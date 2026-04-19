@@ -1,0 +1,40 @@
+{
+  "overview": {
+    "orgsScanned": 247,
+    "domainsScanned": 412,
+    "sovereigntyIndex": 5.8,
+    "sovereignSystems": 0.54,
+    "hyperscalerRatio": 0.33
+  },
+  "sovereigntyDistribution": {
+    "sovereign": 0.54,
+    "partially": 0.13,
+    "hyperscaler": 0.33
+  },
+  "topEmailProviders": [
+    {
+      "name": "Self-Hosted",
+      "share": 0.38
+    },
+    {
+      "name": "Microsoft 365",
+      "share": 0.28
+    },
+    {
+      "name": "Open-Xchange",
+      "share": 0.14
+    },
+    {
+      "name": "Google",
+      "share": 0.09
+    },
+    {
+      "name": "T-Systems",
+      "share": 0.06
+    },
+    {
+      "name": "DFN",
+      "share": 0.05
+    }
+  ]
+}
