@@ -8,7 +8,7 @@ export const getDiffOrZero = (current: number, previous?: number) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const selectByDiff = (diff: number | undefined, positive: any, negative: any, neutral?: any) => {
-  if (!diff) {
+  if (diff == undefined) {
     return undefined
   }
   if (diff === 0 && neutral) {
