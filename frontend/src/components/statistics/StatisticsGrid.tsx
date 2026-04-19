@@ -68,12 +68,12 @@ const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElemen
         </Group>
 
         <Group align="flex-end" gap="xs" mt={25}>
-          <Text c={stat.diff ? (stat.diff > 0 ? 'teal' : 'red') : undefined} className={styles.value}>
+          <Text c={selectByDiff(stat.diff, 'teal', 'red')} className={styles.value}>
             {stat.value}
           </Text>
           {DiffIcon && (
             <Text c={stat.diff! > 0 ? 'teal' : 'red'} fz="sm" fw={500} className={styles.diff}>
-              <span>{Math.round(stat.diff! * 100) / 100}%</span>
+              <span>{Math.round(stat.diff * 100) / 100}%</span>
               <DiffIcon size={16} stroke={1.5} />
             </Text>
           )}
