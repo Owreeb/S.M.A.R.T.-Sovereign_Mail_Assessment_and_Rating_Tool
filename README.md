@@ -13,8 +13,7 @@ Entwickelt als Studierendenprojekt an der Hochschule Karlsruhe im Auftrag der [a
 ```
 S.M.A.R.T./
 ├── scanner/      # Datenpipeline -- sammelt und analysiert Institutionsdaten
-├── frontend/     # React SPA -- interaktive Darstellung der Ergebnisse
-└── Dokumentation/
+└── frontend/     # React SPA -- interaktive Darstellung der Ergebnisse
 ```
 
 ## Komponenten
@@ -31,7 +30,7 @@ Siehe [Scanner-Dokumentation](Dokumentation/02_Scanner.md) für Details.
 
 Single Page Application auf Basis von React und TypeScript. Stellt die Scan-Ergebnisse auf einer interaktiven Karte dar, mit Filterung nach Institutionstyp und Detailansicht je Einrichtung.
 
-Aktuell im Aufbau. Siehe [Frontend-Dokumentation](Dokumentation/03_Frontend.md) für Details.
+Erste Komponenten (Statistik-Dashboard mit Souveränitätskennzahlen) und das Datenmodell sind implementiert. Kartenansicht und weitere Features folgen. Siehe [Frontend-Dokumentation](Dokumentation/03_Frontend.md) für Details.
 
 ## Schnellstart
 
@@ -60,6 +59,7 @@ Setup-Anleitung folgt nach Abschluss der Technologieentscheidung für den Scanne
 | [Scanner](Dokumentation/02_Scanner.md) | Pipeline-Aufbau, Datenbankschema, Logik |
 | [Frontend](Dokumentation/03_Frontend.md) | Tech-Stack, geplante Features, CI |
 | [Entwicklungsumgebung](Dokumentation/04_Entwicklungsumgebung.md) | Lokales Setup Schritt für Schritt |
+| [Entwicklungskonventionen](Dokumentation/05_Entwicklungskonventionen.md) | Branching, PR-Regeln, Coding Standards |
 
 ## Offene Punkte
 
