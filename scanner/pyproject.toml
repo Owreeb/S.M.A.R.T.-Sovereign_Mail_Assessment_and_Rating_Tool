@@ -6,4 +6,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "overpy>=0.7",
+    "pandas",
+    "pyyaml",
+    "requests",
+    "sqlalchemy",
 ]
