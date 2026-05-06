@@ -1,129 +1,21 @@
 institutions:
   university:
     qid: "Q3918"
-    where: |
-      WHERE {
-        ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
-        ?item wdt:P17 wd:{AREA_QID}.
-        FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
-
-        OPTIONAL { ?item wdt:P856 ?website_url. }
-        OPTIONAL { ?item wdt:P968 ?email_addr. }
-        OPTIONAL { ?item wdt:P625 ?coords. }
-        OPTIONAL {
-          ?item wdt:P131* ?city.
-          ?city wdt:P31/wdt:P279* wd:Q515.
-          ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
-        }
-        OPTIONAL {
-          ?item wdt:P131* ?state.
-          ?state wdt:P31 wd:Q1221156.
-          ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
-        }
-
-        ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
-      }
-      GROUP BY ?item
+    filters: []
   hospital:
     qid: "Q16917"
-    where: |
-      WHERE {
-        ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
-        ?item wdt:P17 wd:{AREA_QID}.
-        FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
-
-        OPTIONAL { ?item wdt:P856 ?website_url. }
-        OPTIONAL { ?item wdt:P968 ?email_addr. }
-        OPTIONAL { ?item wdt:P625 ?coords. }
-        OPTIONAL {
-          ?item wdt:P131* ?city.
-          ?city wdt:P31/wdt:P279* wd:Q515.
-          ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
-        }
-        OPTIONAL {
-          ?item wdt:P131* ?state.
-          ?state wdt:P31 wd:Q1221156.
-          ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
-        }
-
-        ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
-      }
-      GROUP BY ?item
+    filters: []
   school:
     qid: "Q132050"
-    where: |
-      WHERE {
-        ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
-        ?item wdt:P17 wd:{AREA_QID}.
-        FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }
-        FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
-
-        OPTIONAL { ?item wdt:P856 ?website_url. }
-        OPTIONAL { ?item wdt:P968 ?email_addr. }
-        OPTIONAL { ?item wdt:P625 ?coords. }
-        OPTIONAL {
-          ?item wdt:P131* ?city.
-          ?city wdt:P31/wdt:P279* wd:Q515.
-          ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
-        }
-        OPTIONAL {
-          ?item wdt:P131* ?state.
-          ?state wdt:P31 wd:Q1221156.
-          ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
-        }
-
-        ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
-      }
-      GROUP BY ?item
+    filters:
+      - FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }
   courthouse:
     qid: "Q41487"
-    where: |
-      WHERE {
-        ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
-        ?item wdt:P17 wd:{AREA_QID}.
-        FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
-
-        OPTIONAL { ?item wdt:P856 ?website_url. }
-        OPTIONAL { ?item wdt:P968 ?email_addr. }
-        OPTIONAL { ?item wdt:P625 ?coords. }
-        OPTIONAL {
-          ?item wdt:P131* ?city.
-          ?city wdt:P31/wdt:P279* wd:Q515.
-          ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
-        }
-        OPTIONAL {
-          ?item wdt:P131* ?state.
-          ?state wdt:P31 wd:Q1221156.
-          ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
-        }
-
-        ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
-      }
-      GROUP BY ?item
+    filters: []
   city:
     qid: "Q515"
-    where: |
-      WHERE {
-        ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
-        ?item wdt:P17 wd:{AREA_QID}.
-        FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
-
-        OPTIONAL { ?item wdt:P856 ?website_url. }
-        OPTIONAL { ?item wdt:P968 ?email_addr. }
-        OPTIONAL { ?item wdt:P625 ?coords. }
-        OPTIONAL {
-          ?item wdt:P131* ?city.
-          ?city wdt:P31/wdt:P279* wd:Q515.
-          ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
-        }
-        OPTIONAL {
-          ?item wdt:P131* ?state.
-          ?state wdt:P31 wd:Q1221156.
-          ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
-        }
-
-        ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
-      }
-      GROUP BY ?item
+    filters: []
 areas:
   germany: "Q183"
+  austria: "Q40"
+  switzerland: "Q39"

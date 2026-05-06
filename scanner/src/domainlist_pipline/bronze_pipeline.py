@@ -15,6 +15,36 @@ SELECT
     (SAMPLE(?coords) AS ?coordinates)
     (SAMPLE(?city_label) AS ?cityLabel) 
     (SAMPLE(?state_label) AS ?stateLabel)
+    (SAMPLE(?country_label) AS ?countryLabel)
+"""
+WHERE_TEMPLATE = """
+WHERE {
+    ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
+    ?item wdt:P17 wd:{AREA_QID}.
+    FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
+    {EXTRA_FILTERS}
+
+    OPTIONAL { ?item wdt:P856 ?website_url. }
+    OPTIONAL { ?item wdt:P968 ?email_addr. }
+    OPTIONAL { ?item wdt:P625 ?coords. }
+    OPTIONAL {
+        ?item wdt:P131* ?city.
+        ?city wdt:P31/wdt:P279* wd:Q515.
+        ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
+    }
+    OPTIONAL {
+        ?item wdt:P131* ?state.
+        ?state wdt:P31 wd:Q1221156.
+        ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
+    }
+    OPTIONAL {
+        ?item wdt:P17 ?country.
+        ?country rdfs:label ?country_label. FILTER(LANG(?country_label) = "de")
+    }
+
+    ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
+}
+GROUP BY ?item
 """
 
 class ConfigLoader:
@@ -40,7 +70,11 @@ class ConfigLoader:
         institution_where = {}
         for key, value in institutions.items():
             institutions_map[str(key)] = str(value["qid"])
-            institution_where[str(key)] = str(value["where"])
+            extra_filters = value.get("filters", [])
+            extra_filters_block = "\n".join(extra_filters).rstrip()
+            institution_where[str(key)] = str(
+                WHERE_TEMPLATE.replace("{EXTRA_FILTERS}", extra_filters_block)
+            )
 
         areas_map = {str(k): str(v) for k, v in areas.items()}
         return institutions_map, areas_map, institution_where
@@ -140,6 +174,7 @@ class WikidataExtractor:
                 "name": row.get('name', {}).get('value'),
                 "city": row.get('cityLabel', {}).get('value'),
                 "state": row.get('stateLabel', {}).get('value'),
+                "country": row.get('countryLabel', {}).get('value'),
                 "website": row.get('website', {}).get('value'),
                 "email": row.get('email', {}).get('value'),
                 "coordinates": row.get('coordinates', {}).get('value'),
@@ -172,6 +207,10 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
 
     if all_data:
         df = pd.DataFrame(all_data)
+        coords = df["coordinates"].str.extract(r"Point\(([-\d.]+)\s+([-\d.]+)\)")
+        df["longitude"] = coords[0]
+        df["latitude"] = coords[1]
+        df.drop(columns=["coordinates"], inplace=True)
         df.drop_duplicates(subset=['id'], inplace=True)
         df.to_sql(table_name, engine, if_exists="replace", index=False)
         print(f"Succesfully saved {len(df)} Entries.")
