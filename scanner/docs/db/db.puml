@@ -1,0 +1,47 @@
+@startuml db_schema
+entity "domain_list" as bronze_table {
+    * uuid : TEXT <<PK>>
+    --
+    id : TEXT
+    name : TEXT
+    city : TEXT
+    state : TEXT
+    country : TEXT
+    website : TEXT
+    website_domain : TEXT
+    email : TEXT
+    category_tag : TEXT
+    longitude : REAL
+    latitude : REAL
+}
+
+entity "mx_records" as mx_records {
+    * uuid : TEXT <<PK>>
+    --
+    mx_record : TEXT
+    type : TEXT
+}
+
+entity "domain_list_mx_records" as domain_list_mx_records {
+    * domain_list_uuid : TEXT <<FK>>
+    * mx_record_uuid : TEXT <<FK>>
+}
+
+entity "smtp_records" as smtp_records {
+    * uuid : TEXT <<PK>>
+    --
+    hostname : TEXT
+    software_name : TEXT
+}
+
+entity "domain_list_smtp_records" as domain_list_smtp_records {
+    * domain_list_uuid : TEXT <<FK>>
+    * smtp_record_uuid : TEXT <<FK>>
+}
+
+bronze_table ||--o{ domain_list_mx_records
+mx_records ||--o{ domain_list_mx_records
+
+bronze_table ||--o{ domain_list_smtp_records
+smtp_records ||--o{ domain_list_smtp_records
+@enduml
