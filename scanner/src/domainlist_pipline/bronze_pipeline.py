@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from urllib.parse import urlparse
 import pandas as pd
 import requests
 from sqlalchemy import create_engine
@@ -46,6 +47,26 @@ WHERE {
 }
 GROUP BY ?item
 """
+
+
+def extract_website_domain(website: str | None) -> str | None:
+    """Extracts the domain from a website URL, also trimming paths, etc."""
+    if not website or not isinstance(website, str):
+        return None
+
+    candidate = website.strip()
+    if not candidate:
+        return None
+
+    parsed = urlparse(candidate)
+    host = parsed.netloc or parsed.path
+    if not host:
+        return None
+
+    host = host.split("/")[0].split("@")[-1].split(":")[0]
+    if host.startswith("www."):
+        host = host[4:]
+    return host.lower() or None
 
 class ConfigLoader:
     """Loads institution and area mappings from a YAML file."""
@@ -143,7 +164,7 @@ class WikidataExtractor:
             except requests.exceptions.RequestException as exc:
                 status = exc.response.status_code if exc.response else None
                 if status not in {502, 503, 504}:
-                    print(f"Fehler: {exc}")
+                    print(f"Error: {exc}")
                     return []
                 if attempt == MAX_ATTEMPTS:
                     print(
@@ -201,12 +222,16 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
     all_data = []
     for inst_key in institution_where.keys():
         for area_qid in areas_map.values():
-            print(f"Lade {inst_key} in {area_qid}...")
+            print(f"Loading {inst_key} in {area_qid}...")
             data = extractor.fetch(inst_key, area_qid)
             all_data.extend(data)
 
     if all_data:
         df = pd.DataFrame(all_data)
+        df = df[
+            df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
+        ]
+        df["website_domain"] = df["website"].apply(extract_website_domain)
         coords = df["coordinates"].str.extract(r"Point\(([-\d.]+)\s+([-\d.]+)\)")
         df["longitude"] = coords[0]
         df["latitude"] = coords[1]
