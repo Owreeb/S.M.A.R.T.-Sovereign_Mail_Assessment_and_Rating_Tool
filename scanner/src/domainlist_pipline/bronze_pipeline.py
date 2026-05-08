@@ -1,12 +1,20 @@
 import argparse
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
+from uuid import uuid4
+
 import pandas as pd
 import requests
 from sqlalchemy import create_engine
 import yaml
 
 MAX_ATTEMPTS = 3
+PREFIX_TEMPLATE = """
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+"""
 SELECT_TEMPLATE = """
 SELECT 
     ?item 
@@ -112,8 +120,8 @@ class WikidataExtractor:
             tag_to_qid: Map of institution keys to QIDs.
             institution_where: Map of institution keys to WHERE clauses.
         """
-        self.endpoint_url = "https://query.wikidata.org/sparql"
-        self.headers = {'User-Agent': 'GeoInstitutionBot/1.4', 'Accept': 'application/sparql-results+json'}
+        self.endpoint_url = "https://qlever.dev/api/wikidata"
+        self.headers = {'User-Agent': 'SMART-BOT/1.4', 'Accept': 'application/sparql-results+json'}
         self.tag_to_qid = tag_to_qid
         self.institution_where = institution_where
 
@@ -137,7 +145,7 @@ class WikidataExtractor:
             .replace("{TARGET_QID}", str(target_qid))
             .replace("{AREA_QID}", str(area_qid))
         )
-        return f"{SELECT_TEMPLATE}\n{where_clause}"
+        return f"{PREFIX_TEMPLATE}\n{SELECT_TEMPLATE}\n{where_clause}"
 
     def fetch(self, institution_key: str, area_qid: str) -> list[dict[str, str]]:
         """
@@ -162,17 +170,13 @@ class WikidataExtractor:
                 data = response.json()
                 return self._parse_rows(data.get('results', {}).get('bindings', []), institution_key)
             except requests.exceptions.RequestException as exc:
-                status = exc.response.status_code if exc.response else None
-                if status not in {502, 503, 504}:
-                    print(f"Error: {exc}")
-                    return []
                 if attempt == MAX_ATTEMPTS:
                     print(
-                        f"Server error after {MAX_ATTEMPTS} attempts for {institution_key} in {area_qid}."
+                        f"Request failed after {MAX_ATTEMPTS} attempts for {institution_key} in {area_qid}: {exc}"
                     )
                 else:
                     print(
-                        f"Server error (attempt {attempt}/{MAX_ATTEMPTS}) for {institution_key} in {area_qid}. Retrying..."
+                        f"Request failed (attempt {attempt}/{MAX_ATTEMPTS}) for {institution_key} in {area_qid}: {exc}. Retrying..."
                     )
         return []
 
@@ -228,15 +232,24 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
 
     if all_data:
         df = pd.DataFrame(all_data)
+
+        df.drop_duplicates(subset=['id'], inplace=True)
+        
         df = df[
             df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
         ]
         df["website_domain"] = df["website"].apply(extract_website_domain)
-        coords = df["coordinates"].str.extract(r"Point\(([-\d.]+)\s+([-\d.]+)\)")
-        df["longitude"] = coords[0]
-        df["latitude"] = coords[1]
+
+        coords = df["coordinates"].astype(str).str.extract(
+            r"(?i)POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)"
+        )
+        df["longitude"] = pd.to_numeric(coords[0], errors="coerce")
+        df["latitude"] = pd.to_numeric(coords[1], errors="coerce")
         df.drop(columns=["coordinates"], inplace=True)
-        df.drop_duplicates(subset=['id'], inplace=True)
+
+        df.insert(0, "uuid", [str(uuid4()) for _ in range(len(df))])
+        df["timestamp"] = datetime.now(timezone.utc)
+
         df.to_sql(table_name, engine, if_exists="replace", index=False)
         print(f"Succesfully saved {len(df)} Entries.")
 

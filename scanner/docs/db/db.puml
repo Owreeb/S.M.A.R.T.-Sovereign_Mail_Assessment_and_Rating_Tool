@@ -13,13 +13,14 @@ entity "domain_list" as bronze_table {
     category_tag : TEXT
     longitude : REAL
     latitude : REAL
+    timestamp : TIMESTAMP
 }
 
 entity "mx_records" as mx_records {
     * uuid : TEXT <<PK>>
     --
     mx_record : TEXT
-    type : TEXT
+    provider : TEXT
 }
 
 entity "domain_list_mx_records" as domain_list_mx_records {
