@@ -27,14 +27,14 @@ const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElemen
     },
     {
       title: 'SOUVERÄNE SYSTEME',
-      value: `${currentData.overview.sovereignSystems}%`,
-      diff: getDiffOrZero(currentData.overview.sovereignSystems, previousData?.overview.sovereignSystems),
+      value: `${currentData.overview.sovereignSystems * 100}%`,
+      diff: getDiffOrZero(currentData.overview.sovereignSystems, previousData?.overview.sovereignSystems) * 100,
       diffLabel: 'seit Q1',
     },
     {
       title: 'HYPERSCALER-ANTEIL',
-      value: `${currentData.overview.hyperscalerRatio}%`,
-      diff: getDiffOrZero(currentData.overview.hyperscalerRatio, previousData?.overview.hyperscalerRatio),
+      value: `${currentData.overview.hyperscalerRatio * 100}%`,
+      diff: getDiffOrZero(currentData.overview.hyperscalerRatio, previousData?.overview.hyperscalerRatio) * 100,
       diffLabel: 'seit Q1',
     },
     {
