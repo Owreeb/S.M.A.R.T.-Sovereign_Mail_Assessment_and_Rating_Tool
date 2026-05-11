@@ -15,6 +15,5 @@ export interface Organization {
   sovereignty_index: number
   sovereignty_level: SovereigntyLevel
   provider_type: ProviderType
-  provider_location: [number, number]
   provider_country: string
 }
