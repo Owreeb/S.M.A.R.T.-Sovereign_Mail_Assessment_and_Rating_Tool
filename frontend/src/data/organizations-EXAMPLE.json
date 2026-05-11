@@ -11,7 +11,6 @@
     "sovereignty_index": 7.8,
     "sovereignty_level": "high",
     "provider_type": "national",
-    "provider_location": [52.5167, 13.3833],
     "provider_country": "DE"
   },
   {
@@ -26,7 +25,6 @@
     "sovereignty_index": 6.4,
     "sovereignty_level": "medium",
     "provider_type": "hyperscaler",
-    "provider_location": [47.6396, -122.1283],
     "provider_country": "US"
   },
   {
@@ -41,7 +39,6 @@
     "sovereignty_index": 8.1,
     "sovereignty_level": "high",
     "provider_type": "self-hosted",
-    "provider_location": [52.5125, 13.3269],
     "provider_country": "DE"
   },
   {
@@ -56,7 +53,6 @@
     "sovereignty_index": 5.9,
     "sovereignty_level": "medium",
     "provider_type": "regional",
-    "provider_location": [51.4344, 6.7623],
     "provider_country": "DE"
   },
   {
@@ -71,7 +67,6 @@
     "sovereignty_index": 4.2,
     "sovereignty_level": "low",
     "provider_type": "hyperscaler",
-    "provider_location": [37.422, -122.084],
     "provider_country": "US"
   },
   {
@@ -86,7 +81,6 @@
     "sovereignty_index": 7.2,
     "sovereignty_level": "high",
     "provider_type": "national",
-    "provider_location": [52.5167, 13.3833],
     "provider_country": "DE"
   },
   {
@@ -101,7 +95,6 @@
     "sovereignty_index": 6.8,
     "sovereignty_level": "medium",
     "provider_type": "national",
-    "provider_location": [50.1109, 8.6821],
     "provider_country": "DE"
   },
   {
@@ -116,7 +109,6 @@
     "sovereignty_index": 8.6,
     "sovereignty_level": "high",
     "provider_type": "self-hosted",
-    "provider_location": [47.3769, 8.5417],
     "provider_country": "CH"
   },
   {
@@ -131,7 +123,6 @@
     "sovereignty_index": 5.1,
     "sovereignty_level": "medium",
     "provider_type": "hyperscaler",
-    "provider_location": [47.6396, -122.1283],
     "provider_country": "US"
   },
   {
@@ -146,7 +137,6 @@
     "sovereignty_index": 5.5,
     "sovereignty_level": "medium",
     "provider_type": "regional",
-    "provider_location": [51.4344, 6.7623],
     "provider_country": "DE"
   },
   {
@@ -161,7 +151,6 @@
     "sovereignty_index": 6.2,
     "sovereignty_level": "medium",
     "provider_type": "regional",
-    "provider_location": [50.937531, 6.960279],
     "provider_country": "DE"
   },
   {
@@ -176,7 +165,6 @@
     "sovereignty_index": 7.4,
     "sovereignty_level": "high",
     "provider_type": "national",
-    "provider_location": [52.5167, 13.3833],
     "provider_country": "DE"
   },
   {
@@ -191,7 +179,6 @@
     "sovereignty_index": 7.1,
     "sovereignty_level": "high",
     "provider_type": "national",
-    "provider_location": [52.5167, 13.3833],
     "provider_country": "DE"
   }
 ]
