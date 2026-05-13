@@ -17,7 +17,7 @@ uv sync
 ### Start Pipeline
 
 ```powershell
-uv run python main.py run_bronze
+uv run main.py
 ```
 
 The SQLite database is written to scanner/database/domainlist.db.

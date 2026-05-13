@@ -1,0 +1,11 @@
+
+.wrapper {
+  justify-content: center;
+  margin: 72px 10%;
+
+  .gridDataContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+}

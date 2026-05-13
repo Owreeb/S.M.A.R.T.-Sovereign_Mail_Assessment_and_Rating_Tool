@@ -1,30 +1,17 @@
-from __future__ import annotations
+from pathlib import Path
 
-import argparse
-import importlib
-from collections.abc import Callable
-
-
-def run_bronze() -> None:
-    module = importlib.import_module("src.domainlist_pipline.bronze_pipeline")
-    module.run()
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Scanner command entrypoint")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("run_bronze", help="Run bronze pipeline")
-    return parser
+from src.domainlist_pipline.bronze_pipeline import save_to_sqlite
 
 
 def main() -> None:
-    command_handlers: dict[str, Callable[[], None]] = {
-        "run_bronze": run_bronze,
-    }
-
-    parser = build_parser()
-    args = parser.parse_args()
-    command_handlers[args.command]()
-
+    base_dir = Path(__file__).resolve().parent
+    db_path = base_dir / "database" / "raw_data.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    save_to_sqlite(
+        str(db_path),
+        "bronze_table",
+        str(base_dir / "src" / "domainlist_pipline" / "config.yaml"),
+    )
 
 if __name__ == "__main__":
     main()

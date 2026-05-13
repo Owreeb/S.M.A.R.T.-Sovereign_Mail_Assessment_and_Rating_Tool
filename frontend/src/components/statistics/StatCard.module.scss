@@ -1,0 +1,52 @@
+.card {
+  display: flex;
+  background: white;
+  border: 1px solid lightgray;
+  border-radius: 6px;
+  max-width: 400px;
+  padding: 24px;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.1s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 0 11px lightgray;
+    transform: scale(1.05);
+  }
+}
+
+.title {
+  font-size: 14px;
+  padding: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-wrap: nowrap;
+  color: gray;
+}
+
+.value {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.diff {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.arrow {
+  font-size: 14px;
+}
+
+.positive {
+  color: green;
+}
+
+.negative {
+  color: red;
+}

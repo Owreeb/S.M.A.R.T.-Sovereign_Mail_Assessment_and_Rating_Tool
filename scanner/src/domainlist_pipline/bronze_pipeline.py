@@ -1,243 +1,263 @@
-from __future__ import annotations
-import datetime as dt
-import sqlite3
-import time
+import argparse
+from datetime import datetime, timezone
 from pathlib import Path
-import overpy
-from .query_profiles import QUERY_PROFILES
+from urllib.parse import urlparse
+from uuid import uuid4
 
-FEDERAL_STATES = [
-    ("Baden-Wuerttemberg", "Baden-Wuerttemberg|Baden-Wuerttemberg|Baden-Württemberg"),
-    ("Bayern", "Bayern"),
-    ("Berlin", "Berlin"),
-    ("Brandenburg", "Brandenburg"),
-    ("Bremen", "Bremen"),
-    ("Hamburg", "Hamburg"),
-    ("Hessen", "Hessen"),
-    ("Mecklenburg-Vorpommern", "Mecklenburg-Vorpommern"),
-    ("Niedersachsen", "Niedersachsen"),
-    ("Nordrhein-Westfalen", "Nordrhein-Westfalen"),
-    ("Rheinland-Pfalz", "Rheinland-Pfalz"),
-    ("Saarland", "Saarland"),
-    ("Sachsen", "Sachsen"),
-    ("Sachsen-Anhalt", "Sachsen-Anhalt"),
-    ("Schleswig-Holstein", "Schleswig-Holstein"),
-    ("Thueringen", "Thueringen|Thüringen"),
-]
+import pandas as pd
+import requests
+from sqlalchemy import create_engine
+import yaml
 
-OVERPASS_URLS = [
-    "https://overpass-api.de/api/interpreter",
-    "https://lz4.overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter",
-]
+MAX_ATTEMPTS = 3
+PREFIX_TEMPLATE = """
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+"""
+SELECT_TEMPLATE = """
+SELECT 
+    ?item 
+    (SAMPLE(?name_label) AS ?name) 
+    (SAMPLE(?website_url) AS ?website) 
+    (SAMPLE(?email_addr) AS ?email) 
+    (SAMPLE(?coords) AS ?coordinates)
+    (SAMPLE(?city_label) AS ?cityLabel) 
+    (SAMPLE(?state_label) AS ?stateLabel)
+    (SAMPLE(?country_label) AS ?countryLabel)
+"""
+WHERE_TEMPLATE = """
+WHERE {
+    ?item wdt:P31/wdt:P279* wd:{TARGET_QID}.
+    ?item wdt:P17 wd:{AREA_QID}.
+    FILTER NOT EXISTS { ?item wdt:P576 ?dissolved. }
+    {EXTRA_FILTERS}
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DB_PATH = PROJECT_ROOT / "database" / "domainlist.db"
+    OPTIONAL { ?item wdt:P856 ?website_url. }
+    OPTIONAL { ?item wdt:P968 ?email_addr. }
+    OPTIONAL { ?item wdt:P625 ?coords. }
+    OPTIONAL {
+        ?item wdt:P131* ?city.
+        ?city wdt:P31/wdt:P279* wd:Q515.
+        ?city rdfs:label ?city_label. FILTER(LANG(?city_label) = "de")
+    }
+    OPTIONAL {
+        ?item wdt:P131* ?state.
+        ?state wdt:P31 wd:Q1221156.
+        ?state rdfs:label ?state_label. FILTER(LANG(?state_label) = "de")
+    }
+    OPTIONAL {
+        ?item wdt:P17 ?country.
+        ?country rdfs:label ?country_label. FILTER(LANG(?country_label) = "de")
+    }
 
-def build_query(selector: str, federal_state_regex: str) -> str:
-    """
-    Builds an Overpass QL query string based on the provided selector and federal_state regex.
+    ?item rdfs:label ?name_label. FILTER(LANG(?name_label) = "de")
+}
+GROUP BY ?item
+"""
 
-    Args:
-        selector (str): The OSM element selector part of the query.
-        federal_state_regex (str): A regex pattern to match the name of the federal state in the query.
-        
-    Returns:
-        str: The constructed Overpass QL query.
-    """
 
-    return f"""
-        [out:json][timeout:180];
-        area["ISO3166-1"="DE"][admin_level=2]->.de;
-        area["admin_level"="4"]["name"~"{federal_state_regex}"](area.de)->.state;
-        (
-        {selector}
-        );
-        nwr._["highway"!~"."]["railway"!~"."]["public_transport"!~"."];
-        nwr._[~"^(website|contact:website|contact:email|wikipedia|wikidata)$"~"."];
-        nwr._["name"!~"(\\bDr\\.|\\bProf\\.|\\bDipl\\.|\\bIng\\.)",i];
-        out center tags;
-    """.strip()
+def extract_website_domain(website: str | None) -> str | None:
+    """Extracts the domain from a website URL, also trimming paths, etc."""
+    if not website or not isinstance(website, str):
+        return None
 
-def query_overpass(query: str, retries_per_endpoint: int = 3) -> overpy.Result:
-    """
-    Executes an Overpass QL query with retry logic and server failover.
+    candidate = website.strip()
+    if not candidate:
+        return None
 
-    Args:
-        query (str): The Overpass QL query string to execute.
-        retries_per_endpoint (int): How many times to retry each server before switching.
+    parsed = urlparse(candidate)
+    host = parsed.netloc or parsed.path
+    if not host:
+        return None
 
-    Returns:
-        overpy.Result: The parsed results from the Overpass API.
+    host = host.split("/")[0].split("@")[-1].split(":")[0]
+    if host.startswith("www."):
+        host = host[4:]
+    return host.lower() or None
 
-    Raises:
-        RuntimeError: If all configured servers fail to return a result.
-        Exception: If any other than RuntimeError occurs.
-    """
+class ConfigLoader:
+    """Loads institution and area mappings from a YAML file."""
 
-    retryable = (
-        overpy.exception.OverpassTooManyRequests,
-        overpy.exception.OverpassGatewayTimeout,
-        overpy.exception.OverpassUnknownHTTPStatusCode,
-    )
-    last_error: Exception | None = None
-    for base_url in OVERPASS_URLS:
-        api = overpy.Overpass(url=base_url)
-        for attempt in range(1, retries_per_endpoint + 1):
+    def __init__(self, config_path: str) -> None:
+        self.config_path = config_path
+
+    def load(self) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+        """
+        Loads mappings from YAML.
+
+        Returns:
+            Tuple of (institutions_map, areas_map, institution_where).
+        """
+        with open(self.config_path, "r", encoding="utf-8") as file_handle:
+            data = yaml.safe_load(file_handle)
+
+        institutions = data["institutions"]
+        areas = data["areas"]
+
+        institutions_map = {}
+        institution_where = {}
+        for key, value in institutions.items():
+            institutions_map[str(key)] = str(value["qid"])
+            extra_filters = value.get("filters", [])
+            extra_filters_block = "\n".join(extra_filters).rstrip()
+            institution_where[str(key)] = str(
+                WHERE_TEMPLATE.replace("{EXTRA_FILTERS}", extra_filters_block)
+            )
+
+        areas_map = {str(k): str(v) for k, v in areas.items()}
+        return institutions_map, areas_map, institution_where
+
+
+class WikidataExtractor:
+    """Builds and executes Wikidata SPARQL queries."""
+
+    def __init__(self, tag_to_qid: dict[str, str], institution_where: dict[str, str]):
+        """
+        Initializes the extractor.
+
+        Args:
+            tag_to_qid: Map of institution keys to QIDs.
+            institution_where: Map of institution keys to WHERE clauses.
+        """
+        self.endpoint_url = "https://qlever.dev/api/wikidata"
+        self.headers = {'User-Agent': 'SMART-BOT/1.4', 'Accept': 'application/sparql-results+json'}
+        self.tag_to_qid = tag_to_qid
+        self.institution_where = institution_where
+
+    def build_query(self, institution_key: str, area_qid: str) -> str:
+        """
+        Builds a SPARQL query from the base template and a WHERE clause.
+
+        Args:
+            institution_key: Config key for the institution.
+            area_qid: Wikidata QID for the area.
+
+        Returns:
+            Fully assembled SPARQL query string.
+        """
+        target_qid = self.tag_to_qid[institution_key]
+
+        where_template = self.institution_where[institution_key]
+
+        where_clause = (
+            where_template
+            .replace("{TARGET_QID}", str(target_qid))
+            .replace("{AREA_QID}", str(area_qid))
+        )
+        return f"{PREFIX_TEMPLATE}\n{SELECT_TEMPLATE}\n{where_clause}"
+
+    def fetch(self, institution_key: str, area_qid: str) -> list[dict[str, str]]:
+        """
+        Runs a query and returns normalized result rows.
+
+        Args:
+            institution_key: Config key for the institution.
+            area_qid: Wikidata QID for the area.
+
+        Returns:
+            List of result dictionaries (possibly empty).
+        """
+        query = self.build_query(institution_key, area_qid)
+        for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
-                return api.query(query)
-            except retryable as exc:
-                last_error = exc
-            except Exception as exc:
-                last_error = exc
-                raise
-            if attempt < retries_per_endpoint:
-                wait_seconds = min(2**attempt, 8)
-                print(f"Warning: {base_url} failed, Retry in {wait_seconds}s")
-                time.sleep(wait_seconds)
-        print(f"Switching to next Overpass server")
-    raise RuntimeError("Couldnt reach any Overpass server.") from last_error
-
-def _result_rows(result: overpy.Result, profile_name: str, federal_state: str, extracted_at: str) -> list[tuple]:
-    """
-    Parses an Overpass result into a flattened list of tuples for database insertion.
-
-    Args:
-        result (overpy.Result): The raw result object from the Overpass API.
-        profile_name (str): The name of the search profile used for this query.
-        federal_state (str): The federal state the data belongs to.
-        extracted_at (str): A timestamp string indicating when the data was fetched.
-
-    Returns:
-        list[tuple]: A list of tuples, where each tuple represents a single OSM element and its relevant tags.
-    """
-
-    rows: list[tuple] = []
-    for osm_type, elements in (("node", result.nodes), ("way", result.ways), ("relation", result.relations)):
-        for item in elements:
-            tags = getattr(item, "tags", {}) or {}
-            name = str(tags.get("name") or "").strip()
-            if not name:
-                continue
-
-            item_id = int(getattr(item, "id", 0) or 0)
-            rows.append(
-                (
-                    item_id,
-                    osm_type,
-                    name,
-                    federal_state,
-                    tags.get("website"),
-                    tags.get("contact:website"),
-                    tags.get("contact:email"),
-                    tags.get("wikipedia"),
-                    tags.get("wikidata"),
-                    profile_name,
-                    extracted_at,
+                response = requests.get(
+                    self.endpoint_url,
+                    params={'query': query},
+                    headers=self.headers,
                 )
-            )
-    return rows
+                response.raise_for_status()
+                data = response.json()
+                return self._parse_rows(data.get('results', {}).get('bindings', []), institution_key)
+            except requests.exceptions.RequestException as exc:
+                if attempt == MAX_ATTEMPTS:
+                    print(
+                        f"Request failed after {MAX_ATTEMPTS} attempts for {institution_key} in {area_qid}: {exc}"
+                    )
+                else:
+                    print(
+                        f"Request failed (attempt {attempt}/{MAX_ATTEMPTS}) for {institution_key} in {area_qid}: {exc}. Retrying..."
+                    )
+        return []
 
-def save_result_to_sqlite(
-    result: overpy.Result,
-    profile_name: str,
-    federal_state: str,
-    db_path: str | Path = DEFAULT_DB_PATH,
-) -> int:
-    
+    @staticmethod
+    def _parse_rows(rows: list[dict], institution_key: str) -> list[dict[str, str]]:
+        """
+        Normalizes SPARQL result bindings.
+
+        Args:
+            rows: Raw SPARQL bindings.
+            institution_key: Config key for the institution.
+
+        Returns:
+            List of normalized rows.
+        """
+        results = []
+        for row in rows:
+            results.append({
+                "id": row.get('item', {}).get('value'),
+                "name": row.get('name', {}).get('value'),
+                "city": row.get('cityLabel', {}).get('value'),
+                "state": row.get('stateLabel', {}).get('value'),
+                "country": row.get('countryLabel', {}).get('value'),
+                "website": row.get('website', {}).get('value'),
+                "email": row.get('email', {}).get('value'),
+                "coordinates": row.get('coordinates', {}).get('value'),
+                "category_tag": institution_key,
+            })
+        return results
+
+
+def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
     """
-    Saves Overpass results to a SQLite database with deduplication.
-
-    It creates the 'osm_names' table if it doesn't exist. Data is inserted 
-    using a 'UNIQUE' constraint to prevent duplicate entries.
+    Fetches data and saves it into SQLite.
 
     Args:
-        result (overpy.Result): The parsed OSM data from Overpass.
-        profile_name (str): The name of the search profile used.
-        federal_state (str): The German federal state the data belongs to.
-        db_path (str): File path to the SQLite database. 
-
-    Returns:
-        int: The number of new records actually inserted into the database 
-            (excludes ignored duplicates).
+        sqlite_path: Output SQLite file path.
+        table_name: Destination table name.
+        config_path: Path to config YAML file.
     """
+    db_path = Path(sqlite_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    engine = create_engine(f"sqlite:///{db_path}")
+    institutions_map, areas_map, institution_where = ConfigLoader(config_path).load()
+    extractor = WikidataExtractor(institutions_map, institution_where)
 
-    resolved_db_path = Path(db_path)
-    if not resolved_db_path.is_absolute():
-        resolved_db_path = PROJECT_ROOT / resolved_db_path
-    resolved_db_path.parent.mkdir(parents=True, exist_ok=True)
+    all_data = []
+    for inst_key in institution_where.keys():
+        for area_qid in areas_map.values():
+            print(f"Loading {inst_key} in {area_qid}...")
+            data = extractor.fetch(inst_key, area_qid)
+            all_data.extend(data)
 
-    extracted_at = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if all_data:
+        df = pd.DataFrame(all_data)
 
-    rows = _result_rows(result, profile_name, federal_state, extracted_at)
+        df.drop_duplicates(subset=['id'], inplace=True)
+        
+        df = df[
+            df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
+        ]
+        df["website_domain"] = df["website"].apply(extract_website_domain)
 
-    with sqlite3.connect(str(resolved_db_path)) as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS osm_names (
-                id INTEGER,
-                osm_type TEXT,
-                name TEXT NOT NULL,
-                federal_state TEXT,
-                website TEXT,
-                contact_website TEXT,
-                contact_email TEXT,
-                wikipedia TEXT,
-                wikidata TEXT,
-                profil TEXT,
-                extracted_at DATETIME,
-                UNIQUE(id, osm_type, name, profil, federal_state)
-            )
-            """
+        coords = df["coordinates"].astype(str).str.extract(
+            r"(?i)POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)"
         )
-        before = conn.total_changes
-        conn.executemany(
-            """
-            INSERT OR IGNORE INTO osm_names
-            (
-                id,
-                osm_type,
-                name,
-                federal_state,
-                website,
-                contact_website,
-                contact_email,
-                wikipedia,
-                wikidata,
-                profil,
-                extracted_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            rows,
-        )
-        conn.commit()
-        return conn.total_changes - before
+        df["longitude"] = pd.to_numeric(coords[0], errors="coerce")
+        df["latitude"] = pd.to_numeric(coords[1], errors="coerce")
+        df.drop(columns=["coordinates"], inplace=True)
 
-def run() -> None:
-    """
-    Orchestrates the full extraction pipeline for all profiles and federal states.
+        df.insert(0, "uuid", [str(uuid4()) for _ in range(len(df))])
+        df["timestamp"] = datetime.now(timezone.utc)
 
-    Summary of the process:
-        1. Iterates through profile names.
-        2. For each profile, loops through all federal states.
-        3. Builds and executes an Overpass QL query.
-        4. Saves results to SQLite with deduplication.
+        df.to_sql(table_name, engine, if_exists="replace", index=False)
+        print(f"Succesfully saved {len(df)} Entries.")
 
-    Returns:
-        None
-    """
 
-    for profile_name in QUERY_PROFILES:
-        selector = QUERY_PROFILES[profile_name]
-        total_inserted = 0
-        for federal_state, federal_state_regex in FEDERAL_STATES:
-            print(f"Searching for '{profile_name}' in {federal_state}")
-            query = build_query(selector, federal_state_regex)
-            result = query_overpass(query)
-
-            inserted_count = save_result_to_sqlite(result, profile_name, federal_state)
-            print(f"Items inserted: {inserted_count}")
-            total_inserted += inserted_count
-
-        print(f"Total items inserted: {total_inserted}")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--db", required=True)
+    parser.add_argument("--table", required=True)
+    parser.add_argument("--config", default="config.yaml", help="Path to config.yaml")
+    args = parser.parse_args()
+    save_to_sqlite(args.db, args.table, args.config)

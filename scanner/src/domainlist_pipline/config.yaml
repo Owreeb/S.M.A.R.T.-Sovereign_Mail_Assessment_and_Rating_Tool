@@ -1,0 +1,21 @@
+institutions:
+  university:
+    qid: "Q3918"
+    filters: []
+  hospital:
+    qid: "Q16917"
+    filters: []
+  school:
+    qid: "Q132050"
+    filters:
+      - FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }
+  courthouse:
+    qid: "Q41487"
+    filters: []
+  city:
+    qid: "Q515"
+    filters: []
+areas:
+  germany: "Q183"
+  austria: "Q40"
+  switzerland: "Q39"
