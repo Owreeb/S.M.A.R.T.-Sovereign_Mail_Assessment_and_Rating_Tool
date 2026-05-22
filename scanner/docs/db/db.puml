@@ -56,6 +56,7 @@ entity IP_ADDRESSES {
     asn              : INTEGER
     asn_org          : TEXT
     country_code     : TEXT
+    rating           : INTEGER
 }
 
 ' ──────────────────────────────────────────
@@ -70,6 +71,7 @@ entity MAIL_SYSTEMS {
     vendor              : TEXT
     is_open_source      : INTEGER
     provider_category   : TEXT
+    rating              : INTEGER
     --
     UNIQUE (software, role)
 }
