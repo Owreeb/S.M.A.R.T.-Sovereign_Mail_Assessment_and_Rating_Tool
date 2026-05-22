@@ -6,7 +6,7 @@ skinparam backgroundColor transparent
 skinparam defaultFontName Arial
 skinparam defaultFontSize 12
 skinparam nodesep 80
-skinparam ranksep 160
+skinparam ranksep 80
 
 skinparam class {
   BackgroundColor #F5F5F5
@@ -106,10 +106,10 @@ entity MAIL_SYSTEM_IP_HISTORY {
 ORGANISATIONS       "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : has >
 MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : proxy for >
 MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : recorded in >
+SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : valid_from / valid_to >
 
 MAIL_SYSTEMS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : has >
 IP_ADDRESSES        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : recorded in >
+SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : valid_from / valid_to >
 
 @enduml
