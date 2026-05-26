@@ -1,48 +1,117 @@
-@startuml db_schema
-entity "domain_list" as bronze_table {
-    * uuid : TEXT <<PK>>
+@startuml db_improved
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam backgroundColor transparent
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam nodesep 80
+skinparam ranksep 80
+
+skinparam class {
+  BackgroundColor #F5F5F5
+  BorderColor #444444
+  HeaderBackgroundColor #D0E4F0
+  FontColor #222222
+  AttributeFontColor #333333
+  ArrowColor #444444
+  ArrowFontSize 11
+  ArrowFontColor #555555
+}
+
+' ──────────────────────────────────────────
+' Core
+' ──────────────────────────────────────────
+
+entity SCANNER_RUNS {
+  * id               : INTEGER <<PK>>
+  --
+    started_at       : TIMESTAMP
+    finished_at      : TIMESTAMP
+    scanner_version  : TEXT
+}
+
+entity ORGANISATIONS {
+  * id               : INTEGER <<PK>>
+  --
+    name             : TEXT
+    wikidata_url     : TEXT
+    primary_domain   : TEXT
+    email_domain     : TEXT
+    website_domain   : TEXT
+    website          : TEXT
+    city             : TEXT
+    state            : TEXT
+    country          : TEXT
+    category_tag     : TEXT
+    longitude        : REAL
+    latitude         : REAL
+}
+
+entity IP_ADDRESSES {
+  * id               : INTEGER <<PK>>
+  --
+    ip_address       : TEXT
+    rdns_hostname    : TEXT
+    asn              : INTEGER
+    asn_org          : TEXT
+    country_code     : TEXT
+    rating           : INTEGER
+}
+
+' ──────────────────────────────────────────
+' Mail Systems
+' ──────────────────────────────────────────
+
+entity MAIL_SYSTEMS {
+  * id                  : INTEGER <<PK>>
+  --
+  * role                : ENUM('smtp_out','smtp_in','imap_pop3','webmailer', 'proxy')
+  * software            : TEXT
+    vendor              : TEXT
+    is_open_source      : INTEGER
+    provider_category   : TEXT
+    rating              : INTEGER
     --
-    id : TEXT
-    name : TEXT
-    city : TEXT
-    state : TEXT
-    country : TEXT
-    website : TEXT
-    website_domain : TEXT
-    email : TEXT
-    category_tag : TEXT
-    longitude : REAL
-    latitude : REAL
-    timestamp : TIMESTAMP
+    UNIQUE (software, role)
 }
 
-entity "mx_records" as mx_records {
-    * uuid : TEXT <<PK>>
-    --
-    mx_record : TEXT
-    provider : TEXT
+' ──────────────────────────────────────────
+' History
+' ──────────────────────────────────────────
+
+entity ORG_MAIL_SYSTEM_HISTORY {
+  * id               : INTEGER <<PK>>
+  --
+  * organisation_id  : INTEGER <<FK>>
+  * mail_system_id   : INTEGER <<FK>>
+  * valid_from_run   : INTEGER <<FK>>
+    valid_to_run     : INTEGER <<FK>>
+    proxy_system_id  : INTEGER <<FK>>
+    is_current       : INTEGER
 }
 
-entity "domain_list_mx_records" as domain_list_mx_records {
-    * domain_list_uuid : TEXT <<FK>>
-    * mx_record_uuid : TEXT <<FK>>
+entity MAIL_SYSTEM_IP_HISTORY {
+  * id               : INTEGER <<PK>>
+  --
+  * mail_system_id   : INTEGER <<FK>>
+  * ip_address_id    : INTEGER <<FK>>
+  * valid_from_run   : INTEGER <<FK>>
+    valid_to_run     : INTEGER <<FK>>
+    is_current       : INTEGER
 }
 
-entity "smtp_records" as smtp_records {
-    * uuid : TEXT <<PK>>
-    --
-    hostname : TEXT
-    software_name : TEXT
-}
+' ──────────────────────────────────────────
+' Relations
+' ──────────────────────────────────────────
 
-entity "domain_list_smtp_records" as domain_list_smtp_records {
-    * domain_list_uuid : TEXT <<FK>>
-    * smtp_record_uuid : TEXT <<FK>>
-}
+ORGANISATIONS       "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : has >
+MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : proxy for >
+MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : referenced in >
+SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : valid_from / valid_to >
 
-bronze_table ||--o{ domain_list_mx_records
-mx_records ||--o{ domain_list_mx_records
+MAIL_SYSTEMS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : has >
+IP_ADDRESSES        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : referenced in >
+SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : valid_from / valid_to >
 
-bronze_table ||--o{ domain_list_smtp_records
-smtp_records ||--o{ domain_list_smtp_records
 @enduml
