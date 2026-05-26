@@ -82,6 +82,6 @@ jobs:
         with:
           args: >
             -Dsonar.organization=owreeb
-            -Dsonar.projectKey=Owreeb_SMART
+            -Dsonar.projectKey=Owreeb_SMART_scanner
             -Dsonar.sources=scanner/src
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.coverage.reportPaths=scanner/coverage.xml
