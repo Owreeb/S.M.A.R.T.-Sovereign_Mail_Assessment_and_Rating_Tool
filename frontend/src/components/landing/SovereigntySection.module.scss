@@ -1,0 +1,95 @@
+.section {
+  background: white;
+  padding: 96px 6%;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #f0792e;
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 28px;
+  color: #15171a;
+  letter-spacing: -0.5px;
+}
+
+.paragraph {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #4a4d52;
+  margin: 0 0 16px;
+  max-width: 520px;
+
+  strong {
+    color: #15171a;
+    font-weight: 700;
+  }
+}
+
+.highlights {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlightCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  border-left: 4px solid #f0792e;
+}
+
+.highlightIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.highlightTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #15171a;
+  margin-bottom: 4px;
+}
+
+.highlightDescription {
+  font-size: 14px;
+  color: #6a6d72;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .section {
+    padding: 64px 5%;
+  }
+
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .heading {
+    font-size: 32px;
+  }
+}

@@ -1,0 +1,99 @@
+.hero {
+  position: relative;
+  background-color: #3a3d42;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+  color: white;
+  overflow: hidden;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(40, 43, 48, 0.7) 0%,
+    rgba(40, 43, 48, 0.4) 45%,
+    rgba(40, 43, 48, 0) 70%
+  );
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 96px 6%;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 28px;
+  letter-spacing: -1px;
+}
+
+.subtitle {
+  font-size: 18px;
+  line-height: 1.55;
+  margin: 0 0 36px;
+  max-width: 520px;
+  color: #d0d3d8;
+}
+
+.cta {
+  display: inline-block;
+  background: #f0792e;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 16px 28px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease-in-out;
+
+  &:hover {
+    background: #d8651c;
+  }
+}
+
+.scrollLink {
+  display: block;
+  margin-top: 28px;
+  color: white;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+
+  &:hover {
+    color: #f0792e;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: 480px;
+  }
+
+  .content {
+    padding: 64px 5%;
+  }
+
+  .title {
+    font-size: 38px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+}
