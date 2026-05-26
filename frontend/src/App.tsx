@@ -1,23 +1,14 @@
-import MapView from '@components/map/MapView.tsx'
-import StatisticsGrid from '@components/statistics/StatisticsGrid.tsx'
-import type { Organization } from '@models/organization.ts'
-import type { StatisticsData } from '@models/statisticsData.ts'
+import { Route, Routes } from 'react-router-dom'
 
-import organizationsData from './data/organizations-EXAMPLE.json'
-
-const dataFiles = import.meta.glob('./data/[0-9]*.json', { eager: true, import: 'default' })
-const sortedFiles = Object.keys(dataFiles).sort((a, b) => b.localeCompare(a))
-
-const currentData = dataFiles[sortedFiles[0]] as StatisticsData
-const previousData = dataFiles[sortedFiles[1]] as StatisticsData | undefined
-const organizations = organizationsData as Organization[]
+import Dashboard from '@pages/Dashboard.tsx'
+import LandingPage from '@pages/LandingPage.tsx'
 
 function App() {
   return (
-    <>
-      <StatisticsGrid currentData={currentData} previousData={previousData} />
-      <MapView orgs={organizations} />
-    </>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Routes>
   )
 }
 

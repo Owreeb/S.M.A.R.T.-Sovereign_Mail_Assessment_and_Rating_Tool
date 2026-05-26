@@ -28,6 +28,7 @@
       "@constants/*": ["./src/constants/*"],
       "@hooks/*": ["./src/hooks/*"],
       "@models/*": ["./src/models/*"],
+      "@pages/*": ["./src/pages/*"],
       "@utils/*": ["./src/utils/*"]
     }
   },
