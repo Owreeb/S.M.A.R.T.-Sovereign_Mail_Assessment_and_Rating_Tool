@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "domainlist_pipline"))
 
-from org_list_pipeline import extract_website_domain, WikidataExtractor
+from org_list_pipeline import extract_website_domain, normalize_email_to_domain, WikidataExtractor
 
 
 class TestExtractWebsiteDomain:
@@ -36,6 +36,44 @@ class TestExtractWebsiteDomain:
 
     def test_returns_none_for_whitespace(self):
         assert extract_website_domain("   ") is None
+
+
+class TestNormalizeEmailToDomain:
+    def test_returns_none_for_none(self):
+        assert normalize_email_to_domain(None) is None
+
+    def test_returns_none_for_empty_string(self):
+        assert normalize_email_to_domain("") is None
+
+    def test_returns_none_for_whitespace(self):
+        assert normalize_email_to_domain("   ") is None
+
+    def test_returns_none_for_non_string(self):
+        assert normalize_email_to_domain(123) is None
+
+    def test_strips_mailto_prefix(self):
+        assert normalize_email_to_domain("mailto:info@example.com") == "example.com"
+
+    def test_strips_mailto_prefix_case_insensitive(self):
+        assert normalize_email_to_domain("MAILTO:info@example.com") == "example.com"
+
+    def test_strips_query_string(self):
+        assert normalize_email_to_domain("mailto:info@example.com?subject=Hi") == "example.com"
+
+    def test_strips_fragment(self):
+        assert normalize_email_to_domain("mailto:info@example.com#anchor") == "example.com"
+
+    def test_returns_none_when_no_at_sign(self):
+        assert normalize_email_to_domain("not-an-email") is None
+
+    def test_lowercases_domain(self):
+        assert normalize_email_to_domain("info@EXAMPLE.COM") == "example.com"
+
+    def test_keeps_subdomain(self):
+        assert normalize_email_to_domain("info@mail.example.com") == "mail.example.com"
+
+    def test_plain_email_without_mailto(self):
+        assert normalize_email_to_domain("info@example.com") == "example.com"
 
 
 class TestWikidataExtractorParseRows:

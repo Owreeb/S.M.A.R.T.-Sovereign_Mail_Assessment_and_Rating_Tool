@@ -3,12 +3,19 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "domainlist_pipline"))
 
+from scrapy.http import HtmlResponse
+
 from email_scraper import (
     normalize_url,
     extract_emails,
     is_generic,
     pick_email_domain,
+    find_impressum_link,
 )
+
+
+def _make_response(body: str, url: str = "https://example.com") -> HtmlResponse:
+    return HtmlResponse(url=url, body=body.encode("utf-8"), encoding="utf-8")
 
 
 class TestNormalizeUrl:
@@ -124,3 +131,63 @@ class TestPickEmailDomain:
     def test_picks_first_non_generic(self):
         emails = ["admin@a.com", "info@b.com", "kontakt@c.com"]
         assert pick_email_domain(emails) == "b.com"
+
+
+class TestFindImpressumLink:
+    def test_finds_link_by_visible_text(self):
+        response = _make_response('<a href="/impressum">Impressum</a>')
+        assert find_impressum_link(response) == "https://example.com/impressum"
+
+    def test_finds_link_by_kontakt_text(self):
+        response = _make_response('<a href="/about">Kontakt</a>')
+        assert find_impressum_link(response) == "https://example.com/about"
+
+    def test_finds_link_by_href_keyword(self):
+        response = _make_response('<a href="/impressum.html">Legal</a>')
+        assert find_impressum_link(response) == "https://example.com/impressum.html"
+
+    def test_text_match_is_case_insensitive(self):
+        response = _make_response('<a href="/page">IMPRESSUM</a>')
+        assert find_impressum_link(response) == "https://example.com/page"
+
+    def test_returns_none_when_no_match(self):
+        response = _make_response('<a href="/home">Home</a><a href="/about">About us</a>')
+        assert find_impressum_link(response) is None
+
+    def test_returns_none_for_empty_page(self):
+        assert find_impressum_link(_make_response("<html></html>")) is None
+
+    def test_ignores_mailto_links(self):
+        response = _make_response('<a href="mailto:impressum@example.com">Impressum</a>')
+        assert find_impressum_link(response) is None
+
+    def test_ignores_tel_links(self):
+        response = _make_response('<a href="tel:+49123">Kontakt</a>')
+        assert find_impressum_link(response) is None
+
+    def test_ignores_fragment_links(self):
+        response = _make_response('<a href="#impressum">Impressum</a>')
+        assert find_impressum_link(response) is None
+
+    def test_ignores_javascript_links(self):
+        response = _make_response('<a href="javascript:void(0)">Impressum</a>')
+        assert find_impressum_link(response) is None
+
+    def test_picks_first_match_when_multiple(self):
+        response = _make_response(
+            '<a href="/impressum">Impressum</a><a href="/kontakt">Kontakt</a>'
+        )
+        assert find_impressum_link(response) == "https://example.com/impressum"
+
+    def test_resolves_relative_url_to_absolute(self):
+        response = _make_response(
+            '<a href="legal/impressum">Impressum</a>',
+            url="https://example.com/de/",
+        )
+        assert find_impressum_link(response) == "https://example.com/de/legal/impressum"
+
+    def test_keeps_absolute_http_url(self):
+        response = _make_response(
+            '<a href="http://other.de/impressum">Impressum</a>'
+        )
+        assert find_impressum_link(response) == "http://other.de/impressum"
