@@ -4,7 +4,6 @@ Scrapes the email domain for each org in `bronze_table`.
 For each row with a website but no email: open the homepage, look for
 mailto: links, take the first non-generic one and store its domain.
 If nothing there, follow an Impressum/Kontakt link and try again.
-Plain-text emails in the body are ignored on purpose (too noisy).
 """
 
 import multiprocessing
@@ -191,7 +190,7 @@ class MailtoSpider(scrapy.Spider):
 
 def count_rows(db_path: str, table: str) -> int:
     """
-    How many rows still need scraping (have website, no email yet).
+    How many rows still need scraping (have website, no email).
     """
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -215,7 +214,8 @@ def fetch_rows(
     last_rowid: int,
 ) -> list[tuple[str, str]]:
     """
-    Next batch of rows to scrape, paged by ROWID. Returns (id, website)."""
+    Next batch of rows to scrape, paged by ROWID. Returns (id, website)
+    """
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -280,7 +280,7 @@ def run_scraper(db_path: str, table: str, batch_size: int = BATCH_SIZE) -> None:
     """
     Run the scraper in batches, one fresh process per batch (clean reactor + FD pool).
 
-    Pagination uses SQLite's ROWID as cursor.
+    Pagination uses SQLite ROWID.
     Rows that fail stay NULL and are skipped because the next batch starts past them.
     """
     remaining = count_rows(db_path, table)
