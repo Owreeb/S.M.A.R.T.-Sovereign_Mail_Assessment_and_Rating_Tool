@@ -1,12 +1,13 @@
-@startuml db_improved
+@startuml db
 
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
 skinparam backgroundColor transparent
 skinparam defaultFontName Arial
 skinparam defaultFontSize 12
-skinparam nodesep 80
-skinparam ranksep 80
+skinparam nodesep 120
+skinparam ranksep 200
+top to bottom direction
 
 skinparam class {
   BackgroundColor #F5F5F5
@@ -18,10 +19,6 @@ skinparam class {
   ArrowFontSize 11
   ArrowFontColor #555555
 }
-
-' ──────────────────────────────────────────
-' Core
-' ──────────────────────────────────────────
 
 entity SCANNER_RUNS {
   * id               : INTEGER <<PK>>
@@ -51,22 +48,21 @@ entity ORGANISATIONS {
 entity IP_ADDRESSES {
   * id               : INTEGER <<PK>>
   --
-    ip_address       : TEXT
+  * ip_address       : TEXT
     rdns_hostname    : TEXT
     asn              : INTEGER
     asn_org          : TEXT
     country_code     : TEXT
     rating           : INTEGER
+    --
+    UNIQUE (ip_address)
 }
-
-' ──────────────────────────────────────────
-' Mail Systems
-' ──────────────────────────────────────────
 
 entity MAIL_SYSTEMS {
   * id                  : INTEGER <<PK>>
   --
-  * role                : ENUM('smtp_out','smtp_in','imap_pop3','webmailer', 'proxy')
+  * role                : ENUM('smtp_out','smtp_in','imap_pop3',
+`webmailer','proxy')
   * software            : TEXT
     vendor              : TEXT
     is_open_source      : INTEGER
@@ -75,10 +71,6 @@ entity MAIL_SYSTEMS {
     --
     UNIQUE (software, role)
 }
-
-' ──────────────────────────────────────────
-' History
-' ──────────────────────────────────────────
 
 entity ORG_MAIL_SYSTEM_HISTORY {
   * id               : INTEGER <<PK>>
@@ -101,17 +93,15 @@ entity MAIL_SYSTEM_IP_HISTORY {
     is_current       : INTEGER
 }
 
-' ──────────────────────────────────────────
-' Relations
-' ──────────────────────────────────────────
-
 ORGANISATIONS       "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : has >
 MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : proxy for >
 MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : valid_from / valid_to >
+SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : first seen in >
+SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : last seen in >
 
 MAIL_SYSTEMS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : has >
 IP_ADDRESSES        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : valid_from / valid_to >
+SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : first seen in >
+SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : last seen in >
 
 @enduml

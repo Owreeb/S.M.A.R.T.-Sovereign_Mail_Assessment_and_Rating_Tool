@@ -76,6 +76,41 @@ def extract_website_domain(website: str | None) -> str | None:
         host = host[4:]
     return host.lower() or None
 
+
+def normalize_email_to_domain(email: str | None) -> str | None:
+    """Normalizes a Wikidata email URI to its domain part.
+
+    Wikidata stores emails as 'mailto:info@example.com' URIs. This function
+    strips the prefix and returns only the domain part.
+
+    Args:
+        email: Raw email value as returned by the SPARQL query, may be None
+            or a 'mailto:...' URI.
+
+    Returns:
+        Lowercased domain part of the email, or None if the input is empty
+        or has no recognisable domain.
+    """
+    if not email or not isinstance(email, str):
+        return None
+
+    value = email.strip()
+    if not value:
+        return None
+
+    # Strip mailto: prefix (case-insensitive).
+    if value.lower().startswith("mailto:"):
+        value = value.split(":", 1)[1]
+
+    # Drop query string 
+    value = value.split("?", 1)[0].split("#", 1)[0]
+
+    if "@" not in value:
+        return None
+    _, _, domain = value.partition("@")
+    domain = domain.strip().lower()
+    return domain or None
+
 class ConfigLoader:
     """Loads institution and area mappings from a YAML file."""
 
@@ -239,6 +274,7 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
             df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
         ]
         df["website_domain"] = df["website"].apply(extract_website_domain)
+        df["email"] = df["email"].apply(normalize_email_to_domain)
 
         coords = df["coordinates"].astype(str).str.extract(
             r"(?i)POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)"
@@ -252,12 +288,3 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
 
         df.to_sql(table_name, engine, if_exists="replace", index=False)
         print(f"Succesfully saved {len(df)} Entries.")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--db", required=True)
-    parser.add_argument("--table", required=True)
-    parser.add_argument("--config", default="config.yaml", help="Path to config.yaml")
-    args = parser.parse_args()
-    save_to_sqlite(args.db, args.table, args.config)
