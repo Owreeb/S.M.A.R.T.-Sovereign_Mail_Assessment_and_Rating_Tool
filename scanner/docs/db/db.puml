@@ -5,103 +5,119 @@ skinparam classAttributeIconSize 0
 skinparam backgroundColor transparent
 skinparam defaultFontName Arial
 skinparam defaultFontSize 12
-skinparam nodesep 120
-skinparam ranksep 200
-top to bottom direction
+skinparam nodesep 60
+skinparam ranksep 100
+left to right direction
 
-skinparam class {
-  BackgroundColor #F5F5F5
-  BorderColor #444444
-  HeaderBackgroundColor #D0E4F0
-  FontColor #222222
+skinparam entity {
+  BackgroundColor    #F9F9F9
+  BorderColor        #555555
+  FontColor          #222222
   AttributeFontColor #333333
-  ArrowColor #444444
-  ArrowFontSize 11
-  ArrowFontColor #555555
 }
 
-entity SCANNER_RUNS {
-  * id               : INTEGER <<PK>>
-  --
-    started_at       : TIMESTAMP
-    finished_at      : TIMESTAMP
-    scanner_version  : TEXT
+skinparam arrow {
+  Color     #666666
+  FontSize  10
+  FontColor #555555
 }
 
-entity ORGANISATIONS {
-  * id               : INTEGER <<PK>>
+entity SCANNER_RUNS #D6D6D6 {
+  * id                       : UUID <<PK>>
+  ==
+    started_at               : TIMESTAMP
+    finished_at              : TIMESTAMP
+    scanner_version_git_hash : TEXT
+}
+
+entity ORG_DOMAIN_HISTORY #FAE5C0 {
+  * id               : UUID <<PK>>
+  ==
+  * organisation_id  : UUID <<FK>>
+  * valid_from_run   : UUID <<FK>>
+    valid_to_run     : UUID <<FK>>
+    is_current       : BOOLEAN
   --
-    name             : TEXT
-    wikidata_url     : TEXT
-    primary_domain   : TEXT
     email_domain     : TEXT
     website_domain   : TEXT
     website          : TEXT
-    city             : TEXT
-    state            : TEXT
-    country          : TEXT
-    category_tag     : TEXT
-    longitude        : REAL
-    latitude         : REAL
 }
 
-entity IP_ADDRESSES {
-  * id               : INTEGER <<PK>>
-  --
-  * ip_address       : TEXT
-    rdns_hostname    : TEXT
-    asn              : INTEGER
-    asn_org          : TEXT
-    country_code     : TEXT
-    rating           : INTEGER
-    --
-    UNIQUE (ip_address)
+entity ORG_MAIL_SYSTEM_HISTORY #FAE5C0 {
+  * id               : UUID <<PK>>
+  ==
+  * organisation_id  : UUID <<FK>>
+  * mail_system_id   : UUID <<FK>>
+  * valid_from_run   : UUID <<FK>>
+    valid_to_run     : UUID <<FK>>
+    proxy_system_id  : UUID <<FK>>
+    is_current       : BOOLEAN
 }
 
-entity MAIL_SYSTEMS {
-  * id                  : INTEGER <<PK>>
+entity MAIL_SYSTEM_IP_HISTORY #FAE5C0 {
+  * id               : UUID <<PK>>
+  ==
+  * mail_system_id   : UUID <<FK>>
+  * ip_address_id    : UUID <<FK>>
+  * valid_from_run   : UUID <<FK>>
+    valid_to_run     : UUID <<FK>>
+    is_current       : BOOLEAN
+}
+
+entity ORGANISATIONS #C8DCF0 {
+  * id           : UUID <<PK>>
+  ==
+    name         : TEXT
+    wikidata_url : TEXT
+    city         : TEXT
+    state        : TEXT
+    country      : TEXT
+    category_tag : TEXT
+    longitude    : REAL
+    latitude     : REAL
+}
+
+entity MAIL_SYSTEMS #C8DCF0 {
+  * id              : UUID <<PK>>
+  ==
+  * role            : ENUM('smtp_out','smtp_in',\n'imap_pop3','webmailer','proxy')
+  * software        : TEXT
+    vendor            : TEXT
+    is_open_source    : INTEGER
+    provider_category : TEXT
+    rating            : INTEGER
   --
-  * role                : ENUM('smtp_out','smtp_in','imap_pop3',
-`webmailer','proxy')
-  * software            : TEXT
-    vendor              : TEXT
-    is_open_source      : INTEGER
-    provider_category   : TEXT
-    rating              : INTEGER
-    --
     UNIQUE (software, role)
 }
 
-entity ORG_MAIL_SYSTEM_HISTORY {
-  * id               : INTEGER <<PK>>
+entity IP_ADDRESSES #C8DCF0 {
+  * id           : UUID <<PK>>
+  ==
+  * ip_address   : TEXT
+    rdns_hostname : TEXT
+    asn           : INTEGER
+    asn_org       : TEXT
+    country_code  : TEXT
+    rating        : INTEGER
   --
-  * organisation_id  : INTEGER <<FK>>
-  * mail_system_id   : INTEGER <<FK>>
-  * valid_from_run   : INTEGER <<FK>>
-    valid_to_run     : INTEGER <<FK>>
-    proxy_system_id  : INTEGER <<FK>>
-    is_current       : INTEGER
+    UNIQUE (ip_address)
 }
 
-entity MAIL_SYSTEM_IP_HISTORY {
-  * id               : INTEGER <<PK>>
-  --
-  * mail_system_id   : INTEGER <<FK>>
-  * ip_address_id    : INTEGER <<FK>>
-  * valid_from_run   : INTEGER <<FK>>
-    valid_to_run     : INTEGER <<FK>>
-    is_current       : INTEGER
-}
+ORG_DOMAIN_HISTORY       -[hidden]d-> ORG_MAIL_SYSTEM_HISTORY
+ORG_MAIL_SYSTEM_HISTORY  -[hidden]d-> MAIL_SYSTEM_IP_HISTORY
 
-ORGANISATIONS       "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : has >
-MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : proxy for >
-MAIL_SYSTEMS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : first seen in >
-SCANNER_RUNS        "1" --- "0..*"  ORG_MAIL_SYSTEM_HISTORY   : last seen in >
+ORGANISATIONS  -[hidden]d-> MAIL_SYSTEMS
+MAIL_SYSTEMS   -[hidden]d-> IP_ADDRESSES
 
-MAIL_SYSTEMS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : has >
-IP_ADDRESSES        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : referenced in >
-SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : first seen in >
-SCANNER_RUNS        "1" --- "0..*"  MAIL_SYSTEM_IP_HISTORY    : last seen in >
+SCANNER_RUNS  "1" ---> "0..*"  ORG_DOMAIN_HISTORY       : valid_from/to >
+SCANNER_RUNS  "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : valid_from/to >
+SCANNER_RUNS  "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : valid_from/to >
+
+ORGANISATIONS  "1" ---> "0..*"  ORG_DOMAIN_HISTORY       : has >
+ORGANISATIONS  "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : has >
+MAIL_SYSTEMS   "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : used as proxy >
+MAIL_SYSTEMS   "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : referenced in >
+MAIL_SYSTEMS   "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : has >
+IP_ADDRESSES   "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : referenced in >
 
 @enduml

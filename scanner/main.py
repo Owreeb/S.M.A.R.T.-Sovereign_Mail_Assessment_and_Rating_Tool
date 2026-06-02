@@ -1,22 +1,24 @@
 from pathlib import Path
-
+from src.db import make_engine, make_session, create_all, scanner_run
 from src.domainlist_pipline.org_list_pipeline import save_to_sqlite
 from src.domainlist_pipline.email_scraper import run_scraper
 
-TABLE_NAME = "bronze_table"
+DB_NAME = "SMART.db"
 
 
 def main() -> None:
+
     base_dir = Path(__file__).resolve().parent
-    db_path = base_dir / "database" / "raw_data.db"
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    config_path = base_dir / "src" / "domainlist_pipline" / "config.yaml"
+    db_path = base_dir / "database" / f"{DB_NAME}"
 
-    print("Step 1: Fetching organisation list from Wikidata")
-    save_to_sqlite(str(db_path), TABLE_NAME, str(config_path))
+    engine = make_engine(db_path)
+    create_all(engine)
+    Session = make_session(engine)
 
-    print("Step 2: Scraping email domains from websites")
-    run_scraper(str(db_path), TABLE_NAME)
+    with Session() as session:
+        with scanner_run(session) as run:
+            print("Run ID:", run.id)
+
 
     print("Finished!")
 
