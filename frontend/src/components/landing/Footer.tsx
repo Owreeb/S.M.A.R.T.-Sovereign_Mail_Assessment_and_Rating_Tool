@@ -25,17 +25,6 @@ const Footer = (): React.ReactElement => {
         <div className={styles.divider} />
         <div className={styles.bottom}>
           <span className={styles.copy}>© 2026 MORPH lab</span>
-          <nav className={styles.legalLinks}>
-            <a className={styles.legalLink} href="#impressum">
-              Impressum
-            </a>
-            <a className={styles.legalLink} href="#datenschutz">
-              Datenschutz
-            </a>
-            <a className={styles.legalLink} href="#agb">
-              AGB
-            </a>
-          </nav>
         </div>
       </div>
     </footer>
