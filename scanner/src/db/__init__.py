@@ -12,6 +12,7 @@ from .models import (
     ScannerRun,
 )
 from .runs import get_git_hash, scanner_run
+from .history import get_or_create, update_fields, update_history
 
 __all__ = [
     "Base",
@@ -28,4 +29,7 @@ __all__ = [
     "MailSystemIpHistory",
     "scanner_run",
     "get_git_hash",
+    "get_or_create",
+    "update_fields",
+    "update_history",
 ]

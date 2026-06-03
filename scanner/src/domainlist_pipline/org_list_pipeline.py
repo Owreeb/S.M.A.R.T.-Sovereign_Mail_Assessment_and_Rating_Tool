@@ -1,13 +1,17 @@
-import argparse
-from datetime import datetime, timezone
-from pathlib import Path
+import math
 from urllib.parse import urlparse
-from uuid import uuid4
 
 import pandas as pd
 import requests
-from sqlalchemy import create_engine
 import yaml
+
+from src.db import (
+    Organisation,
+    OrgDomainHistory,
+    get_or_create,
+    update_fields,
+    update_history,
+)
 
 MAX_ATTEMPTS = 3
 PREFIX_TEMPLATE = """
@@ -243,18 +247,75 @@ class WikidataExtractor:
         return results
 
 
-def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
+def _clean(value):
     """
-    Fetches data and saves it into SQLite.
+    Turns pandas NaN into None so the ORM stores NULL instead of nan.
 
     Args:
-        sqlite_path: Output SQLite file path.
-        table_name: Destination table name.
-        config_path: Path to config YAML file.
+        value: Any cell value from the dataframe.
+
+    Returns:
+        The value, or None if it was NaN.
     """
-    db_path = Path(sqlite_path)
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-    engine = create_engine(f"sqlite:///{db_path}")
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return value
+
+
+def _persist_record(session, run, record):
+    """
+    Saves one organisation and updates its domain history.
+
+    The metadata of the organisation (name, city, ...) is just overwritten.
+    The domain / website / email goes into org_domain_history and we only
+    add a new version when one of those really changed.
+
+    Args:
+        session: The session.
+        run: The current ScannerRun.
+        record: One row dict from the dataframe.
+    """
+    # find the org by its wikidata url, or make a new one
+    org, _ = get_or_create(
+        session, Organisation, wikidata_url=_clean(record.get("id"))
+    )
+    update_fields(org, {
+        "name": _clean(record.get("name")),
+        "city": _clean(record.get("city")),
+        "state": _clean(record.get("state")),
+        "country": _clean(record.get("country")),
+        "category_tag": _clean(record.get("category_tag")),
+        "longitude": _clean(record.get("longitude")),
+        "latitude": _clean(record.get("latitude")),
+    })
+    session.flush()
+
+    update_history(
+        session,
+        OrgDomainHistory,
+        run,
+        match={"organisation_id": org.id},
+        tracked={
+            "email_domain": _clean(record.get("email")),
+            "website_domain": _clean(record.get("website_domain")),
+            "website": _clean(record.get("website")),
+        },
+    )
+
+
+def fetch_records(config_path):
+    """
+    Gets the organisation data from Wikidata and cleans it up.
+
+    This part does no database work, it just returns the rows so the caller
+    can decide how to save them.
+
+    Args:
+        config_path: Path to config YAML file.
+
+    Returns:
+        A list of record dicts
+    """
     institutions_map, areas_map, institution_where = ConfigLoader(config_path).load()
     extractor = WikidataExtractor(institutions_map, institution_where)
 
@@ -265,26 +326,42 @@ def save_to_sqlite(sqlite_path, table_name, config_path="config.yaml"):
             data = extractor.fetch(inst_key, area_qid)
             all_data.extend(data)
 
-    if all_data:
-        df = pd.DataFrame(all_data)
+    if not all_data:
+        return []
 
-        df.drop_duplicates(subset=['id'], inplace=True)
-        
-        df = df[
-            df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
-        ]
-        df["website_domain"] = df["website"].apply(extract_website_domain)
-        df["email"] = df["email"].apply(normalize_email_to_domain)
+    df = pd.DataFrame(all_data)
 
-        coords = df["coordinates"].astype(str).str.extract(
-            r"(?i)POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)"
-        )
-        df["longitude"] = pd.to_numeric(coords[0], errors="coerce")
-        df["latitude"] = pd.to_numeric(coords[1], errors="coerce")
-        df.drop(columns=["coordinates"], inplace=True)
+    df.drop_duplicates(subset=['id'], inplace=True)
 
-        df.insert(0, "uuid", [str(uuid4()) for _ in range(len(df))])
-        df["timestamp"] = datetime.now(timezone.utc)
+    df = df[
+        df["website"].fillna("").str.strip().ne("") | df["email"].fillna("").str.strip().ne("")
+    ]
+    df["website_domain"] = df["website"].apply(extract_website_domain)
+    df["email"] = df["email"].apply(normalize_email_to_domain)
 
-        df.to_sql(table_name, engine, if_exists="replace", index=False)
-        print(f"Succesfully saved {len(df)} Entries.")
+    coords = df["coordinates"].astype(str).str.extract(
+        r"(?i)POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)"
+    )
+    df["longitude"] = pd.to_numeric(coords[0], errors="coerce")
+    df["latitude"] = pd.to_numeric(coords[1], errors="coerce")
+    df.drop(columns=["coordinates"], inplace=True)
+
+    return df.to_dict("records")
+
+
+def wikidata_fetch_and_persist(session, run, wikidata_config_path):
+    """
+    Fetches the data from Wikidata and saves it to the database.
+
+    Args:
+        session: The session to write with.
+        run: The current ScannerRun (used as valid_from for new history).
+        wikidata_config_path: Path to the Wikidata config YAML file.
+    """
+    records = fetch_records(str(wikidata_config_path))
+    for record in records:
+        _persist_record(session, run, record)
+
+    print(f"Saved {len(records)} organisations.")
+
+
