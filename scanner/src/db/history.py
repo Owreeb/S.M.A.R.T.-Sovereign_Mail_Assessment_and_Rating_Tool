@@ -36,6 +36,24 @@ def get_or_create(session: Session, model: type, **match: Any) -> tuple[Any, boo
     return row, True
 
 
+def get_current(session: Session, model: type, **match: Any) -> Any:
+    """
+    Gets the current row (is_current = True) for the match, or None.
+
+    Args:
+        session: The session.
+        model: The history model class, e.g. OrgDomainHistory.
+        **match: The columns that say which history  it is.
+
+    Returns:
+        The current row, or None if there isn't one yet.
+    """
+    stmt = select(model).where(model.is_current.is_(True))
+    for key, value in match.items():
+        stmt = stmt.where(getattr(model, key) == value)
+    return session.scalars(stmt).first()
+
+
 def update_fields(row: Any, values: dict[str, Any]) -> bool:
     """
     Updarte the fields on a row, but only the ones that are not the same.
@@ -66,10 +84,10 @@ def update_history(
     Keep history up to date.
 
     It searches the current row for the thing in `match`.
-    If the tracked values are still the same we do nothing. If they changed
-    (or there is no current row yet) we close the old row (is_current = False
-    and valid_to_run = this run) and add a new current row that starts with
-    this run.
+    If the tracked values are still the same we do nothing. If the current
+    row created in ths same run, we just update it in place. 
+    If it is from an older run we close itand add a new current row
+    that starts with this run.
 
     Args:
         session: The session.
@@ -79,19 +97,21 @@ def update_history(
         tracked: The columns that should make a new version if they change.
 
     Returns:
-        The current history row (the new one if something changed).
+        The current history row 
     """
-    stmt = select(model).where(model.is_current.is_(True))
-    for key, value in match.items():
-        stmt = stmt.where(getattr(model, key) == value)
-    current = session.scalars(stmt).first()
+    current = get_current(session, model, **match)
 
     if current is not None:
         # check if any tracked value is different than before
         same = all(getattr(current, key) == value for key, value in tracked.items())
         if same:
             return current
-        # something changed, so we close the old row
+        if current.valid_from_run == run.id:
+            # this row was already made in this run, so just change it
+            for key, value in tracked.items():
+                setattr(current, key, value)
+            return current
+        # the row is from an older run, so we close it
         current.is_current = False
         current.valid_to_run = run.id
 

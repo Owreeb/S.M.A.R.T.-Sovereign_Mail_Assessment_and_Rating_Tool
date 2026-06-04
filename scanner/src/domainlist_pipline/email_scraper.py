@@ -1,21 +1,29 @@
 """
-Scrapes the email domain for each org in `bronze_table`.
+Fills in the email domain for each organisation.
 
-For each row with a website but no email: open the homepage, look for
-mailto: links, take the first non-generic one and store its domain.
-If nothing there, follow an Impressum/Kontakt link and try again.
+The rule is (only for orgs that don't have an email domain yet):
+- If an organisation already has a current smtp_in mail system, we don't
+  crawl. We just use the website domain as the email domain.
+
+The result always goes into org_domain_history with the history logic, so a
+new version is only made when the email domain actually changed.
 """
 
-import multiprocessing
 import re
-import sqlite3
 from typing import Iterable
 from urllib.parse import urlparse
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
+from sqlalchemy import select
 
-BATCH_SIZE = 500
+from src.db import (
+    MailSystem,
+    MailSystemRole,
+    OrgDomainHistory,
+    OrgMailSystemHistory,
+    update_history,
+)
 
 EMAIL_PATTERN = re.compile(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", re.IGNORECASE)
 
@@ -115,39 +123,37 @@ class MailtoSpider(scrapy.Spider):
         },
     }
 
-    def __init__(
-        self,
-        rows: list[tuple[str, str]],
-        db_path: str,
-        table: str,
-    ) -> None:
+    def __init__(self, rows: list[tuple], results: dict) -> None:
+        """
+        Args:
+            rows: List of (org_id, website) we want to scrape.
+            results: A dict we fill with {org_id: email_domain}. The caller
+                reads it after the crawl is done.
+        """
         super().__init__()
         self.rows = rows
-        self.db_path = db_path
-        self.table = table
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.row_factory = sqlite3.Row
+        self.results = results
 
     async def start(self):
-        for row_id, website in self.rows:
+        for org_id, website in self.rows:
             url = normalize_url(website)
             if not url:
                 continue
             yield scrapy.Request(
                 url=url,
-                meta={"row_id": row_id, "stage": "homepage"},
+                meta={"org_id": org_id, "stage": "homepage"},
                 callback=self.parse,
                 dont_filter=True,
                 errback=self.errback,
             )
 
     def parse(self, response):
-        row_id = response.meta["row_id"]
+        org_id = response.meta["org_id"]
         stage = response.meta.get("stage")
 
         domain = self._extract_domain_mailto(response)
         if domain:
-            self._save(row_id, domain)
+            self.results[org_id] = domain
             return
 
         # nothing on the homepage -> try the Impressum
@@ -156,14 +162,14 @@ class MailtoSpider(scrapy.Spider):
             if impressum_url:
                 yield scrapy.Request(
                     url=impressum_url,
-                    meta={"row_id": row_id, "stage": "impressum"},
+                    meta={"org_id": org_id, "stage": "impressum"},
                     callback=self.parse,
                     dont_filter=True,
                     errback=self.errback,
                 )
 
     def errback(self, failure):
-        # ignore timeouts/DNS/HTTP errors, just move on
+        # ignore errors
         pass
 
     def _extract_domain_mailto(self, response) -> str | None:
@@ -171,138 +177,118 @@ class MailtoSpider(scrapy.Spider):
         hrefs = response.css('a[href^="mailto:"]::attr(href)').getall()
         return pick_email_domain(extract_emails(hrefs))
 
-    def _save(self, row_id, email_domain: str) -> None:
-        cursor = self.conn.cursor()
-        cursor.execute(
-            f"""
-            UPDATE {self.table}
-            SET email = ?
-            WHERE id = ?
-              AND (email IS NULL OR TRIM(email) = '')
-            """,
-            (email_domain, row_id),
-        )
-        self.conn.commit()
 
-    def closed(self, reason):
-        self.conn.close()
-
-
-def count_rows(db_path: str, table: str) -> int:
+def _orgs_with_mx(session) -> set:
     """
-    How many rows still need scraping (have website, no email).
+    Gets the ids of all orgs that have a current smtp_in mail system.
+
+    Args:
+        session: The session.
+
+    Returns:
+        A set of organisation ids.
     """
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(
-        f"""
-        SELECT COUNT(*)
-        FROM {table}
-        WHERE website IS NOT NULL AND TRIM(website) <> ''
-          AND (email IS NULL OR TRIM(email) = '')
-        """
+    stmt = (
+        select(OrgMailSystemHistory.organisation_id)
+        .join(MailSystem, MailSystem.id == OrgMailSystemHistory.mail_system_id)
+        .where(OrgMailSystemHistory.is_current.is_(True))
+        .where(MailSystem.role == MailSystemRole.SMTP_IN)
+        .distinct()
     )
-    result = cursor.fetchone()[0]
-    conn.close()
-    return result
+    return set(session.scalars(stmt).all())
 
 
-def fetch_rows(
-    db_path: str,
-    table: str,
-    batch_size: int,
-    last_rowid: int,
-) -> list[tuple[str, str]]:
+def _set_email_domain(session, run, row, email_domain) -> None:
     """
-    Next batch of rows to scrape, paged by ROWID. Returns (id, website)
+    Writes the email domain into the org domain history.
+
+    It uses update_history, so website and website_domain stay the same and a
+    new version is only made if the email domain really changed.
+
+    Args:
+        session: The session.
+        run: The current ScannerRun.
+        row: The current OrgDomainHistory row of the org.
+        email_domain: The email domain we want to set.
     """
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute(
-        f"""
-        SELECT id, website
-        FROM {table}
-        WHERE website IS NOT NULL AND TRIM(website) <> ''
-          AND (email IS NULL OR TRIM(email) = '')
-          AND ROWID > ?
-        ORDER BY ROWID
-        LIMIT ?
-        """,
-        (last_rowid, batch_size),
+    update_history(
+        session,
+        OrgDomainHistory,
+        run,
+        match={"organisation_id": row.organisation_id},
+        tracked={
+            "email_domain": email_domain,
+            "website_domain": row.website_domain,
+            "website": row.website,
+        },
     )
-    rows = [(row["id"], row["website"]) for row in cursor.fetchall()]
-    conn.close()
-    return rows
 
 
-def _peek_batch_end_rowid(
-    db_path: str, table: str, last_rowid: int, batch_size: int
-) -> int | None:
+def _scrape_email_domains(rows) -> dict:
     """
-    Max ROWID of the next batch (None if nothing left).
+    Crawls the given websites and collects the email domains.
 
-    The subprocess can't tell us where it stopped, so we look it up here.
-    """
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(
-        f"""
-        SELECT MAX(rid) FROM (
-            SELECT ROWID AS rid FROM {table}
-            WHERE website IS NOT NULL AND TRIM(website) <> ''
-              AND (email IS NULL OR TRIM(email) = '')
-              AND ROWID > ?
-            ORDER BY ROWID
-            LIMIT ?
-        )
-        """,
-        (last_rowid, batch_size),
-    )
-    result = cursor.fetchone()[0]
-    conn.close()
-    return result
+    The results are kept in a dict.
 
+    Args:
+        rows: List of OrgDomainHistory rows that have a website.
 
-def _run_single_batch(db_path: str, table: str, batch_size: int, last_rowid: int) -> None:
+    Returns:
+        dict {org_id: email_domain}.
     """
-    One scrapy batch in this process (subprocess entry point).
-    """
-    rows = fetch_rows(db_path, table, batch_size=batch_size, last_rowid=last_rowid)
-    if not rows:
-        return
+    results: dict = {}
+    work = [(row.organisation_id, row.website) for row in rows]
     process = CrawlerProcess()
-    process.crawl(MailtoSpider, rows=rows, db_path=db_path, table=table)
-    process.start()
+    process.crawl(MailtoSpider, rows=work, results=results)
+    process.start()  # blocks until the crawl is finished
+    return results
 
 
-def run_scraper(db_path: str, table: str, batch_size: int = BATCH_SIZE) -> None:
+def run_scraper(session, run) -> None:
     """
-    Run the scraper in batches, one fresh process per batch (clean reactor + FD pool).
+    Fills in the email domain for orgs that don't have one yet.
 
-    Pagination uses SQLite ROWID.
-    Rows that fail stay NULL and are skipped because the next batch starts past them.
+    Orgs that already have an email domain are skipped. For the rest: orgs
+    with an smtp_in just get website_domain as their email domain, orgs
+    without an MX get their website crawled.
+
+    Args:
+        session: The session to write with.
+        run: The current ScannerRun (shared with the rest of the pipeline).
     """
-    remaining = count_rows(db_path, table)
-    if remaining == 0:
-        print("No rows with website found that still need an email.")
+    # only orgs that don't have an email domain yet
+    candidates = session.scalars(
+        select(OrgDomainHistory).where(
+            OrgDomainHistory.is_current.is_(True),
+            (OrgDomainHistory.email_domain.is_(None))
+            | (OrgDomainHistory.email_domain == ""),
+        )
+    ).all()
+
+    mx_orgs = _orgs_with_mx(session)
+
+    to_scrape = []
+    for row in candidates:
+        if row.organisation_id in mx_orgs:
+            # has an smtp_in -> email domain is just the website domain
+            if row.website_domain:
+                _set_email_domain(session, run, row, row.website_domain)
+        elif row.website and row.website.strip():
+            # no MX -> crawl the website
+            to_scrape.append(row)
+
+    session.commit()
+
+    if not to_scrape:
+        print("Nothing to scrape.")
         return
 
-    print(f"Scraping {remaining} websites in batches of {batch_size}...")
-    last_rowid = 0
-    batch_num = 0
-    while True:
-        batch_end_rowid = _peek_batch_end_rowid(db_path, table, last_rowid, batch_size)
-        if batch_end_rowid is None:
-            break
-        batch_num += 1
-        print(f"  Batch {batch_num} (rowids {last_rowid + 1}..{batch_end_rowid})...")
-        proc = multiprocessing.Process(
-            target=_run_single_batch,
-            args=(db_path, table, batch_size, last_rowid),
-        )
-        proc.start()
-        proc.join()
-        last_rowid = batch_end_rowid
+    print(f"Scraping {len(to_scrape)} websites...")
+    results = _scrape_email_domains(to_scrape)
 
-    print(f"Scraping complete. Processed up to ROWID {last_rowid}.")
+    for row in to_scrape:
+        email_domain = results.get(row.organisation_id)
+        if email_domain:
+            _set_email_domain(session, run, row, email_domain)
+    session.commit()
+    print(f"Scraping complete. Found {len(results)} email domains.")

@@ -8,6 +8,7 @@ import yaml
 from src.db import (
     Organisation,
     OrgDomainHistory,
+    get_current,
     get_or_create,
     update_fields,
     update_history,
@@ -290,13 +291,18 @@ def _persist_record(session, run, record):
     })
     session.flush()
 
+    # only take the wikidata email if there is one, otherwise keep the existing one
+    wikidata_email = _clean(record.get("email"))
+    current = get_current(session, OrgDomainHistory, organisation_id=org.id)
+    email_domain = wikidata_email or (current.email_domain if current else None)
+
     update_history(
         session,
         OrgDomainHistory,
         run,
         match={"organisation_id": org.id},
         tracked={
-            "email_domain": _clean(record.get("email")),
+            "email_domain": email_domain,
             "website_domain": _clean(record.get("website_domain")),
             "website": _clean(record.get("website")),
         },
