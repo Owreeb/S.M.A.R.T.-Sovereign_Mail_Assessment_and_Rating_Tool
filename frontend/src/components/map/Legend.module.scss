@@ -1,0 +1,32 @@
+.legend {
+  position: absolute;
+  bottom: 32px;
+  right: 16px;
+  z-index: 1000;
+  padding: 8px 12px;
+  font-family: Inter, sans-serif;
+  background: white;
+  border: 1px solid lightgray;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #495057;
+  padding: 1px 0;
+}
+
+.pin {
+  flex-shrink: 0;
+}

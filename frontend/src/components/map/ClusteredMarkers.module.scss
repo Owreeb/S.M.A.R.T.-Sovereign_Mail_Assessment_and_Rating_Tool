@@ -1,3 +1,8 @@
+.pin {
+  background: none;
+  border: none;
+}
+
 .popup {
   min-width: 200px;
   font-family: Inter, sans-serif;
@@ -37,19 +42,9 @@
 
 .label {
   color: gray;
-}
-
-.high {
-  color: green;
   font-weight: 600;
 }
 
-.medium {
-  color: #f08c00;
-  font-weight: 600;
-}
-
-.low {
-  color: red;
+.score {
   font-weight: 600;
 }
