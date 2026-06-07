@@ -1,5 +1,6 @@
 import React from 'react'
 
+import Footer from '@components/landing/Footer.tsx'
 import Navbar from '@components/landing/Navbar.tsx'
 import MapView from '@components/map/MapView.tsx'
 import StatisticsGrid from '@components/statistics/StatisticsGrid.tsx'
@@ -21,6 +22,7 @@ const Dashboard = (): React.ReactElement => {
       <Navbar />
       <StatisticsGrid currentData={currentData} previousData={previousData} />
       <MapView orgs={organizations} />
+      <Footer />
     </>
   )
 }
