@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 
 import L from 'leaflet'
 import 'leaflet-geosearch/dist/geosearch.css'
@@ -11,11 +11,14 @@ import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer } from 'react-leaflet'
 
 import type { Organization } from '@models/organization'
+import { IconFilter } from '@tabler/icons-react'
 
 import ClusteredMarkers from './ClusteredMarkers'
+import FilterPanel from './FilterPanel'
 import Legend from './Legend'
 import styles from './MapView.module.scss'
 import SearchControl from './SearchControl'
+import { FILTER_FIELDS, type FilterState } from './filterFields'
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl })
@@ -24,7 +27,34 @@ type Props = {
   orgs: Organization[]
 }
 
+const emptyFilterState = (): FilterState => Object.fromEntries(FILTER_FIELDS.map((field) => [field.key, []]))
+
 const MapView = ({ orgs }: Props): React.ReactElement => {
+  const [selected, setSelected] = useState<FilterState>(emptyFilterState)
+  const [filterOpen, setFilterOpen] = useState(false)
+
+  const activeCount = FILTER_FIELDS.reduce((sum, field) => sum + selected[field.key].length, 0)
+
+  const filteredOrgs = useMemo(
+    () =>
+      orgs.filter((org) =>
+        FILTER_FIELDS.every((field) => {
+          const chosen = selected[field.key]
+          if (chosen.length === 0) return true
+          const value = org[field.key]
+          return Array.isArray(value) ? value.some((v) => chosen.includes(v)) : chosen.includes(value)
+        }),
+      ),
+    [orgs, selected],
+  )
+
+  const toggleValue = (key: string, value: string): void =>
+    setSelected((prev) => {
+      const current = prev[key]
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
+      return { ...prev, [key]: next }
+    })
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.map}>
@@ -36,9 +66,24 @@ const MapView = ({ orgs }: Props): React.ReactElement => {
             maxZoom={19}
           />
           <SearchControl />
-          <ClusteredMarkers orgs={orgs} />
+          <ClusteredMarkers orgs={filteredOrgs} />
         </MapContainer>
         <Legend />
+        {!filterOpen && (
+          <button type="button" className={styles.filterToggle} onClick={() => setFilterOpen(true)}>
+            <IconFilter size={16} />
+            <span>Filter</span>
+            {activeCount > 0 && <span className={styles.toggleBadge}>{activeCount}</span>}
+          </button>
+        )}
+        <FilterPanel
+          orgs={orgs}
+          selected={selected}
+          open={filterOpen}
+          onToggle={toggleValue}
+          onReset={() => setSelected(emptyFilterState())}
+          onClose={() => setFilterOpen(false)}
+        />
       </div>
     </div>
   )
