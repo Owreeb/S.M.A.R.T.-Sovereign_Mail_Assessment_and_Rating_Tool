@@ -13,6 +13,7 @@ import { MapContainer, TileLayer } from 'react-leaflet'
 import type { Organization } from '@models/organization'
 
 import ClusteredMarkers from './ClusteredMarkers'
+import Legend from './Legend'
 import styles from './MapView.module.scss'
 import SearchControl from './SearchControl'
 
@@ -37,6 +38,7 @@ const MapView = ({ orgs }: Props): React.ReactElement => {
           <SearchControl />
           <ClusteredMarkers orgs={orgs} />
         </MapContainer>
+        <Legend />
       </div>
     </div>
   )
