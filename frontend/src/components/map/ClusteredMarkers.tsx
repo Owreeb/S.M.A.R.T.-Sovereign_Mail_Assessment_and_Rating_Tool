@@ -3,11 +3,17 @@ import { useEffect } from 'react'
 import dayjs from 'dayjs'
 import L from 'leaflet'
 import 'leaflet.markercluster'
+import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-leaflet'
 
 import type { Organization } from '@models/organization'
 
 import styles from './ClusteredMarkers.module.scss'
+
+type PopupLabels = {
+  sovereignty: string
+  lastChecked: string
+}
 
 type Props = {
   orgs: Organization[]
@@ -42,7 +48,7 @@ const createIcon = (color: string): L.DivIcon =>
     popupAnchor: [0, -34],
   })
 
-const renderPopup = (org: Organization): string => {
+const renderPopup = (org: Organization, labels: PopupLabels): string => {
   const checked = dayjs(org.last_checked).format('DD.MM.YYYY HH:mm')
   return `
     <div class="${styles.popup}">
@@ -50,13 +56,13 @@ const renderPopup = (org: Organization): string => {
       <p class="${styles.domain}">${escapeHtml(org.domain)}</p>
       <span class="${styles.category}">${escapeHtml(org.category)}</span>
       <div class="${styles.row}">
-        <span class="${styles.label}">Souveränität</span>
+        <span class="${styles.label}">${escapeHtml(labels.sovereignty)}</span>
         <span class="${styles.score}" style="color: ${scoreColor(org.sovereignty_index)}">
           ${org.sovereignty_index.toFixed(1)} / ${escapeHtml(org.sovereignty_level)}
         </span>
       </div>
       <div class="${styles.row}">
-        <span class="${styles.label}">Zuletzt geprüft</span>
+        <span class="${styles.label}">${escapeHtml(labels.lastChecked)}</span>
         <span>${escapeHtml(checked)}</span>
       </div>
     </div>
@@ -65,6 +71,7 @@ const renderPopup = (org: Organization): string => {
 
 const ClusteredMarkers = ({ orgs }: Props): null => {
   const map = useMap()
+  const { t } = useTranslation('map')
 
   useEffect(() => {
     const cluster = L.markerClusterGroup({
@@ -77,7 +84,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
         title: org.org,
         icon: createIcon(scoreColor(org.sovereignty_index)),
       })
-      marker.bindPopup(renderPopup(org))
+      marker.bindPopup(renderPopup(org, { sovereignty: t('popupSovereignty'), lastChecked: t('popupLastChecked') }))
       cluster.addLayer(marker)
     })
 
@@ -86,7 +93,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
     return () => {
       map.removeLayer(cluster)
     }
-  }, [map, orgs])
+  }, [map, orgs, t])
 
   return null
 }

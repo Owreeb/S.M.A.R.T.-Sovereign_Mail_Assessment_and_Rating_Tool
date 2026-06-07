@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import { IconScale, IconShieldLock, IconWorld } from '@tabler/icons-react'
 
 import styles from './SovereigntySection.module.scss'
@@ -10,47 +12,42 @@ type Highlight = {
   description: string
 }
 
-const highlights: Highlight[] = [
-  {
-    icon: <IconWorld size={24} stroke={1.5} color="#1f4ea1" />,
-    title: 'EU-Serverstandort',
-    description: 'Server befinden sich innerhalb der EU',
-  },
-  {
-    icon: <IconShieldLock size={24} stroke={1.5} color="#7a6645" />,
-    title: 'Punkt #2',
-    description: 'Text zu Punkt #2',
-  },
-  {
-    icon: <IconScale size={24} stroke={1.5} color="#5a5a5a" />,
-    title: 'Punkt #3',
-    description: 'Text zu Punkt #3',
-  },
-]
-
 const SovereigntySection = (): React.ReactElement => {
+  const { t } = useTranslation('sovereignty')
+
+  const highlights: Highlight[] = [
+    {
+      icon: <IconWorld size={24} stroke={1.5} color="#1f4ea1" />,
+      title: t('highlights.euLocationTitle'),
+      description: t('highlights.euLocationDescription'),
+    },
+    {
+      icon: <IconShieldLock size={24} stroke={1.5} color="#7a6645" />,
+      title: t('highlights.point2Title'),
+      description: t('highlights.point2Description'),
+    },
+    {
+      icon: <IconScale size={24} stroke={1.5} color="#5a5a5a" />,
+      title: t('highlights.point3Title'),
+      description: t('highlights.point3Description'),
+    },
+  ]
+
   return (
     <section id="hintergrund" className={styles.section}>
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <div className={styles.eyebrow}>HINTERGRUND</div>
+          <div className={styles.eyebrow}>{t('eyebrow')}</div>
           <h2 className={styles.heading}>
-            Was ist digitale
+            {t('headingLine1')}
             <br />
-            Souveränität?
+            {t('headingLine2')}
           </h2>
           <p className={styles.paragraph}>
-            <strong>PRÜFEN:</strong> Digitale Souveränität beschreibt die Fähigkeit von Organisationen, ihre digitale
-            Infrastruktur selbst zu kontrollieren — unabhängig von großen Tech-Konzernen wie Google, Microsoft oder
-            Amazon.
+            <strong>{t('paragraph1Strong')}</strong> {t('paragraph1')}
           </p>
-          <p className={styles.paragraph}>
-            Im E-Mail-Bereich bedeutet das: Wer verarbeitet Ihre Nachrichten? Wo liegen die Server?
-          </p>
-          <p className={styles.paragraph}>
-            Souveräne Systeme werden in Deutschland oder der EU betrieben, von Anbietern ohne Abhängigkeit von
-            US-amerikanischen Cloud-Plattformen.
-          </p>
+          <p className={styles.paragraph}>{t('paragraph2')}</p>
+          <p className={styles.paragraph}>{t('paragraph3')}</p>
         </div>
         <div className={styles.highlights}>
           {highlights.map((item) => (

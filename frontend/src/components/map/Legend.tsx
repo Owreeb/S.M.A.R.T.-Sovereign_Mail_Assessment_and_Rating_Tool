@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import styles from './Legend.module.scss'
 
 const entries: { color: string; label: string }[] = [
@@ -12,9 +14,11 @@ const entries: { color: string; label: string }[] = [
 ]
 
 const Legend = (): React.ReactElement => {
+  const { t } = useTranslation('map')
+
   return (
     <div className={styles.legend}>
-      <p className={styles.title}>Souveränität</p>
+      <p className={styles.title}>{t('legendTitle')}</p>
       {entries.map((entry) => (
         <div key={entry.label} className={styles.row}>
           <svg className={styles.pin} width="12" height="18" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">

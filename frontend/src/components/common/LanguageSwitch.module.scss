@@ -1,0 +1,34 @@
+.switch {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #4a4d52;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.option {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #c8ccd1;
+  padding: 5px 10px;
+  transition:
+    color 0.15s ease-in-out,
+    background 0.15s ease-in-out;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.active {
+  background: #f0792e;
+  color: #ffffff;
+
+  &:hover {
+    color: #ffffff;
+  }
+}

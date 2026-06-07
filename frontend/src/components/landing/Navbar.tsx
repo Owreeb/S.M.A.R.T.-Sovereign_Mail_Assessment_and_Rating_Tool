@@ -1,10 +1,14 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router-dom'
+
+import LanguageSwitch from '@components/common/LanguageSwitch'
 
 import styles from './Navbar.module.scss'
 
 const Navbar = (): React.ReactElement => {
+  const { t } = useTranslation('navbar')
   const { pathname } = useLocation()
   const onDashboard = pathname.startsWith('/dashboard')
 
@@ -16,7 +20,7 @@ const Navbar = (): React.ReactElement => {
             s.m.a.r<span className={styles.logoAccent}>.t.</span>
           </span>
           <span className={styles.tagline}>
-            E-MAIL SOUVERÄNITÄT
+            {t('tagline')}
             <br />
             DACH
           </span>
@@ -25,13 +29,14 @@ const Navbar = (): React.ReactElement => {
       <nav className={styles.links}>
         {onDashboard ? (
           <Link className={styles.link} to="/">
-            HOME
+            {t('home')}
           </Link>
         ) : (
           <Link className={styles.link} to="/dashboard">
-            DOMAIN-STATISTIK
+            {t('domainStatistics')}
           </Link>
         )}
+        <LanguageSwitch />
       </nav>
     </header>
   )

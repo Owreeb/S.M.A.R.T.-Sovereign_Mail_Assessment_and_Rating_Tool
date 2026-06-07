@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import { IconChartBar, IconMapPin, IconShieldCheck } from '@tabler/icons-react'
 
 import styles from './FeaturesSection.module.scss'
@@ -10,25 +12,27 @@ type Feature = {
   description: string
 }
 
-const features: Feature[] = [
-  {
-    icon: <IconShieldCheck size={32} stroke={1.5} color="#f0792e" />,
-    title: 'Souveränitätsindex',
-    description: 'Jede Domain erhält einen Score von 0–10 basierend auf Provider und Serverstandort.',
-  },
-  {
-    icon: <IconMapPin size={32} stroke={1.5} color="#f0792e" />,
-    title: 'DACH-Abdeckung',
-    description: 'Wir erfassen Behörden, Universitäten und Unternehmen in Deutschland, Österreich und der Schweiz.',
-  },
-  {
-    icon: <IconChartBar size={32} stroke={1.5} color="#f0792e" />,
-    title: 'Transparente Statistiken',
-    description: 'Aktuelle Verteilung zwischen souveränen Anbietern, teilweise-souveränen und Hyperscaler-Nutzern.',
-  },
-]
-
 const FeaturesSection = (): React.ReactElement => {
+  const { t } = useTranslation('features')
+
+  const features: Feature[] = [
+    {
+      icon: <IconShieldCheck size={32} stroke={1.5} color="#f0792e" />,
+      title: t('sovereigntyIndexTitle'),
+      description: t('sovereigntyIndexDescription'),
+    },
+    {
+      icon: <IconMapPin size={32} stroke={1.5} color="#f0792e" />,
+      title: t('dachCoverageTitle'),
+      description: t('dachCoverageDescription'),
+    },
+    {
+      icon: <IconChartBar size={32} stroke={1.5} color="#f0792e" />,
+      title: t('transparentStatsTitle'),
+      description: t('transparentStatsDescription'),
+    },
+  ]
+
   return (
     <section className={styles.section}>
       <div className={styles.grid}>

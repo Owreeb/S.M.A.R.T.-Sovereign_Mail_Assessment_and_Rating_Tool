@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import type { StatisticsData } from '@models/statisticsData.ts'
 import { getDiffOrZero } from '@utils/statisticsUtils.ts'
 
@@ -12,36 +14,38 @@ type Props = {
 }
 
 const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElement => {
+  const { t } = useTranslation('statistics')
+
   const gridData = [
     {
-      title: 'ORGANISATIONEN GESCANNT',
+      title: t('orgsScannedTitle'),
       value: currentData.overview.orgsScanned,
       diff: getDiffOrZero(currentData.overview.orgsScanned, previousData?.overview.orgsScanned),
-      diffLabel: 'diese Woche',
+      diffLabel: t('diffThisWeek'),
     },
     {
-      title: 'Ø SOUVERÄNITÄTSINDEX',
+      title: t('sovereigntyIndexTitle'),
       value: currentData.overview.sovereigntyIndex,
       diff: getDiffOrZero(currentData.overview.sovereigntyIndex, previousData?.overview.sovereigntyIndex),
-      diffLabel: 'Vormonat',
+      diffLabel: t('diffLastMonth'),
     },
     {
-      title: 'SOUVERÄNE SYSTEME',
+      title: t('sovereignSystemsTitle'),
       value: `${currentData.overview.sovereignSystems * 100}%`,
       diff: getDiffOrZero(currentData.overview.sovereignSystems, previousData?.overview.sovereignSystems) * 100,
-      diffLabel: 'seit Q1',
+      diffLabel: t('diffSinceQ1'),
     },
     {
-      title: 'HYPERSCALER-ANTEIL',
+      title: t('hyperscalerRatioTitle'),
       value: `${currentData.overview.hyperscalerRatio * 100}%`,
       diff: getDiffOrZero(currentData.overview.hyperscalerRatio, previousData?.overview.hyperscalerRatio) * 100,
-      diffLabel: 'seit Q1',
+      diffLabel: t('diffSinceQ1'),
     },
     {
-      title: 'DOMAINS ANALYSIERT',
+      title: t('domainsScannedTitle'),
       value: currentData.overview.domainsScanned,
       diff: getDiffOrZero(currentData.overview.domainsScanned, previousData?.overview.domainsScanned),
-      diffLabel: 'diese Woche',
+      diffLabel: t('diffThisWeek'),
     },
   ]
 
