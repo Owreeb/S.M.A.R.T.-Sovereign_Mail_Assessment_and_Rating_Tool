@@ -1,0 +1,98 @@
+import React, { useState } from 'react'
+
+import type { Organization } from '@models/organization'
+import { IconChevronDown, IconX } from '@tabler/icons-react'
+
+import styles from './FilterPanel.module.scss'
+import { FILTER_FIELDS, type FilterField, type FilterState } from './filterFields'
+
+type Props = {
+  orgs: Organization[]
+  selected: FilterState
+  open: boolean
+  onToggle: (key: string, value: string) => void
+  onReset: () => void
+  onClose: () => void
+}
+
+const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
+  const values = new Set<string>()
+  orgs.forEach((org) => {
+    const value = org[field.key]
+    if (Array.isArray(value)) value.forEach((v) => values.add(v))
+    else values.add(value)
+  })
+  return [...values].sort((a, b) => a.localeCompare(b))
+}
+
+const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1)
+
+const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props): React.ReactElement => {
+  const [openSection, setOpenSection] = useState<string | null>(null)
+
+  const toggleOpen = (key: string): void => setOpenSection((prev) => (prev === key ? null : key))
+
+  const activeCount = FILTER_FIELDS.reduce((sum, field) => sum + selected[field.key].length, 0)
+
+  return (
+    <div className={`${styles.panel} ${open ? styles.panelOpen : ''}`}>
+      <div className={styles.header}>
+        <span className={styles.headerTitle}>Filter</span>
+        <div className={styles.headerRight}>
+          {activeCount > 0 && <span className={styles.activeCount}>{activeCount} aktiv</span>}
+          <button type="button" className={styles.close} onClick={onClose} aria-label="Filter schließen">
+            <IconX size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.sections}>
+        {FILTER_FIELDS.map((field) => {
+          const isOpen = openSection === field.key
+          const count = selected[field.key].length
+          return (
+            <div key={field.key} className={styles.section}>
+              <button
+                type="button"
+                className={`${styles.sectionHeader} ${isOpen ? styles.sectionHeaderActive : ''}`}
+                onClick={() => toggleOpen(field.key)}
+              >
+                <span className={styles.sectionLabel}>
+                  {field.label}
+                  {count > 0 && <span className={styles.badge}>{count}</span>}
+                </span>
+                <IconChevronDown className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`} size={16} />
+              </button>
+              {isOpen && (
+                <div className={styles.options}>
+                  {optionsFor(orgs, field).map((value) => (
+                    <label key={value} className={styles.option}>
+                      <input
+                        type="checkbox"
+                        checked={selected[field.key].includes(value)}
+                        onChange={() => onToggle(field.key, value)}
+                      />
+                      <span>{field.key === 'category' ? capitalize(value) : value}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className={styles.footer}>
+        <button
+          type="button"
+          className={`${styles.reset} ${activeCount > 0 ? styles.resetActive : ''}`}
+          onClick={onReset}
+        >
+          Filter zurücksetzen
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default FilterPanel
