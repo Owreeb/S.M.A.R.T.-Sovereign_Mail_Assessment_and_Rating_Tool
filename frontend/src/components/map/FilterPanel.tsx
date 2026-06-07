@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import type { Organization } from '@models/organization'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
 
@@ -28,6 +30,7 @@ const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
 const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1)
 
 const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props): React.ReactElement => {
+  const { t } = useTranslation('map')
   const [openSection, setOpenSection] = useState<string | null>(null)
 
   const toggleOpen = (key: string): void => setOpenSection((prev) => (prev === key ? null : key))
@@ -37,10 +40,10 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
   return (
     <div className={`${styles.panel} ${open ? styles.panelOpen : ''}`}>
       <div className={styles.header}>
-        <span className={styles.headerTitle}>Filter</span>
+        <span className={styles.headerTitle}>{t('filter')}</span>
         <div className={styles.headerRight}>
-          {activeCount > 0 && <span className={styles.activeCount}>{activeCount} aktiv</span>}
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Filter schließen">
+          {activeCount > 0 && <span className={styles.activeCount}>{t('filterActive', { count: activeCount })}</span>}
+          <button type="button" className={styles.close} onClick={onClose} aria-label={t('filterClose')}>
             <IconX size={16} />
           </button>
         </div>
@@ -58,7 +61,7 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
                 onClick={() => toggleOpen(field.key)}
               >
                 <span className={styles.sectionLabel}>
-                  {field.label}
+                  {t(field.labelKey)}
                   {count > 0 && <span className={styles.badge}>{count}</span>}
                 </span>
                 <IconChevronDown className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`} size={16} />
@@ -88,7 +91,7 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
           className={`${styles.reset} ${activeCount > 0 ? styles.resetActive : ''}`}
           onClick={onReset}
         >
-          Filter zurücksetzen
+          {t('filterReset')}
         </button>
       </div>
     </div>

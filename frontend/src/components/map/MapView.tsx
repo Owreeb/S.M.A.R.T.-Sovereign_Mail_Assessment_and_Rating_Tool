@@ -8,6 +8,7 @@ import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import 'leaflet/dist/leaflet.css'
+import { useTranslation } from 'react-i18next'
 import { MapContainer, TileLayer } from 'react-leaflet'
 
 import type { Organization } from '@models/organization'
@@ -30,6 +31,7 @@ type Props = {
 const emptyFilterState = (): FilterState => Object.fromEntries(FILTER_FIELDS.map((field) => [field.key, []]))
 
 const MapView = ({ orgs }: Props): React.ReactElement => {
+  const { t } = useTranslation('map')
   const [selected, setSelected] = useState<FilterState>(emptyFilterState)
   const [filterOpen, setFilterOpen] = useState(false)
 
@@ -72,7 +74,7 @@ const MapView = ({ orgs }: Props): React.ReactElement => {
         {!filterOpen && (
           <button type="button" className={styles.filterToggle} onClick={() => setFilterOpen(true)}>
             <IconFilter size={16} />
-            <span>Filter</span>
+            <span>{t('filter')}</span>
             {activeCount > 0 && <span className={styles.toggleBadge}>{activeCount}</span>}
           </button>
         )}

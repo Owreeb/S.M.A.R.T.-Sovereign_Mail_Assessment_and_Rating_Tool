@@ -9,6 +9,7 @@ import '@mantine/core/styles.css'
 import '@mantine/dates/styles.css'
 
 import App from './App.tsx'
+import './i18n/i18n'
 import './index.css'
 import theme from './theme.ts'
 

@@ -1,6 +1,6 @@
 export const FILTER_FIELDS = [
-  { key: 'provider', label: 'Provider', isArray: true },
-  { key: 'category', label: 'Kategorie', isArray: false },
+  { key: 'provider', labelKey: 'providerLabel', isArray: true },
+  { key: 'category', labelKey: 'categoryLabel', isArray: false },
 ] as const
 
 export type FilterField = (typeof FILTER_FIELDS)[number]

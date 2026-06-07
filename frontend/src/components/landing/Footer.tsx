@@ -1,8 +1,12 @@
 import React from 'react'
 
+import { useTranslation } from 'react-i18next'
+
 import styles from './Footer.module.scss'
 
 const Footer = (): React.ReactElement => {
+  const { t } = useTranslation('footer')
+
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
@@ -11,20 +15,20 @@ const Footer = (): React.ReactElement => {
             <span className={styles.logo}>
               s.m.a.r<span className={styles.logoAccent}>.t.</span>
             </span>
-            <span className={styles.tagline}>E-Mail-Souveränität im DACH-Raum</span>
+            <span className={styles.tagline}>{t('tagline')}</span>
           </div>
           <div className={styles.contactColumn}>
-            <div className={styles.contactHeading}>Kontakt</div>
+            <div className={styles.contactHeading}>{t('contactHeading')}</div>
             <a className={styles.contactLine} href="mailto:hapa1037@h-ka.de">
               hapa1037@h-ka.de
             </a>
-            <div className={styles.contactLine}>MORPH Labs</div>
-            <div className={styles.contactLine}>Moltkestraße 30, 76133 Karlsruhe</div>
+            <div className={styles.contactLine}>{t('organization')}</div>
+            <div className={styles.contactLine}>{t('address')}</div>
           </div>
         </div>
         <div className={styles.divider} />
         <div className={styles.bottom}>
-          <span className={styles.copy}>© 2026 MORPH lab</span>
+          <span className={styles.copy}>{t('copyright')}</span>
         </div>
       </div>
     </footer>
