@@ -82,10 +82,12 @@ entity MAIL_SYSTEMS #C8DCF0 {
   ==
   * role            : ENUM('smtp_out','smtp_in',\n'imap_pop3','webmailer','proxy')
   * software        : TEXT
-    vendor            : TEXT
-    is_open_source    : INTEGER
-    provider_category : TEXT
-    rating            : INTEGER
+    vendor                 : TEXT
+    vendor_country         : TEXT
+    vendor_category        : TEXT
+    vendor_country_rating  : INTEGER
+    open_source_rating     : INTEGER
+    vendor_category_rating : INTEGER
   --
     UNIQUE (software, role)
 }
@@ -94,11 +96,12 @@ entity IP_ADDRESSES #C8DCF0 {
   * id           : UUID <<PK>>
   ==
   * ip_address   : TEXT
-    rdns_hostname : TEXT
-    asn           : INTEGER
-    asn_org       : TEXT
-    country_code  : TEXT
-    rating        : INTEGER
+    rdns_hostname  : TEXT
+    asn            : INTEGER
+    asn_org        : TEXT
+    country_code   : TEXT
+    country_rating : INTEGER
+    asn_rating     : INTEGER
   --
     UNIQUE (ip_address)
 }

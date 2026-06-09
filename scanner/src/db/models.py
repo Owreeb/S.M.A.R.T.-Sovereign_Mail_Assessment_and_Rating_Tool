@@ -103,9 +103,13 @@ class MailSystem(Base):
     )
     software: Mapped[str] = mapped_column(Text, nullable=False)
     vendor: Mapped[str | None] = mapped_column(Text)
-    is_open_source: Mapped[bool | None] = mapped_column(Integer)
-    provider_category: Mapped[str | None] = mapped_column(Text)
-    rating: Mapped[int | None] = mapped_column(Integer)
+    vendor_country: Mapped[str | None] = mapped_column(Text)
+    vendor_category: Mapped[str | None] = mapped_column(Text)
+
+    # partial scores of the sovereignty index
+    vendor_country_rating: Mapped[int | None] = mapped_column(Integer)
+    open_source_rating: Mapped[int | None] = mapped_column(Integer)
+    vendor_category_rating: Mapped[int | None] = mapped_column(Integer)
 
     # rows where this is the normal mail system
     mail_system_history: Mapped[list[OrgMailSystemHistory]] = relationship(
@@ -135,7 +139,10 @@ class IpAddress(Base):
     asn: Mapped[int | None] = mapped_column(Integer)
     asn_org: Mapped[str | None] = mapped_column(Text)
     country_code: Mapped[str | None] = mapped_column(Text)
-    rating: Mapped[int | None] = mapped_column(Integer)
+
+    # partial scores of the sovereignty index
+    country_rating: Mapped[int | None] = mapped_column(Integer)
+    asn_rating: Mapped[int | None] = mapped_column(Integer)
 
     ip_history: Mapped[list[MailSystemIpHistory]] = relationship(
         back_populates="ip_address",
