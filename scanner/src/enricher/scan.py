@@ -138,10 +138,11 @@ def clean_list(items):
 
 
 async def main(domains):
-    # cache.load(
-    #     r"D:\Projekte\S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool\scanner\cache_dump.json"
-    # )
 
+    cache.load(
+        r"/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/cache_dump.json"
+    )
+    
     mx_tasks = [
         cache.get(domain, "mx", lambda d=domain: get_mx(d)) for domain in domains
     ]
@@ -173,7 +174,7 @@ async def main(domains):
     asn_results = await asyncio.gather(*asn_task, return_exceptions=True)
 
     cache.save(
-        r"D:\Projekte\S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool\scanner\cache_dump.json"
+        r"/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/cache_dump.json"
     )
 
     monitor_task.cancel()
@@ -193,8 +194,9 @@ def df_to_json(df: pd.DataFrame, path: str):
 
 
 if __name__ == "__main__":
+    # Path der DB anpassen
     conn = sqlite3.connect(
-            "D:\\Projekte\\S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool\\scanner\\database\\raw_data.db"
+            "/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/database/raw_data.db"
         )
 
     df = pd.read_sql_query("SELECT * FROM bronze_table", conn)
