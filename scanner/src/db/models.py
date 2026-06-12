@@ -79,6 +79,7 @@ class Organisation(Base):
     category_tag: Mapped[str | None] = mapped_column(Text)
     longitude: Mapped[float | None] = mapped_column(REAL)
     latitude: Mapped[float | None] = mapped_column(REAL)
+    website: Mapped[str | None] = mapped_column(Text)
 
     domain_history: Mapped[list[OrgDomainHistory]] = relationship(
         back_populates="organisation",
@@ -151,7 +152,9 @@ class IpAddress(Base):
 
 
 class OrgDomainHistory(Base):
-    """History of the domain/website of an organisation over the runs."""
+    """
+    History of the domains of an organisation over the runs.
+    """
 
     __tablename__ = "org_domain_history"
 
@@ -167,7 +170,6 @@ class OrgDomainHistory(Base):
 
     email_domain: Mapped[str | None] = mapped_column(Text)
     website_domain: Mapped[str | None] = mapped_column(Text)
-    website: Mapped[str | None] = mapped_column(Text)
 
     organisation: Mapped[Organisation] = relationship(
         back_populates="domain_history", foreign_keys=[organisation_id]

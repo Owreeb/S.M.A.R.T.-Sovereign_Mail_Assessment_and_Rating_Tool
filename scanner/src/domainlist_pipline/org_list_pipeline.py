@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 import pandas as pd
 import requests
+import tldextract
 import yaml
 
 from src.db import (
@@ -63,7 +64,12 @@ GROUP BY ?item
 
 
 def extract_website_domain(website: str | None) -> str | None:
-    """Extracts the domain from a website URL, also trimming paths, etc."""
+    """Extracts the registered domain from a website URL.
+
+    Subdomains, paths, ports etc. are stripped, so en.mannheim.de and
+    www.mannheim.de both become mannheim.de. This way a website change
+    only creates a new history entry when the actual domain changed.
+    """
     if not website or not isinstance(website, str):
         return None
 
@@ -79,7 +85,12 @@ def extract_website_domain(website: str | None) -> str | None:
     host = host.split("/")[0].split("@")[-1].split(":")[0]
     if host.startswith("www."):
         host = host[4:]
-    return host.lower() or None
+    host = host.lower()
+    if not host:
+        return None
+
+    registered = tldextract.extract(host).top_domain_under_public_suffix
+    return registered or host
 
 
 def normalize_email_to_domain(email: str | None) -> str | None:
@@ -268,7 +279,7 @@ def _persist_record(session, run, record):
     Saves one organisation and updates its domain history.
 
     The metadata of the organisation (name, city, ...) is just overwritten.
-    The domain / website / email goes into org_domain_history and we only
+    The domains go into org_domain_history and we only
     add a new version when one of those really changed.
 
     Args:
@@ -288,6 +299,7 @@ def _persist_record(session, run, record):
         "category_tag": _clean(record.get("category_tag")),
         "longitude": _clean(record.get("longitude")),
         "latitude": _clean(record.get("latitude")),
+        "website": _clean(record.get("website")),
     })
     session.flush()
 
@@ -304,7 +316,6 @@ def _persist_record(session, run, record):
         tracked={
             "email_domain": email_domain,
             "website_domain": _clean(record.get("website_domain")),
-            "website": _clean(record.get("website")),
         },
     )
 

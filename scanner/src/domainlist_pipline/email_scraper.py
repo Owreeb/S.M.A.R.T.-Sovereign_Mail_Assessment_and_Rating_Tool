@@ -20,6 +20,7 @@ from sqlalchemy import select
 from src.db import (
     MailSystem,
     MailSystemRole,
+    Organisation,
     OrgDomainHistory,
     OrgMailSystemHistory,
     update_history,
@@ -219,25 +220,23 @@ def _set_email_domain(session, run, row, email_domain) -> None:
         tracked={
             "email_domain": email_domain,
             "website_domain": row.website_domain,
-            "website": row.website,
         },
     )
 
 
-def _scrape_email_domains(rows) -> dict:
+def _scrape_email_domains(work: list[tuple]) -> dict:
     """
     Crawls the given websites and collects the email domains.
 
     The results are kept in a dict.
 
     Args:
-        rows: List of OrgDomainHistory rows that have a website.
+        work: List of (org_id, website) tuples to scrape.
 
     Returns:
         dict {org_id: email_domain}.
     """
     results: dict = {}
-    work = [(row.organisation_id, row.website) for row in rows]
     process = CrawlerProcess()
     process.crawl(MailtoSpider, rows=work, results=results)
     process.start()  # blocks until the crawl is finished
@@ -257,8 +256,10 @@ def run_scraper(session, run) -> None:
         run: The current ScannerRun (shared with the rest of the pipeline).
     """
     # only orgs that don't have an email domain yet
-    candidates = session.scalars(
-        select(OrgDomainHistory).where(
+    candidates = session.execute(
+        select(OrgDomainHistory, Organisation.website)
+        .join(Organisation, Organisation.id == OrgDomainHistory.organisation_id)
+        .where(
             OrgDomainHistory.is_current.is_(True),
             (OrgDomainHistory.email_domain.is_(None))
             | (OrgDomainHistory.email_domain == ""),
@@ -268,14 +269,14 @@ def run_scraper(session, run) -> None:
     mx_orgs = _orgs_with_mx(session)
 
     to_scrape = []
-    for row in candidates:
+    for row, website in candidates:
         if row.organisation_id in mx_orgs:
             # has an smtp_in -> email domain is just the website domain
             if row.website_domain:
                 _set_email_domain(session, run, row, row.website_domain)
-        elif row.website and row.website.strip():
+        elif website and website.strip():
             # no MX -> crawl the website
-            to_scrape.append(row)
+            to_scrape.append((row, website))
 
     session.commit()
 
@@ -284,9 +285,11 @@ def run_scraper(session, run) -> None:
         return
 
     print(f"Scraping {len(to_scrape)} websites...")
-    results = _scrape_email_domains(to_scrape)
+    results = _scrape_email_domains(
+        [(row.organisation_id, website) for row, website in to_scrape]
+    )
 
-    for row in to_scrape:
+    for row, _ in to_scrape:
         email_domain = results.get(row.organisation_id)
         if email_domain:
             _set_email_domain(session, run, row, email_domain)

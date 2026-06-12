@@ -40,7 +40,6 @@ entity ORG_DOMAIN_HISTORY #FAE5C0 {
   --
     email_domain     : TEXT
     website_domain   : TEXT
-    website          : TEXT
 }
 
 entity ORG_MAIL_SYSTEM_HISTORY #FAE5C0 {
@@ -75,6 +74,7 @@ entity ORGANISATIONS #C8DCF0 {
     category_tag : TEXT
     longitude    : REAL
     latitude     : REAL
+    website          : TEXT
 }
 
 entity MAIL_SYSTEMS #C8DCF0 {
