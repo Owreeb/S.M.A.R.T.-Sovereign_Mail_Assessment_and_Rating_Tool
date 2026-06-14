@@ -13,8 +13,6 @@ export type OrgFilters = {
 
 const emptyFilterState = (): FilterState => Object.fromEntries(FILTER_FIELDS.map((field) => [field.key, []]))
 
-// Shared faceted filtering for orgs, consumed by both the map and the table so
-// a single selection drives both views.
 export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
   const [selected, setSelected] = useState<FilterState>(emptyFilterState)
 
