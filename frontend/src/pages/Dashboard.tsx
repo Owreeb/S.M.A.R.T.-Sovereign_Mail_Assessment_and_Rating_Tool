@@ -4,6 +4,7 @@ import Footer from '@components/landing/Footer.tsx'
 import Navbar from '@components/landing/Navbar.tsx'
 import MapView from '@components/map/MapView.tsx'
 import StatisticsGrid from '@components/statistics/StatisticsGrid.tsx'
+import OrgTable from '@components/table/OrgTable.tsx'
 import type { Organization } from '@models/organization.ts'
 import type { StatisticsData } from '@models/statisticsData.ts'
 
@@ -22,6 +23,7 @@ const Dashboard = (): React.ReactElement => {
       <Navbar />
       <StatisticsGrid currentData={currentData} previousData={previousData} />
       <MapView orgs={organizations} />
+      <OrgTable orgs={organizations} />
       <Footer />
     </>
   )

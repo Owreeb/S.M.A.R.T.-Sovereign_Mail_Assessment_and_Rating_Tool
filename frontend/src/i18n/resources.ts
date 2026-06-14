@@ -6,6 +6,7 @@ import deMap from './locales/de/map'
 import deNavbar from './locales/de/navbar'
 import deSovereignty from './locales/de/sovereignty'
 import deStatistics from './locales/de/statistics'
+import deTable from './locales/de/table'
 import enCommon from './locales/en/common'
 import enFeatures from './locales/en/features'
 import enFooter from './locales/en/footer'
@@ -14,6 +15,7 @@ import enMap from './locales/en/map'
 import enNavbar from './locales/en/navbar'
 import enSovereignty from './locales/en/sovereignty'
 import enStatistics from './locales/en/statistics'
+import enTable from './locales/en/table'
 
 const langEn = {
   common: enCommon,
@@ -24,6 +26,7 @@ const langEn = {
   footer: enFooter,
   statistics: enStatistics,
   map: enMap,
+  table: enTable,
 } as const
 
 const langDe: typeof langEn = {
@@ -35,6 +38,7 @@ const langDe: typeof langEn = {
   footer: deFooter,
   statistics: deStatistics,
   map: deMap,
+  table: deTable,
 }
 
 export const resources = {

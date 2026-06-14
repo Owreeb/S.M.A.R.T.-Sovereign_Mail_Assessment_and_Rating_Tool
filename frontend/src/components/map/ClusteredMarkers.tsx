@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-leaflet'
 
 import type { Organization } from '@models/organization'
+import { scoreColor } from '@utils/sovereignty'
 
 import styles from './ClusteredMarkers.module.scss'
 
@@ -26,15 +27,6 @@ const escapeHtml = (value: string): string =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
-
-const scoreColor = (index: number): string => {
-  if (index >= 9) return '#1c7ed6' // Blau
-  if (index >= 8) return '#2f9e44' // Grün
-  if (index >= 6) return '#74b816' // Hellgrün
-  if (index >= 4) return '#f2cc0c' // Gelb
-  if (index >= 2) return '#f76707' // Orange
-  return '#e03131' // Rot
-}
 
 const createIcon = (color: string): L.DivIcon =>
   L.divIcon({
