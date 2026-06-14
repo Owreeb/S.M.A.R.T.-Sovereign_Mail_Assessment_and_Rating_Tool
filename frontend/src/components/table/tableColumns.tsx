@@ -1,16 +1,19 @@
 import React from 'react'
 
+import type { ParseKeys, TFunction } from 'i18next'
+
 import type { Organization } from '@models/organization'
 import { scoreColor } from '@utils/sovereignty'
 
 import styles from './OrgTable.module.scss'
 
-type Translate = (key: string) => string
+type TableKey = ParseKeys<'table'>
+type Translate = TFunction<'table'>
 
 // Add new columns here
 export type TableColumn = {
   key: string
-  labelKey: string
+  labelKey: TableKey
   accessor: (org: Organization) => string
   render?: (org: Organization, t: Translate) => React.ReactNode
 }
@@ -21,7 +24,7 @@ const statusClass: Record<Organization['sovereignty_level'], string> = {
   low: styles.statusLow,
 }
 
-const statusKey: Record<Organization['sovereignty_level'], string> = {
+const statusKey: Record<Organization['sovereignty_level'], TableKey> = {
   high: 'statusHigh',
   medium: 'statusMedium',
   low: 'statusLow',

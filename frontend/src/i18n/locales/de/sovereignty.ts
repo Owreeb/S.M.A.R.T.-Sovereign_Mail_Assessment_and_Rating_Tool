@@ -11,10 +11,12 @@ const sovereignty = {
   highlights: {
     euLocationTitle: 'EU-Serverstandort',
     euLocationDescription: 'Server befinden sich innerhalb der EU',
-    point2Title: 'Punkt #2',
-    point2Description: 'Text zu Punkt #2',
-    point3Title: 'Punkt #3',
-    point3Description: 'Text zu Punkt #3',
+    point2Title: 'DSGVO-konformer Betrieb',
+    point2Description:
+      'Anbieter ohne US-Rechtssitz unterliegen nicht dem CLOUD Act, ihre E-Mails bleiben vor Behördenzugriffen geschützt.',
+    point3Title: 'Anbietersouveränität',
+    point3Description:
+      'Souveräne E-Mail-Provider haben ihren Firmensitz in der EU und unterliegen ausschließlich europäischem Recht.',
   },
 }
 

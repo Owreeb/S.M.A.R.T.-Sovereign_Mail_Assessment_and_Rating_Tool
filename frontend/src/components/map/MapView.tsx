@@ -37,6 +37,7 @@ const MapView = ({ orgs, filters }: Props): React.ReactElement => {
 
   return (
     <div className={styles.wrapper}>
+      <h2 className={styles.heading}>{t('viewTitle')}</h2>
       <div className={styles.map}>
         <MapContainer center={[51.16, 10.45]} zoom={6} scrollWheelZoom style={{ width: '100%', height: '100%' }}>
           <TileLayer

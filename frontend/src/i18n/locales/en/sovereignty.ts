@@ -11,10 +11,12 @@ const sovereignty = {
   highlights: {
     euLocationTitle: 'EU server location',
     euLocationDescription: 'Servers are located within the EU',
-    point2Title: 'Point #2',
-    point2Description: 'Text for point #2',
-    point3Title: 'Point #3',
-    point3Description: 'Text for point #3',
+    point2Title: 'GDPR-Compliant Operation',
+    point2Description:
+      'Providers without a U.S. legal presence are not subject to the CLOUD Act, ensuring their emails remain protected from government access requests.',
+    point3Title: 'Provider Sovereignty',
+    point3Description:
+      'Sovereign email providers are headquartered in the EU and are subject exclusively to European law.',
   },
 }
 

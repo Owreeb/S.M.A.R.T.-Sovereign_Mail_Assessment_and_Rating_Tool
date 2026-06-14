@@ -1,5 +1,5 @@
 const table = {
-  heading: 'All analysed domains',
+  heading: 'Analysed domains',
   searchPlaceholder: 'Search …',
   filteredBy: 'Filtered by:',
   colDomain: 'Domain',
