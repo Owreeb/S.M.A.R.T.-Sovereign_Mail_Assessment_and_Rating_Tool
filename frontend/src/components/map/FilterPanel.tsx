@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
+import { FILTER_FIELDS, type FilterField, type FilterState } from '@constants/filterFields'
 import type { Organization } from '@models/organization'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
 
 import styles from './FilterPanel.module.scss'
-import { FILTER_FIELDS, type FilterField, type FilterState } from './filterFields'
 
 type Props = {
   orgs: Organization[]

@@ -1,4 +1,5 @@
 const map = {
+  viewTitle: 'Kartenansicht',
   legendTitle: 'Souveränität',
   filter: 'Filter',
   filterActive: '{{count}} aktiv',
