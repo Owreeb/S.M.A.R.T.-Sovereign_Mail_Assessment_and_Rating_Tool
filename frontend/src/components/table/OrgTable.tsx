@@ -2,14 +2,17 @@ import React, { useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
+import type { OrgFilters } from '@hooks/useOrgFilters'
 import type { Organization } from '@models/organization'
 import { IconArrowLeft, IconArrowRight, IconSearch } from '@tabler/icons-react'
 
+import FilterChips from './FilterChips'
 import styles from './OrgTable.module.scss'
 import { TABLE_COLUMNS } from './tableColumns'
 
 type Props = {
   orgs: Organization[]
+  filters: OrgFilters
 }
 
 const PAGE_SIZE = 10
@@ -26,7 +29,7 @@ const pageItems = (current: number, total: number): (number | 'ellipsis')[] => {
   return items
 }
 
-const OrgTable = ({ orgs }: Props): React.ReactElement => {
+const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
   const { t } = useTranslation('table')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -49,6 +52,12 @@ const OrgTable = ({ orgs }: Props): React.ReactElement => {
   return (
     <div className={styles.wrapper}>
       <h2 className={styles.heading}>{t('heading')}</h2>
+      <FilterChips
+        selected={filters.selected}
+        activeCount={filters.activeCount}
+        onRemove={filters.toggle}
+        onReset={filters.reset}
+      />
       <div className={styles.searchBar}>
         <IconSearch size={16} className={styles.searchIcon} />
         <input

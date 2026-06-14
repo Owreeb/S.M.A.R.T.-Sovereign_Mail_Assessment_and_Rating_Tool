@@ -5,6 +5,7 @@ import Navbar from '@components/landing/Navbar.tsx'
 import MapView from '@components/map/MapView.tsx'
 import StatisticsGrid from '@components/statistics/StatisticsGrid.tsx'
 import OrgTable from '@components/table/OrgTable.tsx'
+import { useOrgFilters } from '@hooks/useOrgFilters.ts'
 import type { Organization } from '@models/organization.ts'
 import type { StatisticsData } from '@models/statisticsData.ts'
 
@@ -18,12 +19,14 @@ const previousData = dataFiles[sortedFiles[1]] as StatisticsData | undefined
 const organizations = organizationsData as Organization[]
 
 const Dashboard = (): React.ReactElement => {
+  const filters = useOrgFilters(organizations)
+
   return (
     <>
       <Navbar />
       <StatisticsGrid currentData={currentData} previousData={previousData} />
-      <MapView orgs={organizations} />
-      <OrgTable orgs={organizations} />
+      <MapView orgs={organizations} filters={filters} />
+      <OrgTable orgs={filters.filteredOrgs} filters={filters} />
       <Footer />
     </>
   )

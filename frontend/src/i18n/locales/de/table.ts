@@ -1,6 +1,7 @@
 const table = {
   heading: 'Alle analysierten Domains',
   searchPlaceholder: 'Suchen …',
+  filteredBy: 'Gefiltert nach:',
   colDomain: 'Domain',
   colOrg: 'Organisation',
   colCategory: 'Typ',

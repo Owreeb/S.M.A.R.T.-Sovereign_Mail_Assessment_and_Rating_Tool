@@ -1,0 +1,49 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-family: Inter, sans-serif;
+}
+
+.intro {
+  font-size: 13px;
+  color: #868e96;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #e8590c;
+  background: #fcefe6;
+  border: 1px solid #f3c4a3;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #f9e2d2;
+}
+
+.chipLabel {
+  font-weight: 600;
+}
+
+.clear {
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #868e96;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.clear:hover {
+  color: #e8590c;
+}
