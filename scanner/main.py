@@ -2,6 +2,7 @@ from pathlib import Path
 from src.db import make_engine, make_session, create_all, scanner_run
 from src.domainlist_pipline.org_list_pipeline import wikidata_fetch_and_persist
 from src.domainlist_pipline.email_scraper import run_scraper
+from src.json_dumper.dump import write_dump
 
 DB_NAME = "SMART.db"
 
@@ -25,10 +26,15 @@ def main() -> None:
             session.commit()
 
             #TODO: Run the MX-Record enricher here before scraping email domains
-
+            """
             print("Step 2: Scraping email domains where Website Domain != Email Domain")
             run_scraper(session, run)
             session.commit()
+            """
+
+            print("Last step: Dumping the database to JSON")
+            count = write_dump(session)
+            print(f"Dumped {count} organisations to JSON")
 
     print("Finished!")
 

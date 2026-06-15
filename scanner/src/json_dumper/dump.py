@@ -1,91 +1,307 @@
-import argparse
+"""
+Dump the current state of the database into the frontend JSON format.
+
+The sovereignty_index is calculated on the fly while dumping, following
+the Souveränitätsindex V2 specification (see sovereignty_index_calc.py).
+"""
 import json
-import sqlite3
+from collections import Counter
+from datetime import date
 from pathlib import Path
+from typing import Any
+
+import brotli
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from src.db import (
+    IpAddress,
+    MailSystem,
+    MailSystemIpHistory,
+    MailSystemRole,
+    OrgDomainHistory,
+    OrgMailSystemHistory,
+    Organisation,
+    ScannerRun,
+)
+from src.json_dumper.sovereignty_index_calc import (
+    compute_average_index,
+    compute_sovereignty_index,
+)
+
+EXPORT_ROLES = [
+    MailSystemRole.SMTP_OUT,
+    MailSystemRole.SMTP_IN,
+    MailSystemRole.IMAP_POP3,
+    MailSystemRole.WEBMAILER,
+]
 
 
-def _row_key(row):
-	return row["uuid"]
+def _current_ips(session: Session, mail_system: MailSystem) -> list[IpAddress]:
+    """
+    Get the IPs that are currently behind a mail system
+
+    Args:
+        session: The database session.
+        mail_system: The mail system to look up.
+
+    Returns:
+        The current IpAddress rows of the mail system.
+    """
+    return list(
+        session.scalars(
+            select(IpAddress)
+            .join(MailSystemIpHistory, MailSystemIpHistory.ip_address_id == IpAddress.id)
+            .where(
+                MailSystemIpHistory.mail_system_id == mail_system.id,
+                MailSystemIpHistory.is_current.is_(True),
+            )
+        )
+    )
 
 
-def dump_domain_data(db_path):
-	query = """
-		SELECT
-			dl.uuid,
-			dl.name,
-			dl.website_domain,
-			dl.category_tag,
-			dl.latitude,
-			dl.longitude,
-			dl.timestamp,
-			mx.provider AS provider,
-			sr.software_name AS smtp_software
-		FROM bronze_table AS dl
-		LEFT JOIN domain_list_mx_records AS dlmx
-			ON dlmx.domain_list_uuid = dl.uuid
-		LEFT JOIN mx_records AS mx
-			ON mx.uuid = dlmx.mx_record_uuid
-		LEFT JOIN domain_list_smtp_records AS dlsr
-			ON dlsr.domain_list_uuid = dl.uuid
-		LEFT JOIN smtp_records AS sr
-			ON sr.uuid = dlsr.smtp_record_uuid
-		WHERE mx.uuid IS NOT NULL OR sr.uuid IS NOT NULL
-		ORDER BY dl.uuid
-	"""
-
-	results = {}
-	with sqlite3.connect(db_path) as conn:
-		conn.row_factory = sqlite3.Row
-		for row in conn.execute(query):
-			key = _row_key(row)
-			if key not in results:
-				results[key] = {
-					"org": row["name"],
-					"domain": row["website_domain"],
-					"category": row["category_tag"],
-					"lat": row["latitude"],
-					"long": row["longitude"],
-					"provider": [],
-					"smtp_software": [],
-					"last_checked": row["timestamp"],
-				}
-
-			provider = row["provider"]
-			if provider and provider not in results[key]["provider"]:
-				results[key]["provider"].append(provider)
-
-			smtp_software = row["smtp_software"]
-			if smtp_software and smtp_software not in results[key]["smtp_software"]:
-				results[key]["smtp_software"].append(smtp_software)
-
-	return list(results.values())
+def _serialize_ip(ip: IpAddress) -> dict[str, Any]:
+    """Turn an IpAddress row into the JSON dict for export."""
+    return {
+        "ip_address": ip.ip_address,
+        "rdns_hostname": ip.rdns_hostname,
+        "country_code": ip.country_code,
+        "country_rating": ip.country_rating,
+        "hoster": ip.asn_org,
+        "hoster_rating": ip.asn_rating,
+    }
 
 
-def main():
-	parser = argparse.ArgumentParser(
-		description="Dump domain data to JSON format.")
-	parser.add_argument(
-		"--db",
-		default=str(Path("database") / "raw_data.db"),
-		help="Path to the SQLite database (default: database/raw_data.db).",
-	)
-	parser.add_argument(
-		"--output",
-		default=str(Path("data") / "domain_dump.json"),
-		help=(
-			"Write JSON output to a file "
-			"(default: data/domain_dump.json)."
-		),
-	)
-	args = parser.parse_args()
+def _serialize_mail_system(
+    session: Session, mail_system: MailSystem, proxy: MailSystem | None
+) -> dict[str, Any]:
+    """
+    Turn a mail system (plus optional proxy) into the JSON dict.
 
-	data = dump_domain_data(args.db)
-	payload = json.dumps(data, indent=2, ensure_ascii=True)
+    Args:
+        session: The database session.
+        mail_system: The main mail system.
+        proxy: The proxy in front of it, or None.
 
-	output_path = Path(args.output)
-	output_path.parent.mkdir(parents=True, exist_ok=True)
-	output_path.write_text(payload, encoding="utf-8")
+    Returns:
+        The mail system dict in the export format.
+    """
+    entry: dict[str, Any] = {
+        "software": mail_system.software,
+        "open_source_rating": mail_system.open_source_rating,
+        "vendor": mail_system.vendor,
+        "vendor_country": mail_system.vendor_country,
+        "vendor_country_rating": mail_system.vendor_country_rating,
+        "vendor_category": mail_system.vendor_category,
+        "vendor_category_rating": mail_system.vendor_category_rating,
+        "ips": [_serialize_ip(ip) for ip in _current_ips(session, mail_system)],
+    }
+    if proxy is not None:
+        proxy_entry = _serialize_mail_system(session, proxy, None)
+        del proxy_entry["proxy"]
+        entry["proxy"] = proxy_entry
+    else:
+        entry["proxy"] = None
+    return entry
 
 
-if __name__ == "__main__":
-	main()
+def _last_checked(session: Session, run_ids: set) -> str | None:
+    """
+    Get the newest timestamp of the runs the current rows came from.
+
+    Args:
+        session: The database session.
+        run_ids: The valid_from_run ids of the org's current history rows.
+
+    Returns:
+        The newest finished_at (or started_at)
+    """
+    if not run_ids:
+        return None
+    runs = session.scalars(select(ScannerRun).where(ScannerRun.id.in_(run_ids)))
+    timestamps = [run.finished_at or run.started_at for run in runs]
+    timestamps = [ts for ts in timestamps if ts is not None]
+    if not timestamps:
+        return None
+    return max(timestamps).isoformat()
+
+
+def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
+    """
+    Turn an organisation into a JSON dict
+
+    Args:
+        session: The database session.
+        org: The organisation to serialize.
+
+    Returns:
+        The organisation dict in the export format
+    """
+    domain_row = session.scalars(
+        select(OrgDomainHistory).where(
+            OrgDomainHistory.organisation_id == org.id,
+            OrgDomainHistory.is_current.is_(True),
+        )
+    ).first()
+
+    system_rows = list(
+        session.scalars(
+            select(OrgMailSystemHistory).where(
+                OrgMailSystemHistory.organisation_id == org.id,
+                OrgMailSystemHistory.is_current.is_(True),
+            )
+        )
+    )
+
+    mail_systems: dict[str, list[dict[str, Any]]] = {
+        role.value: [] for role in EXPORT_ROLES
+    }
+    providers: list[str] = []
+    hosters: list[str] = []
+
+    for row in system_rows:
+        ms = row.mail_system
+        if ms.role not in EXPORT_ROLES:
+            continue
+        mail_systems[ms.role.value].append(
+            _serialize_mail_system(session, ms, row.proxy_system)
+        )
+        if ms.vendor and ms.vendor not in providers:
+            providers.append(ms.vendor)
+        for ip in _current_ips(session, ms):
+            if ip.asn_org and ip.asn_org not in hosters:
+                hosters.append(ip.asn_org)
+
+    run_ids = {row.valid_from_run for row in system_rows}
+    if domain_row is not None:
+        run_ids.add(domain_row.valid_from_run)
+
+    sovereignty_index = compute_sovereignty_index(mail_systems)
+
+    return {
+        "org": org.name,
+        "email_domain": domain_row.email_domain if domain_row else None,
+        "category": org.category_tag,
+        "wikidata_url": org.wikidata_url,
+        "city": org.city,
+        "state": org.state,
+        "country": org.country,
+        "lat": org.latitude,
+        "long": org.longitude,
+        "last_checked": _last_checked(session, run_ids),
+        "sovereignty_index": sovereignty_index,
+        "providers": providers,
+        "hosters": hosters,
+        "mail_systems": mail_systems,
+    }
+
+def _top_shares(
+    data: list[dict[str, Any]], key: str, limit: int = 10
+) -> list[dict[str, Any]]:
+    """
+    Count how often each name appears in the orgs' lists under ``key``.
+
+    Args:
+        data: The serialized org dicts.
+        key: The list field to count -> "providers" or "hosters".
+        limit: How many top entries to return.
+
+    Returns:
+        A list of {"name": ..., "share": ...} dicts, sorted by share.
+    """
+    counter: Counter = Counter()
+    for org in data:
+        for name in org.get(key) or []:
+            counter[name] += 1
+    total = sum(counter.values())
+    if total == 0:
+        return []
+    return [
+        {"name": name, "share": round(count / total, 2)}
+        for name, count in counter.most_common(limit)
+    ]
+
+
+def _build_overview(data: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    Build the overview object for the overview file.
+
+    Args:
+        data: The serialized org dicts.
+
+    Returns:
+        The overview json with the average sovereignty index and the
+        top mail vendors, hosters
+    """
+    average, _ = compute_average_index(data)
+    domains = {org["email_domain"] for org in data if org.get("email_domain")}
+    return {
+        "overview": {
+            "orgsScanned": len(data),
+            "domainsScanned": len(domains),
+            "sovereigntyIndex": average,
+        },
+        "topMailVendors": _top_shares(data, "providers"),
+        "topHosters": _top_shares(data, "hosters"),
+    }
+
+
+def _write_json_with_brotli(data: Any, path: Path) -> None:
+    """
+    Write data as JSON and a compressed Brotli version of it.
+
+    Args:
+        data: The JSON-serializable data to write.
+        path: The path of the plain .json file.
+    """
+    payload = json.dumps(data, indent=2, ensure_ascii=False)
+    path.write_text(payload, encoding="utf-8")
+    compressed = brotli.compress(payload.encode("utf-8"))
+    path.with_suffix(path.suffix + ".br").write_bytes(compressed)
+
+
+def _export_output_path(session: Session) -> Path:
+    """
+    Build the export path next to the database the session is bound to.
+
+    Args:
+        session: The database session.
+
+    Returns:
+        The path for the export fgolder
+    """
+    db_file = session.get_bind().url.database
+    return Path(db_file).resolve().parent / "export" / "organizations.json"
+
+
+def write_dump(session: Session) -> int:
+    """
+    Dump all organisations and write them as JSON next to the database.
+
+    Writes two files into <db folder>/export: organizations.json
+    with all orgs and a date-named overview file (e.g. 2026-06-12.json)
+    with the average sovereignty index and the top vendors/hosters.
+
+    Args:
+        session: The database session.
+
+    Returns:
+        How many organisations were written.
+    """
+    orgs = session.scalars(select(Organisation).order_by(Organisation.name))
+    data = [_serialize_org(session, org) for org in orgs]
+
+    average, n_rated = compute_average_index(data)
+    if average is not None:
+        print(
+            f"Average sovereignty index: {average}) over {n_rated} rated organisations"
+        )
+
+    path = _export_output_path(session)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _write_json_with_brotli(data, path)
+
+    overview_path = path.parent / f"{date.today().isoformat()}.json"
+    _write_json_with_brotli(_build_overview(data), overview_path)
+    return len(data)
