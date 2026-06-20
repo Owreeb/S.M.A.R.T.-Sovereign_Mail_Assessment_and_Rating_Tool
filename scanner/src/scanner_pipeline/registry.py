@@ -2,7 +2,7 @@
 import sqlite3
 import pandas as pd
 
-from step import Step, MX, Domain, IP, ASN, SMTP, IMAP, Combiner
+from src.scanner_pipeline.step import Step, MX, Domain, IP, ASN, SMTP, IMAP, Combiner, PTR
 from pathlib import Path
 
 
@@ -33,7 +33,6 @@ class Registry:
             self.queue.remove(step)
             
 
-
     def find_step(self):
         for step in self.queue:
             if step.required_step in self.results:
@@ -49,24 +48,72 @@ class Registry:
             filename = f"{step.__name__.lower()}.csv"
             df.to_csv(path / filename, index=False)
 
+    @classmethod
+    def from_domain_df(cls, domain_df: pd.DataFrame):
+        registry = cls(
+            ASN(),
+            IP(),
+            MX(),
+            SMTP(),
+            IMAP(),
+            Combiner(),
+            PTR(),
+        )
+
+        registry.results[Domain] = domain_df
+        return registry
+
+    @classmethod
+    def from_sqlite(
+        cls,
+        database: str | Path,
+        query: str,
+    ):
+        conn = sqlite3.connect(database)
+
+        try:
+            domain_df = pd.read_sql_query(query, conn)
+        finally:
+            conn.close()
+
+        return cls.from_domain_df(domain_df)
+    
+    @classmethod
+    def create_and_run(
+        cls,
+        domain_df: pd.DataFrame=None,
+        database: str | Path=None,
+        query: str=None,
+        export_results: bool=False,
+        export_path: str=None,
+    ):
+        if domain_df:
+            registry = cls.from_domain_df(domain_df)
+        elif database:
+            registry = cls.from_sqlite(database, query)
+        asyncio.run(registry.run_queue())
+
+        if export_results:
+            registry.export_results(export_path)
+        return registry
+    
+    @classmethod
+    def create_testing_registry(cls):
+        export_path="/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/exports"
+        registry = Registry()
+        registry.results[ASN] = pd.read_csv(export_path+"/asn.csv")
+        registry.results[Combiner] = pd.read_csv(export_path+"/combiner.csv")
+        registry.results[ASN] = pd.read_csv(export_path+"/asn.csv")
+        registry.results[Domain] = pd.read_csv(export_path+"/domain.csv")
+        registry.results[IMAP] = pd.read_csv(export_path+"/imap.csv")
+        registry.results[IP] = pd.read_csv(export_path+"/ip.csv")
+        registry.results[MX] = pd.read_csv(export_path+"/mx.csv")
+        registry.results[PTR] = pd.read_csv(export_path+"/ptr.csv")
+        registry.results[SMTP] = pd.read_csv(export_path+"/smtp.csv")
+
+        return registry
 
 
 if __name__ == "__main__":
-
-    conn = sqlite3.connect(
-            "/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/database/raw_data.db"
-        )
-
-    domain = pd.read_sql_query("SELECT * FROM bronze_table", conn)
-
-    registry = Registry(
-        ASN(),
-        IP(),
-        MX(),
-        SMTP(),
-        IMAP(),
-        Combiner(),
-    )
-    registry.results[Domain] = domain
-    asyncio.run(registry.run_queue())
-    registry.export_results("/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/src/scanner_pipeline/results")
+    registry = Registry.create_testing_registry()
+    print(registry.results)

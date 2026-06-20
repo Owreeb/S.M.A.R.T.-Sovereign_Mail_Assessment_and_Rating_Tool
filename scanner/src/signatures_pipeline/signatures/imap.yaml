@@ -1,0 +1,17 @@
+﻿- regex: '(?i)dovecot'
+  software: Dovecot
+  vendor: Open Source
+  vendor_country: FI
+  vendor_category: Mail Server
+
+- regex: '(?i)kasserver\.com'
+  software: KAS Mail Server
+  vendor: STRATO
+  vendor_country: DE
+  vendor_category: Hosting Provider
+
+- regex: '(?i)microsoft exchange imap4'
+  software: Microsoft Exchange
+  vendor: Microsoft
+  vendor_country: US
+  vendor_category: Mail Server

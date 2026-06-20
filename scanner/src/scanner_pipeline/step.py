@@ -7,6 +7,7 @@ from typing import Type
 import pandas as pd
 
 import dns.asyncresolver
+import dns.reversename
 
 resolver = dns.asyncresolver.Resolver()
 
@@ -100,14 +101,14 @@ class Domain(Step):
 
 class Combiner(Step):
     required_step = Domain
-    input_col = ["website_domain", "email"]
+    input_col = ["website_domain", "email_domain"]
 
     async def get(self, value):
         pass
 
     async def scan(self, data: pd.DataFrame):
         return pd.concat(
-            [data["website_domain"], data["email"]],
+            [data["website_domain"], data["email_domain"]],
             ignore_index=True
         ).dropna().drop_duplicates().to_frame("domain")
 
@@ -278,6 +279,25 @@ class IMAP(Step):
                     continue
 
         raise RuntimeError("No IMAP Found")
+
+
+class PTR(Step):
+    required_step = IP
+    input_col = "ip"
+
+    resolver = dns.asyncresolver.Resolver()
+
+    async def get(self, ip: str) -> list[dict]:
+        reverse_name = dns.reversename.from_address(ip)
+        answer = await self.resolver.resolve(reverse_name, "PTR")
+
+        return [
+            {
+                self.input_col: ip,
+                "ptr": str(record.target).rstrip("."),
+            }
+            for record in answer
+        ]
 
 if __name__ == "__main__":
     domain = MX()
