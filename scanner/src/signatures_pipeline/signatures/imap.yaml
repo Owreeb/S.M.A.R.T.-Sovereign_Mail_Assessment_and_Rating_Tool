@@ -1,4 +1,4 @@
-﻿- regex: '(?i)dovecot'
+﻿- regex: "(?i)dovecot"
   software: Dovecot
   vendor: Open Source
   vendor_country: FI
@@ -10,8 +10,44 @@
   vendor_country: DE
   vendor_category: Hosting Provider
 
-- regex: '(?i)microsoft exchange imap4'
+- regex: "(?i)microsoft exchange imap4|exchange"
   software: Microsoft Exchange
   vendor: Microsoft
   vendor_country: US
+  vendor_category: Mail Server
+
+- regex: "(?i)cyrus imap"
+  software: Cyrus IMAP
+  vendor: Open Source
+  vendor_country: US
+  vendor_category: Mail Server
+
+- regex: "(?i)communigate pro"
+  software: CommuniGate Pro
+  vendor: Stalker Software
+  vendor_country: US
+  vendor_category: Mail Server
+
+- regex: "(?i)icewarp"
+  software: IceWarp
+  vendor: IceWarp
+  vendor_country: CZ
+  vendor_category: Mail Server
+
+- regex: "(?i)alfahosting"
+  software: AlfaHosting Mailserver
+  vendor: AlfaHosting GmbH
+  vendor_country: DE
+  vendor_category: Hosting Provider
+
+- regex: "(?i)smartermail"
+  software: SmarterMail
+  vendor: SmarterTools Inc.
+  vendor_country: US
+  vendor_category: Mail Server
+
+- regex: "(?i)popnet"
+  software: PopNet Mail Server
+  vendor: PopNet Informatik AG
+  vendor_country: CH
   vendor_category: Mail Server

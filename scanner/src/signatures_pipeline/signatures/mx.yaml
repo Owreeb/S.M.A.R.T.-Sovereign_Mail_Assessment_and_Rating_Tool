@@ -1,1 +1,149 @@
-﻿
+﻿- regex: '(?i)kvnbw\.de'
+  software: Unknown Mail Gateway
+  vendor: KV Baden-Württemberg
+  vendor_country: DE
+  vendor_category: Organization
+
+- regex: '(?i)\.ionos\.de$'
+  software: IONOS Mail Gateway
+  vendor: IONOS
+  vendor_country: DE
+  vendor_category: Hosting Provider
+
+- regex: "(?i)(hornetsecurity|antispameurope)"
+  software: Hornetsecurity Mail Security Gateway
+  vendor: Hornetsecurity
+  vendor_country: DE
+  vendor_category: Security / Proxy
+
+- regex: '(?i)pzd-svn\.de$'
+  software: Unknown Mail Gateway
+  vendor: PZD-SVN
+  vendor_country: DE
+  vendor_category: Organization
+
+- regex: '(?i)kgrz-ks\.de$'
+  software: Unknown Mail Gateway
+  vendor: KGRZ Kassel
+  vendor_country: DE
+  vendor_category: Organization
+
+- regex: "(?i)sophos"
+  software: Sophos Email Gateway
+  vendor: Sophos
+  vendor_country: GB
+  vendor_category: Security / Proxy
+
+- regex: '(?i)ekom21\.de$'
+  software: Unknown Mail Gateway
+  vendor: ekom21
+  vendor_country: DE
+  vendor_category: Organization
+
+- regex: '(?i)rzone\.de$'
+  software: IONOS Mail Gateway
+  vendor: IONOS
+  vendor_country: DE
+  vendor_category: Hosting Provider
+
+- regex: '(?i)regioit-aachen\.de$'
+  software: Unknown Mail Gateway
+  vendor: regio iT GmbH
+  vendor_country: DE
+  vendor_category: Public Sector IT Service Provider
+
+- regex: '(?i)itebo\.de$'
+  software: Unknown Mail Gateway
+  vendor: ITEBO
+  vendor_country: DE
+  vendor_category: Public Sector IT Service Provider
+
+- regex: '(?i)abxsec\.com$'
+  software: ABXSEC Mail Security Gateway
+  vendor: ABXSEC
+  vendor_country: DE
+  vendor_category: Security / Proxy
+
+- regex: '(?i)civitec\.de$'
+  software: Unknown Mail Gateway
+  vendor: Civitec
+  vendor_country: DE
+  vendor_category: Public Sector IT Service Provider
+
+- regex: "(?i)(google|aspmx)"
+  software: Google Mail Gateway
+  vendor: Google
+  vendor_country: US
+  vendor_category: Cloud Provider
+
+- regex: '(?i)pphosted\.com$'
+  software: Proofpoint Email Security Gateway
+  vendor: Proofpoint
+  vendor_country: US
+  vendor_category: Security / Proxy
+
+- regex: '(?i)\.mail\.protection\.outlook\.com$'
+  software: Microsoft Exchange Online Protection
+  vendor: Microsoft
+  vendor_country: US
+  vendor_category: Cloud Provider
+
+- regex: '(?i)dfn\.de$'
+  software: DFN Mail Gateway
+  vendor: DFN-Verein
+  vendor_country: DE
+  vendor_category: Research / Education Network
+
+- regex: '(?i)belwue\.de$'
+  software: BelWü Mail Gateway
+  vendor: BelWü
+  vendor_country: DE
+  vendor_category: Research / Education Network
+
+- regex: '(?i)\.iphmx\.com$'
+  software: Cisco Email Security Gateway
+  vendor: Cisco
+  vendor_country: US
+  vendor_category: Security / Proxy
+
+- regex: '(?i)mailspamprotection\.com$'
+  software: SiteGround Mail Protection / AntiSpam Gateway
+  vendor: SiteGround
+  vendor_country: BG
+  vendor_category: Hosting Provider
+
+- regex: '(?i)mimecast\.com$'
+  software: Mimecast Email Security Gateway
+  vendor: Mimecast
+  vendor_country: GB
+  vendor_category: Security / Proxy
+
+- regex: '(?i)expurgate\.net$'
+  software: Expurgate Mail Security Gateway
+  vendor: G-Data
+  vendor_country: DE
+  vendor_category: Security / Proxy
+
+- regex: '(?i)mvnet\.de$'
+  software: MVnet Mail Gateway
+  vendor: MVnet
+  vendor_country: DE
+  vendor_category: Regional ISP / Hosting Provider
+
+- regex: '(?i)bund\.de$'
+  software: Government Mail Gateway
+  vendor: Bundesrepublik Deutschland
+  vendor_country: DE
+  vendor_category: Government
+
+- regex: "(?i)spamexperts"
+  software: SpamExperts Email Security Gateway
+  vendor: SpamExperts
+  vendor_country: NL
+  vendor_category: Security / Proxy
+
+- regex: '(?i)kraemer-it\.cloud$'
+  software: Kraemer IT Mail Gateway
+  vendor: Krämer IT Solutions
+  vendor_country: DE
+  vendor_category: Hosting Provider
