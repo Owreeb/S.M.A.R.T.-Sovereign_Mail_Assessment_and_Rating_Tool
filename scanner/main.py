@@ -28,16 +28,16 @@ def main() -> None:
             # wikidata_fetch_and_persist(session, run, wikidata_config_path)
             # session.commit()
             # uncomment to 
-            # registry = Registry.create_and_run(
-            #     database=db_path,
-            #     query="SELECT * FROM org_domain_history",
-            #     export_results=True,
-            #     export_path= base_dir / "exports" 
-            # )
+            registry = Registry.create_and_run(
+                database=db_path,
+                query="SELECT * FROM org_domain_history LIMIT 100",
+                export_results=True,
+                export_path= base_dir / "test_exports" 
+            )
 
-            registry = Registry.create_testing_registry()
+            # registry = Registry.create_testing_registry()
 
-            to_db(session, run, registry)
+            # to_db(session, run, registry)
             
             #TODO: Run the MX-Record enricher here before scraping email domains
 

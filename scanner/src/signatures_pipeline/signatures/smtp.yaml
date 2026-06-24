@@ -1,1 +1,87 @@
-﻿
+- regex: "(?i)nospamproxy"
+  software: NoSpamProxy
+  vendor: Net at Work GmbH
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: proxy
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+  # Hinweis: SMTP-Banner meist auf vorgeschaltetem Mailgateway sichtbar
+
+- regex: "(?i)antispameurope"
+  software: Hornetsecurity Email Gateway
+  vendor: Hornetsecurity
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: proxy
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+  # Hinweis: AntiSpamEurope wurde von Hornetsecurity übernommen
+
+- regex: "(?i)postfix"
+  software: Postfix
+  vendor: null
+  vendor_country: NL
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: smtp_in
+  open_source_rating: 1
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+  # Hinweis: häufigster SMTP-Server im Hosting-/Uni-Umfeld
+
+- regex: "(?i)exim"
+  software: Exim
+  vendor: null
+  vendor_country: GB
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: smtp_in
+  open_source_rating: 1
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+  # Hinweis: sehr häufig im Shared-Hosting-Bereich
+
+- regex: "(?i)microsoft"
+  software: Microsoft Exchange SMTP
+  vendor: Microsoft
+  vendor_country: US
+  vendor_category: US Hyperscaler
+  role: smtp_out
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+  # Hinweis: kann Exchange Online oder On-Premise sein
+
+- regex: "(?i)proxmox"
+  software: Proxmox Mail Gateway
+  vendor: Proxmox Server Solutions GmbH
+  vendor_country: AT
+  vendor_category: EU Software Vendor
+  role: proxy
+  open_source_rating: 2
+  vendor_country_rating: 2
+  vendor_category_rating: 2
+  # Hinweis: Open-Source Kernel + kommerzielle Enterprise-Version
+
+- regex: "(?i)hosteurope|webpack"
+  software: Host Europe Mail Gateway
+  vendor: Host Europe GmbH
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: smtp_in
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+  # Hinweis: MX zeigt nur Frontend-Infrastruktur, nicht Backend-Mailserver
+
+- regex: "(?i)barracuda|ess\\.aws"
+  software: Barracuda Email Security Gateway
+  vendor: Barracuda Networks
+  vendor_country: US
+  vendor_category: US Hyperscaler
+  role: proxy
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+  # Hinweis: Cloud Security Gateway (oft AWS gehostet)

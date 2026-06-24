@@ -2,7 +2,7 @@
 import sqlite3
 import pandas as pd
 
-from src.scanner_pipeline.step import Step, MX, Domain, IP, ASN, SMTP, IMAP, Combiner, PTR
+from src.scanner_pipeline.step import Step, MX, Domain, IP, ASN, SPF, SMTP, IMAP, Combiner, PTR
 from pathlib import Path
 
 
@@ -58,6 +58,7 @@ class Registry:
             IMAP(),
             Combiner(),
             PTR(),
+            SPF(),
         )
 
         registry.results[Domain] = domain_df
@@ -115,5 +116,13 @@ class Registry:
 
 
 if __name__ == "__main__":
-    registry = Registry.create_testing_registry()
+    
+    registry = Registry.from_sqlite(
+        "/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/database/SMART.db",
+        "SELECT * FROM org_domain_history"
+    )
+    registry.results[Domain] = registry.results[Domain].sample(100)
+    asyncio.run(registry.run_queue())
+    registry.export_results("/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/test_exports")
+    # registry = Registry.create_testing_registry()
     print(registry.results)

@@ -285,11 +285,9 @@ class PTR(Step):
     required_step = IP
     input_col = "ip"
 
-    resolver = dns.asyncresolver.Resolver()
-
     async def get(self, ip: str) -> list[dict]:
         reverse_name = dns.reversename.from_address(ip)
-        answer = await self.resolver.resolve(reverse_name, "PTR")
+        answer = await resolver.resolve(reverse_name, "PTR")
 
         return [
             {
@@ -297,6 +295,25 @@ class PTR(Step):
                 "ptr": str(record.target).rstrip("."),
             }
             for record in answer
+        ]
+
+
+class SPF(Step):
+
+    required_step = Combiner
+    input_col = "domain"
+
+    async def get(self, domain: str) -> list[dict]:
+
+        answer = await resolver.resolve(domain, "TXT")
+
+        return [
+            {
+                self.input_col: domain,
+                "spf": str(record).strip('"'),
+            }
+            for record in answer
+            if str(record).strip('"').startswith("v=spf1")
         ]
 
 if __name__ == "__main__":

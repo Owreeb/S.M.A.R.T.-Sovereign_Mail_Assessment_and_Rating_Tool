@@ -29,6 +29,64 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
+from enum import IntEnum
+
+
+class VendorCountryRating(IntEnum):
+    """
+    Bewertung des Sitzlandes des Herstellers / Anbieters.
+
+    1 = Deutschland
+    2 = EU / EWR / Schweiz
+    3 = UK oder Drittland mit Angemessenheitsbeschluss (z.B. Japan, Kanada, etc.)
+    5 = USA (CLOUD-Act-relevant)
+    6 = Hochrisiko- oder sanktionierte Staaten (z.B. Russland, China)
+    """
+
+    GERMANY = 1
+    EU_EEA_CH = 2
+    ADEQUACY_THIRD_COUNTRY = 3
+    USA_CLOUD_ACT = 5
+    HIGH_RISK_COUNTRY = 6
+
+    @classmethod
+    def from_country_code(cls, code: str) -> "VendorCountryRating":
+        code = code.upper()
+
+        if code == "DE":
+            return cls.GERMANY
+
+        if code in {"AT", "FR", "IT", "ES", "NL", "BE", "PL", "SE", "FI", "DK", "IE", "PT", "GR", "CZ", "SK", "HU", "RO", "BG", "HR", "SI", "LT", "LV", "EE", "LU", "MT", "CY", "NO", "IS", "LI", "CH"}:
+            return cls.EU_EEA_CH
+
+        if code == "US":
+            return cls.USA_CLOUD_ACT
+
+        if code in {"RU", "CN", "IR", "KP"}:
+            return cls.HIGH_RISK_COUNTRY
+
+        # Default: Drittland mit Angemessenheitsbeschluss (vereinfachte Annahme)
+        return cls.ADEQUACY_THIRD_COUNTRY
+
+
+class VendorCategory(str, enum.Enum):
+    COMMUNITY_ORG = "Community / Public Sector / Gemeinwohl"
+    EU_SOFTWARE_VENDOR = "EU Software Vendor"
+    EU_SUBSIDIARY_FOREIGN_VENDOR = "EU Subsidiary of Foreign Vendor"
+    INTERNATIONAL_VENDOR = "International Vendor"
+    US_HYPERSCALER = "US Hyperscaler"
+    UNKNOWN_OR_SANCTIONED = "Unknown / Sanctioned Vendor"
+
+    @property
+    def rating(self) -> int:
+        return {
+            VendorCategory.COMMUNITY_ORG: 1,
+            VendorCategory.EU_SOFTWARE_VENDOR: 2,
+            VendorCategory.EU_SUBSIDIARY_FOREIGN_VENDOR: 3,
+            VendorCategory.INTERNATIONAL_VENDOR: 4,
+            VendorCategory.US_HYPERSCALER: 5,
+            VendorCategory.UNKNOWN_OR_SANCTIONED: 6,
+        }[self]
 
 class MailSystemRole(enum.Enum):
     """The role a mail system has."""

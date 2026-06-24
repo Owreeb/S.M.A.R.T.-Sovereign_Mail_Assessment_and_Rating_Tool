@@ -41,21 +41,28 @@ def _sync_ip_addresses(session: Session, run: ScannerRun, registry: Registry):
 def _sync_mailsystems(session: Session, run: ScannerRun, registry: Registry):
     """
     id (CHAR(32)) - auto
-    role (VARCHAR(9)) - regex? ptr?
-    software (TEXT) - regext?
-    vendor (TEXT) - regex?
-    vendor_country (TEXT) - config based on vendor
+    role (VARCHAR(9)) - regex? ptr? MailSystemRole
+    software (TEXT) - regext? str
+    vendor (TEXT) - regex? str
+    vendor_country (TEXT) - config based on vendor 
     vendor_category (TEXT) - config based on vendor
     vendor_country_rating (INTEGER) - config based on vendor
     open_source_rating (INTEGER) - config
     vendor_category_rating (INTEGER) - config
     """
-    # smtp - regex - SMTP IN 
+
+    
+
+    # smtp - regex - SMTP IN
+
+    # imap
+
+    # 
 
     pass
 
 def _sync_org_domain_history(session: Session, run: ScannerRun, registry: Registry):
-    
+    pass
 
 def _sync_org_mail_sytem_history(session: Session, run: ScannerRun, registry: Registry):
     pass
