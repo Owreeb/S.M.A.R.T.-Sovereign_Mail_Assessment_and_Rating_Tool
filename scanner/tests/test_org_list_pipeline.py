@@ -1,9 +1,4 @@
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "domainlist_pipline"))
-
-from org_list_pipeline import extract_website_domain, normalize_email_to_domain, WikidataExtractor
+from src.domainlist_pipline.org_list_pipeline import extract_website_domain, normalize_email_to_domain, WikidataExtractor
 
 
 class TestExtractWebsiteDomain:
