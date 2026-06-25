@@ -45,3 +45,4 @@ htmlcov/
 scanner/.venv/
 scanner/database/
 scanner/**/*.csv
+*.ipynb
