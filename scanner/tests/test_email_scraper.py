@@ -1,11 +1,6 @@
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "domainlist_pipline"))
-
 from scrapy.http import HtmlResponse
 
-from email_scraper import (
+from src.domainlist_pipline.email_scraper import (
     normalize_url,
     extract_emails,
     is_generic,

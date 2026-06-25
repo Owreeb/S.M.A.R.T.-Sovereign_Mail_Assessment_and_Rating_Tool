@@ -19,10 +19,11 @@ const Footer = (): React.ReactElement => {
           </div>
           <div className={styles.contactColumn}>
             <div className={styles.contactHeading}>{t('contactHeading')}</div>
-            <a className={styles.contactLine} href="mailto:hapa1037@h-ka.de">
-              hapa1037@h-ka.de
-            </a>
-            <div className={styles.contactLine}>{t('organization')}</div>
+            <div className={styles.contactLine}>
+              <a className={styles.contactLine} target="_blank" href="https://www.audriga.com/en/Contact">
+                {t('organization')}
+              </a>
+            </div>
             <div className={styles.contactLine}>{t('address')}</div>
           </div>
         </div>
