@@ -1,11 +1,9 @@
-
 .wrapper {
-  justify-content: center;
-  margin: 72px 10%;
+  margin-bottom: 16px;
 
   .gridDataContainer {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
   }
 }

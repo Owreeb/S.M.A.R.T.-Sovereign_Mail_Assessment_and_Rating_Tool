@@ -79,8 +79,8 @@ const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((org) => (
-              <tr key={org.domain}>
+            {rows.map((org, i) => (
+              <tr key={org.wikidata_url ?? org.domain ?? `${org.org}-${i}`}>
                 {TABLE_COLUMNS.map((col) => (
                   <td key={col.key}>{col.render ? col.render(org, t) : col.accessor(org)}</td>
                 ))}

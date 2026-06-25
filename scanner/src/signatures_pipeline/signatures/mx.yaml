@@ -1,0 +1,254 @@
+﻿- regex: '(?i)kvnbw\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "KV Baden-Württemberg"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+  # Hinweis: wahrscheinlich zentraler Behörden-/RZ-Mailrelay, kein klassischer Produktvendor
+
+- regex: '(?i)\.ionos\.de$'
+  software: "IONOS Mail Gateway"
+  vendor: "IONOS"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: "(?i)(hornetsecurity|antispameurope)"
+  software: "Hornetsecurity Mail Security Gateway"
+  vendor: "Hornetsecurity"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+  # Hinweis: stark MSP-/Security-orientiert, oft Exchange Online davor geschaltet
+
+- regex: '(?i)pzd-svn\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "PZD-SVN"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+  # Hinweis: unklar ob eigener Mailstack oder zentraler Landesdienstleister
+
+- regex: '(?i)kgrz-ks\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "KGRZ Kassel"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: "(?i)sophos"
+  software: "Sophos Email Gateway"
+  vendor: "Sophos"
+  vendor_country: "GB"
+  vendor_category: "International Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 3
+  vendor_category_rating: 4
+  # Hinweis: häufig als Zusatzlayer hinter M365 oder IONOS genutzt
+
+- regex: '(?i)ekom21\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "ekom21"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)rzone\.de$'
+  software: "IONOS Mail Gateway"
+  vendor: "IONOS"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)regioit-aachen\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "regio iT GmbH"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+  # Hinweis: typischer kommunaler IT-Dienstleister mit eigenem RZ-Mailbetrieb
+
+- regex: '(?i)itebo\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "ITEBO"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)abxsec\.com$'
+  software: "ABXSEC Mail Security Gateway"
+  vendor: "ABXSEC"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)civitec\.de$'
+  software: "Unknown Mail Gateway"
+  vendor: "Civitec"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: "(?i)(google|aspmx)"
+  software: "Google Mail Gateway"
+  vendor: "Google"
+  vendor_country: "US"
+  vendor_category: "US Hyperscaler"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: '(?i)pphosted\.com$'
+  software: "Proofpoint Email Security Gateway"
+  vendor: "Proofpoint"
+  vendor_country: "US"
+  vendor_category: "US Hyperscaler"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: '(?i)\.mail\.protection\.outlook\.com$'
+  software: "Microsoft Exchange Online Protection"
+  vendor: "Microsoft"
+  vendor_country: "US"
+  vendor_category: "US Hyperscaler"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: '(?i)dfn\.de$'
+  software: "DFN Mail Gateway"
+  vendor: "DFN-Verein"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)belwue\.de$'
+  software: "BelWü Mail Gateway"
+  vendor: "BelWü"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)\.iphmx\.com$'
+  software: "Cisco Email Security Gateway"
+  vendor: "Cisco"
+  vendor_country: "US"
+  vendor_category: "US Hyperscaler"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: '(?i)mailspamprotection\.com$'
+  software: "SiteGround Mail Protection / AntiSpam Gateway"
+  vendor: "SiteGround"
+  vendor_country: "BG"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 2
+
+- regex: '(?i)mimecast\.com$'
+  software: "Mimecast Email Security Gateway"
+  vendor: "Mimecast"
+  vendor_country: "GB"
+  vendor_category: "International Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 3
+  vendor_category_rating: 4
+
+- regex: '(?i)expurgate\.net$'
+  software: "Expurgate Mail Security Gateway"
+  vendor: "G-Data"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)mvnet\.de$'
+  software: "MVnet Mail Gateway"
+  vendor: "MVnet"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)bund\.de$'
+  software: "Government Mail Gateway"
+  vendor: "Bundesrepublik Deutschland"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: "(?i)spamexperts"
+  software: "SpamExperts Email Security Gateway"
+  vendor: "SpamExperts"
+  vendor_country: "NL"
+  vendor_category: "International Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 4
+
+- regex: '(?i)kraemer-it\.cloud$'
+  software: "Kraemer IT Mail Gateway"
+  vendor: "Krämer IT Solutions"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2

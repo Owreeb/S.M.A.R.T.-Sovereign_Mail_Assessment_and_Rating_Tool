@@ -7,6 +7,9 @@ from typing import Type
 import pandas as pd
 
 import dns.asyncresolver
+import dns.reversename
+
+from src.scanner_pipeline.asn_bulk import lookup_asn_bulk
 
 resolver = dns.asyncresolver.Resolver()
 
@@ -100,14 +103,14 @@ class Domain(Step):
 
 class Combiner(Step):
     required_step = Domain
-    input_col = ["website_domain", "email"]
+    input_col = ["website_domain", "email_domain"]
 
     async def get(self, value):
         pass
 
     async def scan(self, data: pd.DataFrame):
         return pd.concat(
-            [data["website_domain"], data["email"]],
+            [data["website_domain"], data["email_domain"]],
             ignore_index=True
         ).dropna().drop_duplicates().to_frame("domain")
 
@@ -144,6 +147,28 @@ class IP(Step):
 class ASN(Step):
     required_step = IP
     input_col = "ip"
+
+    async def scan(self, data: pd.DataFrame) -> pd.DataFrame:
+        # Team Cymru rate-limits per-IP DNS on large runs, so look the whole
+        # batch up in one bulk WHOIS connection instead. get() below is kept as
+        # the per-IP DNS fallback.
+        data = self.preprocess(data)
+        ips = list(data[self.input_col])
+        if not ips:
+            return pd.DataFrame(columns=["ip", "asn", "owner", "prefix", "country", "error"])
+
+        looked = await asyncio.to_thread(lookup_asn_bulk, ips)
+
+        rows = []
+        for ip in ips:
+            info = looked.get(ip)
+            if info is None:
+                rows.append({"ip": ip, "asn": None, "owner": None,
+                             "prefix": None, "country": None, "error": "no asn data"})
+            else:
+                rows.append({"ip": ip, "asn": info["asn"], "owner": info["asn_org"],
+                             "prefix": None, "country": info["country_code"], "error": None})
+        return self.postprocess(pd.DataFrame(rows))
 
     async def get(self, ip: str):
         addr = ipaddress.ip_address(ip)
@@ -278,6 +303,42 @@ class IMAP(Step):
                     continue
 
         raise RuntimeError("No IMAP Found")
+
+
+class PTR(Step):
+    required_step = IP
+    input_col = "ip"
+
+    async def get(self, ip: str) -> list[dict]:
+        reverse_name = dns.reversename.from_address(ip)
+        answer = await resolver.resolve(reverse_name, "PTR")
+
+        return [
+            {
+                self.input_col: ip,
+                "ptr": str(record.target).rstrip("."),
+            }
+            for record in answer
+        ]
+
+
+class SPF(Step):
+
+    required_step = Combiner
+    input_col = "domain"
+
+    async def get(self, domain: str) -> list[dict]:
+
+        answer = await resolver.resolve(domain, "TXT")
+
+        return [
+            {
+                self.input_col: domain,
+                "spf": str(record).strip('"'),
+            }
+            for record in answer
+            if str(record).strip('"').startswith("v=spf1")
+        ]
 
 if __name__ == "__main__":
     domain = MX()

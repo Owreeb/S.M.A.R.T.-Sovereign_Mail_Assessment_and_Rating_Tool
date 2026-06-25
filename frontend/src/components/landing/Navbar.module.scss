@@ -47,6 +47,7 @@
 .link {
   background: none;
   border: none;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -54,11 +55,18 @@
   color: white;
   text-decoration: none;
   padding: 4px 0;
-  transition: color 0.15s ease-in-out;
+  transition:
+    color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out;
 
   &:hover {
     color: #f0792e;
   }
+}
+
+.linkActive {
+  color: #f0792e;
+  border-bottom-color: #f0792e;
 }
 
 @media (max-width: 640px) {

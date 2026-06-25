@@ -1,0 +1,91 @@
+{
+  "overview": {
+    "orgsScanned": 5025,
+    "domainsScanned": 173,
+    "sovereigntyIndex": 2.58
+  },
+  "topMailVendors": [
+    {
+      "name": "PZD-SVN",
+      "share": 0.24
+    },
+    {
+      "name": "Microsoft",
+      "share": 0.21
+    },
+    {
+      "name": "Open-Xchange / Dovecot",
+      "share": 0.18
+    },
+    {
+      "name": "IONOS",
+      "share": 0.08
+    },
+    {
+      "name": "Hornetsecurity",
+      "share": 0.06
+    },
+    {
+      "name": "STRATO",
+      "share": 0.05
+    },
+    {
+      "name": "DFN-Verein",
+      "share": 0.04
+    },
+    {
+      "name": "Sophos",
+      "share": 0.03
+    },
+    {
+      "name": "Proofpoint",
+      "share": 0.02
+    },
+    {
+      "name": "MVnet",
+      "share": 0.02
+    }
+  ],
+  "topHosters": [
+    {
+      "name": "MICROSOFT-CORP-MSN-AS-BLOCK - Microsoft Corporation, US",
+      "share": 0.15
+    },
+    {
+      "name": "Komm-ONE-AS - civillent GmbH, DE",
+      "share": 0.11
+    },
+    {
+      "name": "IT-NRW - IT-NRW, DE",
+      "share": 0.09
+    },
+    {
+      "name": "SSERV-AS - kyberio GmbH, DE",
+      "share": 0.06
+    },
+    {
+      "name": "MK-NETZDIENSTE-AS - MK Netzdienste Verwaltungs GmbH trading as MK Netzdienste GmbH & Co. KG, DE",
+      "share": 0.06
+    },
+    {
+      "name": "Sub-LIR-SN-AS - Staatsbetrieb Saechsische Informatik Dienste, DE",
+      "share": 0.05
+    },
+    {
+      "name": "IONOS-AS - IONOS SE, DE",
+      "share": 0.05
+    },
+    {
+      "name": "NCORE-AS - HKN GmbH, DE",
+      "share": 0.05
+    },
+    {
+      "name": "DTAG - Deutsche Telekom AG, DE",
+      "share": 0.04
+    },
+    {
+      "name": "DFN - Verein zur Foerderung eines Deutschen Forschungsnetzes e.V., DE",
+      "share": 0.04
+    }
+  ]
+}

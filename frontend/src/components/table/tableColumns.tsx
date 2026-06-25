@@ -2,8 +2,8 @@ import React from 'react'
 
 import type { ParseKeys, TFunction } from 'i18next'
 
-import type { Organization } from '@models/organization'
-import { scoreColor } from '@utils/sovereignty'
+import type { Organization, SovereigntyLevel } from '@models/organization'
+import { sovereigntyColor, sovereigntyLevel } from '@utils/sovereignty'
 
 import styles from './OrgTable.module.scss'
 
@@ -18,48 +18,70 @@ export type TableColumn = {
   render?: (org: Organization, t: Translate) => React.ReactNode
 }
 
-const statusClass: Record<Organization['sovereignty_level'], string> = {
-  high: styles.statusHigh,
-  medium: styles.statusMedium,
-  low: styles.statusLow,
+const STATUS_KEY: Record<SovereigntyLevel, TableKey> = {
+  'sehr-hoch': 'statusVeryHigh',
+  hoch: 'statusHigh',
+  mittel: 'statusMedium',
+  niedrig: 'statusLow',
+  'sehr-niedrig': 'statusVeryLow',
+  unbekannt: 'statusUnknown',
 }
 
-const statusKey: Record<Organization['sovereignty_level'], TableKey> = {
-  high: 'statusHigh',
-  medium: 'statusMedium',
-  low: 'statusLow',
+const CATEGORY_KEY: Record<string, TableKey> = {
+  hospital: 'catHospital',
+  university: 'catUniversity',
+  city: 'catCity',
+  courthouse: 'catCourthouse',
+}
+
+const mailSoftware = (org: Organization): string => {
+  const names = new Set<string>()
+  Object.values(org.mail_systems).forEach((systems) =>
+    systems.forEach((system) => {
+      if (system.software) names.add(system.software)
+    }),
+  )
+  return [...names].join(', ')
 }
 
 export const TABLE_COLUMNS: TableColumn[] = [
   {
     key: 'domain',
     labelKey: 'colDomain',
-    accessor: (org) => org.domain,
-    render: (org) => <span className={styles.domain}>{org.domain}</span>,
+    accessor: (org) => org.domain ?? '',
+    render: (org) => <span className={styles.domain}>{org.domain ?? '—'}</span>,
   },
   { key: 'org', labelKey: 'colOrg', accessor: (org) => org.org },
-  { key: 'category', labelKey: 'colCategory', accessor: (org) => org.category },
-  { key: 'provider', labelKey: 'colProvider', accessor: (org) => org.provider.join(', ') },
-  { key: 'smtp', labelKey: 'colSmtp', accessor: (org) => org.smtp_software.join(', ') },
+  {
+    key: 'category',
+    labelKey: 'colCategory',
+    accessor: (org) => org.category,
+    render: (org, t) => {
+      const key = CATEGORY_KEY[org.category]
+      return key ? t(key) : org.category
+    },
+  },
+  { key: 'provider', labelKey: 'colProvider', accessor: (org) => org.providers.join(', ') },
+  { key: 'software', labelKey: 'colSoftware', accessor: mailSoftware },
   {
     key: 'status',
     labelKey: 'colStatus',
-    accessor: (org) => org.sovereignty_level,
+    accessor: (org) => sovereigntyLevel(org.sovereignty_index),
     render: (org, t) => (
-      <span className={`${styles.status} ${statusClass[org.sovereignty_level]}`}>
-        {t(statusKey[org.sovereignty_level])}
+      <span className={styles.status} style={{ color: sovereigntyColor(org.sovereignty_index) }}>
+        {t(STATUS_KEY[sovereigntyLevel(org.sovereignty_index)])}
       </span>
     ),
   },
   {
     key: 'score',
     labelKey: 'colScore',
-    accessor: (org) => org.sovereignty_index.toFixed(1),
+    accessor: (org) => (org.sovereignty_index == null ? '—' : String(org.sovereignty_index)),
     render: (org) => (
-      <span className={styles.score} style={{ color: scoreColor(org.sovereignty_index) }}>
-        {org.sovereignty_index.toFixed(1)}
+      <span className={styles.score} style={{ color: sovereigntyColor(org.sovereignty_index) }}>
+        {org.sovereignty_index == null ? '—' : `${org.sovereignty_index}/6`}
       </span>
     ),
   },
-  { key: 'country', labelKey: 'colCountry', accessor: (org) => org.provider_country },
+  { key: 'country', labelKey: 'colCountry', accessor: (org) => org.country ?? '' },
 ]

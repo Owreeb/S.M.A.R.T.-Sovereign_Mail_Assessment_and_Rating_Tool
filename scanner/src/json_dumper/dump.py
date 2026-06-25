@@ -38,16 +38,20 @@ EXPORT_ROLES = [
 ]
 
 
-def _current_ips(session: Session, mail_system: MailSystem) -> list[IpAddress]:
+def _current_ips(
+    session: Session, mail_system: MailSystem, org_id
+) -> list[IpAddress]:
     """
-    Get the IPs that are currently behind a mail system
+    Get the IPs that are currently behind a mail system for one organisation.
 
     Args:
         session: The database session.
         mail_system: The mail system to look up.
+        org_id: The organisation the IPs must belong to (the link is scoped to
+            org + mail system, since mail systems are shared across orgs).
 
     Returns:
-        The current IpAddress rows of the mail system.
+        The current IpAddress rows of this org's mail system.
     """
     return list(
         session.scalars(
@@ -55,6 +59,7 @@ def _current_ips(session: Session, mail_system: MailSystem) -> list[IpAddress]:
             .join(MailSystemIpHistory, MailSystemIpHistory.ip_address_id == IpAddress.id)
             .where(
                 MailSystemIpHistory.mail_system_id == mail_system.id,
+                MailSystemIpHistory.organisation_id == org_id,
                 MailSystemIpHistory.is_current.is_(True),
             )
         )
@@ -74,7 +79,7 @@ def _serialize_ip(ip: IpAddress) -> dict[str, Any]:
 
 
 def _serialize_mail_system(
-    session: Session, mail_system: MailSystem, proxy: MailSystem | None
+    session: Session, mail_system: MailSystem, proxy: MailSystem | None, org_id
 ) -> dict[str, Any]:
     """
     Turn a mail system (plus optional proxy) into the JSON dict.
@@ -83,6 +88,7 @@ def _serialize_mail_system(
         session: The database session.
         mail_system: The main mail system.
         proxy: The proxy in front of it, or None.
+        org_id: The organisation whose IPs to attach.
 
     Returns:
         The mail system dict in the export format.
@@ -95,10 +101,10 @@ def _serialize_mail_system(
         "vendor_country_rating": mail_system.vendor_country_rating,
         "vendor_category": mail_system.vendor_category,
         "vendor_category_rating": mail_system.vendor_category_rating,
-        "ips": [_serialize_ip(ip) for ip in _current_ips(session, mail_system)],
+        "ips": [_serialize_ip(ip) for ip in _current_ips(session, mail_system, org_id)],
     }
     if proxy is not None:
-        proxy_entry = _serialize_mail_system(session, proxy, None)
+        proxy_entry = _serialize_mail_system(session, proxy, None, org_id)
         del proxy_entry["proxy"]
         entry["proxy"] = proxy_entry
     else:
@@ -124,7 +130,41 @@ def _last_checked(session: Session, run_ids: set) -> str | None:
     timestamps = [ts for ts in timestamps if ts is not None]
     if not timestamps:
         return None
+    # SQLite stores naive timestamps, but a freshly created in-memory run can
+    # still be tz-aware; normalize so old and new runs stay comparable.
+    timestamps = [ts.replace(tzinfo=None) for ts in timestamps]
     return max(timestamps).isoformat()
+
+
+def _slim_system(system: dict[str, Any]) -> dict[str, Any]:
+    """
+    Slim a serialized mail system for the export.
+
+    The per-IP objects (raw IP, rDNS, repeated ratings) are the bulk of the
+    file and not interesting on their own, so they are dropped in favour of the
+    distinct host countries and hosters. Everything else (software, vendor,
+    ratings, proxy) is kept.
+
+    Args:
+        system: A full serialized mail system dict.
+
+    Returns:
+        The slimmed system dict.
+    """
+    ips = system.get("ips") or []
+    proxy = system.get("proxy")
+    return {
+        "software": system.get("software"),
+        "vendor": system.get("vendor"),
+        "vendor_country": system.get("vendor_country"),
+        "vendor_country_rating": system.get("vendor_country_rating"),
+        "vendor_category": system.get("vendor_category"),
+        "vendor_category_rating": system.get("vendor_category_rating"),
+        "open_source_rating": system.get("open_source_rating"),
+        "countries": sorted({ip["country_code"] for ip in ips if ip.get("country_code")}),
+        "hosters": sorted({ip["hoster"] for ip in ips if ip.get("hoster")}),
+        "proxy": _slim_system(proxy) if proxy else None,
+    }
 
 
 def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
@@ -162,14 +202,18 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
 
     for row in system_rows:
         ms = row.mail_system
-        if ms.role not in EXPORT_ROLES:
+        # a standalone proxy is the visible inbound path -> score it as smtp_in
+        export_role = (
+            MailSystemRole.SMTP_IN if ms.role == MailSystemRole.PROXY else ms.role
+        )
+        if export_role not in EXPORT_ROLES:
             continue
-        mail_systems[ms.role.value].append(
-            _serialize_mail_system(session, ms, row.proxy_system)
+        mail_systems[export_role.value].append(
+            _serialize_mail_system(session, ms, row.proxy_system, org.id)
         )
         if ms.vendor and ms.vendor not in providers:
             providers.append(ms.vendor)
-        for ip in _current_ips(session, ms):
+        for ip in _current_ips(session, ms, org.id):
             if ip.asn_org and ip.asn_org not in hosters:
                 hosters.append(ip.asn_org)
 
@@ -177,10 +221,21 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
     if domain_row is not None:
         run_ids.add(domain_row.valid_from_run)
 
+    # score from the full structure, then slim it for the output
     sovereignty_index = compute_sovereignty_index(mail_systems)
+    slim_mail_systems = {
+        role: [_slim_system(system) for system in systems]
+        for role, systems in mail_systems.items()
+    }
+
+    # the org's primary domain (website), falling back to the email domain
+    domain = None
+    if domain_row is not None:
+        domain = domain_row.website_domain or domain_row.email_domain
 
     return {
         "org": org.name,
+        "domain": domain,
         "email_domain": domain_row.email_domain if domain_row else None,
         "category": org.category_tag,
         "wikidata_url": org.wikidata_url,
@@ -193,7 +248,7 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
         "sovereignty_index": sovereignty_index,
         "providers": providers,
         "hosters": hosters,
-        "mail_systems": mail_systems,
+        "mail_systems": slim_mail_systems,
     }
 
 def _top_shares(
