@@ -6,9 +6,8 @@ import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
-  // Served from https://owreeb.github.io/SMART/ in production, root in dev.
-  base: command === 'build' ? '/SMART/' : '/',
+export default defineConfig(() => ({
+  base: process.env.BASE_PATH || '/',
   plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   server: {
     fs: {
