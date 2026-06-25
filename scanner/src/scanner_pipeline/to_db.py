@@ -2,8 +2,14 @@
 from src.scanner_pipeline.step import IP, PTR, ASN
 from src.domainlist_pipline.org_list_pipeline import _clean
 from src.db.history import (Session, ScannerRun, get_or_create, update_fields)
-from src.db.models import (IpAddress, MailSystemRole)
+from src.db.models import (IpAddress, MailSystem)
 
+import pandas as pd
+import yaml
+from pathlib import Path
+
+SIGNATURE_DIR = Path(__file__).resolve().parent.parent / "signatures_pipeline" / "signatures"
+print(SIGNATURE_DIR)
 
 def _sync_ip_addresses(session: Session, run: ScannerRun, registry: Registry):
 
@@ -50,16 +56,38 @@ def _sync_mailsystems(session: Session, run: ScannerRun, registry: Registry):
     open_source_rating (INTEGER) - config
     vendor_category_rating (INTEGER) - config
     """
+    records = []
 
-    
+    for file in SIGNATURE_DIR.glob("*.yaml"):
+        print("Opening file", file)
+        with open(file, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
 
-    # smtp - regex - SMTP IN
+        if isinstance(data, list):
+            records.extend(data)
+        else:
+            records.append(data)
 
-    # imap
+    if not records:
+        return
 
-    # 
+    mailsystems_df = (
+        pd.DataFrame(records)
+        .drop_duplicates(subset=["software"])
+        .dropna(subset=["software"])
+    )
 
-    pass
+    for row in mailsystems_df.to_dict(orient="records"):
+        mailsystem, _ = get_or_create(
+            session,
+            MailSystem,
+            software=row["software"],
+        )
+
+        update_fields(
+            mailsystem,
+            {k: v for k, v in row.items() if k != "software"},
+        )
 
 def _sync_org_domain_history(session: Session, run: ScannerRun, registry: Registry):
     pass
@@ -72,7 +100,7 @@ def to_db(session: Session, run: ScannerRun, registry: Registry):
     # ip addresses
     _sync_ip_addresses(session, run, registry)
     # mailsystems
-    
+    _sync_mailsystems(session, run, registry)
     # org_domain_history
 
     # org_mail_system_history

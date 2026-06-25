@@ -58,7 +58,7 @@
   vendor_category: "International Vendor"
   role: "proxy"
   open_source_rating: 6
-  vendor_country_rating: 4
+  vendor_country_rating: 3
   vendor_category_rating: 4
   # Hinweis: häufig als Zusatzlayer hinter M365 oder IONOS genutzt
 
@@ -200,7 +200,7 @@
   vendor_category: "International Vendor"
   role: "proxy"
   open_source_rating: 6
-  vendor_country_rating: 4
+  vendor_country_rating: 3
   vendor_category_rating: 4
 
 - regex: '(?i)expurgate\.net$'
@@ -240,7 +240,7 @@
   vendor_category: "International Vendor"
   role: "proxy"
   open_source_rating: 6
-  vendor_country_rating: 4
+  vendor_country_rating: 2
   vendor_category_rating: 4
 
 - regex: '(?i)kraemer-it\.cloud$'

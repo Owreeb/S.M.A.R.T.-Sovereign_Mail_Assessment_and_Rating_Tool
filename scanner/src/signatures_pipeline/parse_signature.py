@@ -51,8 +51,9 @@ class ValidationRunner:
             try:
                 expected = VendorCategory(vc)
                 if record.get("vendor_category_rating") != expected.rating:
-                    record["vendor_category_rating"] = expected.rating
-                    self.add_corrected(software)
+                    # record["vendor_category_rating"] = expected.rating
+                    # self.add_corrected(software)
+                    self.add_error(file, software, f"Expected vendor_category_rating: {expected.rating}")
             except ValueError:
                 self.add_error(file, software, f"Unknown vendor_category: {vc}")
 
@@ -64,8 +65,9 @@ class ValidationRunner:
             try:
                 expected = VendorCountryRating.from_country_code(country)
                 if record.get("vendor_country_rating") != expected:
-                    record["vendor_country_rating"] = expected
-                    self.add_corrected(software)
+                    self.add_error(file, software, f"Expected vendor_country_rating: {expected}")
+                    # record["vendor_country_rating"] = expected
+                    # self.add_corrected(software)
             except Exception as e:
                 self.add_error(file, software, str(e))
 
@@ -121,9 +123,9 @@ def run():
     # -------------------------
     # FINAL REPORT
     # -------------------------
-    print("\n=== CORRECTED ===")
-    for c in runner.corrected:
-        print(c)
+    # print("\n=== CORRECTED ===")
+    # for c in runner.corrected:
+    #     print(c)
 
     print("\n=== ERRORS ===")
     for e in runner.errors:
