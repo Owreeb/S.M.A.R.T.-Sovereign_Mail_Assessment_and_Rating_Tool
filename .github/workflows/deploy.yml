@@ -37,6 +37,8 @@ jobs:
       # /SMART/dashboard must be served the app shell to let the router take over.
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
