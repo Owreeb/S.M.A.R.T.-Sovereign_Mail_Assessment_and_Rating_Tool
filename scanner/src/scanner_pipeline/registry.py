@@ -88,7 +88,7 @@ class Registry:
         export_results: bool=False,
         export_path: str=None,
     ):
-        if domain_df:
+        if domain_df is not None:
             registry = cls.from_domain_df(domain_df)
         elif database:
             registry = cls.from_sqlite(database, query)

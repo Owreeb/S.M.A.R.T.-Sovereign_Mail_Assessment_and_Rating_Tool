@@ -69,6 +69,48 @@ class VendorCountryRating(IntEnum):
         return cls.ADEQUACY_THIRD_COUNTRY
 
 
+# US hyperscalers / large US clouds -> CLOUD-Act exposed regardless of the
+# country their prefix is announced from.
+_HYPERSCALER_KEYWORDS = (
+    "GOOGLE", "AMAZON", "AWS", "MICROSOFT", "AZURE", "ORACLE",
+    "CLOUDFLARE", "AKAMAI", "FASTLY", "DIGITALOCEAN", "LINODE",
+)
+
+# Map the vendor-country scale to the IP-hoster scale (Souveränitätsindex V2,
+# 4.2). DE/EU operators default to "private EU operator" (2) because we can not
+# tell public from cooperative without owner metadata.
+_HOSTER_RATING_BY_COUNTRY = {
+    VendorCountryRating.GERMANY: 2,
+    VendorCountryRating.EU_EEA_CH: 2,
+    VendorCountryRating.ADEQUACY_THIRD_COUNTRY: 4,
+    VendorCountryRating.USA_CLOUD_ACT: 5,
+    VendorCountryRating.HIGH_RISK_COUNTRY: 6,
+}
+
+
+def derive_hoster_rating(country_code, asn_org) -> int | None:
+    """
+    Simplified IP-hoster rating (Souveränitätsindex V2, scale 4.2).
+
+    1 = public/cooperative EU operator, 2 = private EU operator,
+    4 = neutral international carrier, 5 = US hyperscaler / CLOUD-Act,
+    6 = sanctioned.
+
+    Args:
+        country_code: the ASN country code.
+        asn_org: the ASN owner string.
+
+    Returns:
+        The rating, or None if there is nothing to base it on.
+    """
+    if asn_org and any(k in str(asn_org).upper() for k in _HYPERSCALER_KEYWORDS):
+        return 5
+    if not country_code:
+        return None
+    base = VendorCountryRating.from_country_code(str(country_code))
+    return _HOSTER_RATING_BY_COUNTRY.get(base, 4)
+
+
 class VendorCategory(str, enum.Enum):
     COMMUNITY_ORG = "Community / Public Sector / Gemeinwohl"
     EU_SOFTWARE_VENDOR = "EU Software Vendor"
@@ -278,6 +320,9 @@ class MailSystemIpHistory(Base):
     __tablename__ = "mail_system_ip_history"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organisation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organisations.id"), nullable=False, index=True
+    )
     mail_system_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("mail_systems.id"), nullable=False, index=True
     )

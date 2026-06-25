@@ -9,6 +9,8 @@ import pandas as pd
 import dns.asyncresolver
 import dns.reversename
 
+from src.scanner_pipeline.asn_bulk import lookup_asn_bulk
+
 resolver = dns.asyncresolver.Resolver()
 
 
@@ -145,6 +147,28 @@ class IP(Step):
 class ASN(Step):
     required_step = IP
     input_col = "ip"
+
+    async def scan(self, data: pd.DataFrame) -> pd.DataFrame:
+        # Team Cymru rate-limits per-IP DNS on large runs, so look the whole
+        # batch up in one bulk WHOIS connection instead. get() below is kept as
+        # the per-IP DNS fallback.
+        data = self.preprocess(data)
+        ips = list(data[self.input_col])
+        if not ips:
+            return pd.DataFrame(columns=["ip", "asn", "owner", "prefix", "country", "error"])
+
+        looked = await asyncio.to_thread(lookup_asn_bulk, ips)
+
+        rows = []
+        for ip in ips:
+            info = looked.get(ip)
+            if info is None:
+                rows.append({"ip": ip, "asn": None, "owner": None,
+                             "prefix": None, "country": None, "error": "no asn data"})
+            else:
+                rows.append({"ip": ip, "asn": info["asn"], "owner": info["asn_org"],
+                             "prefix": None, "country": info["country_code"], "error": None})
+        return self.postprocess(pd.DataFrame(rows))
 
     async def get(self, ip: str):
         addr = ipaddress.ip_address(ip)
