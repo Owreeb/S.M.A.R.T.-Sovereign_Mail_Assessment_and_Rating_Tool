@@ -43,5 +43,5 @@ htmlcov/
 
 # Scanner
 scanner/.venv/
-scanner/database/*.db
+scanner/database/
 scanner/**/*.csv

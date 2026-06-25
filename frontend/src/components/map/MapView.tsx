@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { MapContainer, TileLayer } from 'react-leaflet'
 
 import type { OrgFilters } from '@hooks/useOrgFilters'
-import type { Organization } from '@models/organization'
+import type { MappableOrganization, Organization } from '@models/organization'
 import { IconFilter } from '@tabler/icons-react'
 
 import ClusteredMarkers from './ClusteredMarkers'
@@ -35,6 +35,8 @@ const MapView = ({ orgs, filters }: Props): React.ReactElement => {
 
   const { selected, filteredOrgs, activeCount, toggle, reset } = filters
 
+  const mappableOrgs = filteredOrgs.filter((org): org is MappableOrganization => org.lat != null && org.long != null)
+
   return (
     <div className={styles.wrapper}>
       <h2 className={styles.heading}>{t('viewTitle')}</h2>
@@ -47,7 +49,7 @@ const MapView = ({ orgs, filters }: Props): React.ReactElement => {
             maxZoom={19}
           />
           <SearchControl />
-          <ClusteredMarkers orgs={filteredOrgs} />
+          <ClusteredMarkers orgs={mappableOrgs} />
         </MapContainer>
         <Legend />
         {!filterOpen && (

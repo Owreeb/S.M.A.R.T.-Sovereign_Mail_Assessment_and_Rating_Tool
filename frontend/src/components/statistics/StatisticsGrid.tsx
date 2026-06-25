@@ -21,31 +21,19 @@ const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElemen
       title: t('orgsScannedTitle'),
       value: currentData.overview.orgsScanned,
       diff: getDiffOrZero(currentData.overview.orgsScanned, previousData?.overview.orgsScanned),
-      diffLabel: t('diffThisWeek'),
+      diffLabel: t('diffSinceLastScan'),
     },
     {
       title: t('sovereigntyIndexTitle'),
       value: currentData.overview.sovereigntyIndex,
       diff: getDiffOrZero(currentData.overview.sovereigntyIndex, previousData?.overview.sovereigntyIndex),
-      diffLabel: t('diffLastMonth'),
-    },
-    {
-      title: t('sovereignSystemsTitle'),
-      value: `${currentData.overview.sovereignSystems * 100}%`,
-      diff: getDiffOrZero(currentData.overview.sovereignSystems, previousData?.overview.sovereignSystems) * 100,
-      diffLabel: t('diffSinceQ1'),
-    },
-    {
-      title: t('hyperscalerRatioTitle'),
-      value: `${currentData.overview.hyperscalerRatio * 100}%`,
-      diff: getDiffOrZero(currentData.overview.hyperscalerRatio, previousData?.overview.hyperscalerRatio) * 100,
-      diffLabel: t('diffSinceQ1'),
+      diffLabel: t('diffSinceLastScan'),
     },
     {
       title: t('domainsScannedTitle'),
       value: currentData.overview.domainsScanned,
       diff: getDiffOrZero(currentData.overview.domainsScanned, previousData?.overview.domainsScanned),
-      diffLabel: t('diffThisWeek'),
+      diffLabel: t('diffSinceLastScan'),
     },
   ]
 

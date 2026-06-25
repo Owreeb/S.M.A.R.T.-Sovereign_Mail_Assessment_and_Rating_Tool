@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
-import { FILTER_FIELDS, type FilterField, type FilterState } from '@constants/filterFields'
+import { FILTER_FIELDS, type FilterField, type FilterKey, type FilterState } from '@constants/filterFields'
 import type { Organization } from '@models/organization'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
+import { categoryLabel } from '@utils/categoryUtils'
 
 import styles from './FilterPanel.module.scss'
 
@@ -12,7 +13,7 @@ type Props = {
   orgs: Organization[]
   selected: FilterState
   open: boolean
-  onToggle: (key: string, value: string) => void
+  onToggle: (key: FilterKey, value: string) => void
   onReset: () => void
   onClose: () => void
 }
@@ -22,12 +23,10 @@ const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
   orgs.forEach((org) => {
     const value = org[field.key]
     if (Array.isArray(value)) value.forEach((v) => values.add(v))
-    else values.add(value)
+    else if (value != null) values.add(value)
   })
   return [...values].sort((a, b) => a.localeCompare(b))
 }
-
-const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1)
 
 const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props): React.ReactElement => {
   const { t } = useTranslation('map')
@@ -75,7 +74,7 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
                         checked={selected[field.key].includes(value)}
                         onChange={() => onToggle(field.key, value)}
                       />
-                      <span>{field.key === 'category' ? capitalize(value) : value}</span>
+                      <span>{field.key === 'category' ? categoryLabel(t, value) : value}</span>
                     </label>
                   ))}
                 </div>

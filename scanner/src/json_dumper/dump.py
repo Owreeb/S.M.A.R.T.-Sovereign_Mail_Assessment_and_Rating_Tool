@@ -228,8 +228,14 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
         for role, systems in mail_systems.items()
     }
 
+    # the org's primary domain (website), falling back to the email domain
+    domain = None
+    if domain_row is not None:
+        domain = domain_row.website_domain or domain_row.email_domain
+
     return {
         "org": org.name,
+        "domain": domain,
         "email_domain": domain_row.email_domain if domain_row else None,
         "category": org.category_tag,
         "wikidata_url": org.wikidata_url,

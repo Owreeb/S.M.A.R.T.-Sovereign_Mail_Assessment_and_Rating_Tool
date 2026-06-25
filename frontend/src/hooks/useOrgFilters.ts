@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react'
 
-import { FILTER_FIELDS, type FilterState } from '@constants/filterFields'
+import { FILTER_FIELDS, type FilterKey, type FilterState } from '@constants/filterFields'
 import type { Organization } from '@models/organization'
 
 export type OrgFilters = {
   selected: FilterState
   filteredOrgs: Organization[]
   activeCount: number
-  toggle: (key: string, value: string) => void
+  toggle: (key: FilterKey, value: string) => void
   reset: () => void
 }
 
-const emptyFilterState = (): FilterState => Object.fromEntries(FILTER_FIELDS.map((field) => [field.key, []]))
+const emptyFilterState = (): FilterState => ({ providers: [], category: [], country: [] })
 
 export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
   const [selected, setSelected] = useState<FilterState>(emptyFilterState)
@@ -23,7 +23,8 @@ export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
           const chosen = selected[field.key]
           if (chosen.length === 0) return true
           const value = org[field.key]
-          return Array.isArray(value) ? value.some((v) => chosen.includes(v)) : chosen.includes(value)
+          if (Array.isArray(value)) return value.some((v) => chosen.includes(v))
+          return value != null && chosen.includes(value)
         }),
       ),
     [orgs, selected],
@@ -31,7 +32,7 @@ export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
 
   const activeCount = FILTER_FIELDS.reduce((sum, field) => sum + selected[field.key].length, 0)
 
-  const toggle = (key: string, value: string): void =>
+  const toggle = (key: FilterKey, value: string): void =>
     setSelected((prev) => {
       const current = prev[key]
       const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]

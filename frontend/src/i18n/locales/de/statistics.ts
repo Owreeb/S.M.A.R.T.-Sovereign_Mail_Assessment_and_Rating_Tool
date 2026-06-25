@@ -1,12 +1,11 @@
 const statistics = {
+  overviewTitle: 'Überblick',
   orgsScannedTitle: 'ORGANISATIONEN GESCANNT',
   sovereigntyIndexTitle: 'Ø SOUVERÄNITÄTSINDEX',
-  sovereignSystemsTitle: 'SOUVERÄNE SYSTEME',
-  hyperscalerRatioTitle: 'HYPERSCALER-ANTEIL',
   domainsScannedTitle: 'DOMAINS ANALYSIERT',
-  diffThisWeek: 'diese Woche',
-  diffLastMonth: 'Vormonat',
-  diffSinceQ1: 'seit Q1',
+  topMailVendorsTitle: 'TOP MAIL-ANBIETER',
+  topHostersTitle: 'TOP HOSTER',
+  diffSinceLastScan: 'seit letztem Scan',
 }
 
 export default statistics
