@@ -81,16 +81,3 @@ npm run dev           # → http://localhost:5173
 ```
 
 ---
-
-## Note on the older `Dokumentation/` folder
-
-The repository's existing top-level [`../Dokumentation/`](../Dokumentation/) folder
-and the root `README.md` predate much of the current implementation (they describe
-an OpenStreetMap/Overpass "Bronze pipeline" and an undecided scanner tech stack).
-**This `docs/` folder reflects the code as it is actually implemented today**
-(Wikidata/QLever ingestion, SQLAlchemy SCD-2 schema, signature fingerprinting,
-sovereignty-index V2, and a React 19 frontend). Prefer the documents here.
-
-*Der bestehende Ordner `Dokumentation/` und die Wurzel-`README.md` sind teils
-veraltet. **Dieser `docs/`-Ordner spiegelt den tatsächlichen aktuellen Code wider**
-— ihm den Vorzug geben.*
