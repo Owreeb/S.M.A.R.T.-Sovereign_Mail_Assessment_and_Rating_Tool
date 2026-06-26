@@ -2,9 +2,15 @@
 
 **Sovereign Mail Assessment and Rating Tool**
 
-S.M.A.R.T. analysiert die E-Mail-Infrastruktur öffentlicher Institutionen in Deutschland und bewertet, ob diese souverän betrieben wird oder auf externe Anbieter wie Microsoft 365 angewiesen ist. Die Ergebnisse werden in einer interaktiven Kartenansicht dargestellt.
+S.M.A.R.T. analysiert die E-Mail-Infrastruktur öffentlicher Organisationen im
+DACH-Raum (Deutschland, Österreich, Schweiz) und bewertet, ob diese souverän
+betrieben wird oder auf externe Anbieter wie Microsoft 365 oder Google Workspace
+angewiesen ist. Jede Organisation erhält eine Souveränitätsnote von **1 (sehr
+souverän) bis 6 (nicht souverän)**. Die Ergebnisse werden in einer interaktiven
+Web-Oberfläche (Karte, Statistik-Dashboard, Tabelle) dargestellt.
 
-Entwickelt als Studierendenprojekt an der Hochschule Karlsruhe im Auftrag der [audriga GmbH](https://www.audriga.com), Karlsruhe.
+Entwickelt als Studierendenprojekt an der Hochschule Karlsruhe im Auftrag der
+[audriga GmbH](https://www.audriga.com), Karlsruhe.
 
 ---
 
@@ -12,31 +18,51 @@ Entwickelt als Studierendenprojekt an der Hochschule Karlsruhe im Auftrag der [a
 
 ```
 S.M.A.R.T./
-├── scanner/      # Datenpipeline -- sammelt und analysiert Institutionsdaten
-└── frontend/     # React SPA -- interaktive Darstellung der Ergebnisse
+├── scanner/      # Python-Datenpipeline -- ermittelt & bewertet die Mail-Infrastruktur
+├── frontend/     # React SPA -- interaktive Darstellung der Ergebnisse
+└── docs/         # vollständige Doku (Scanner & Frontend, technisch & Benutzer, DE/EN)
 ```
 
 ## Komponenten
 
-### Scanner
+### Scanner (`scanner/`)
 
-Fragt OpenStreetMap-Daten zu deutschen Institutionen (Rathäuser, Gerichte, u.a.) über die Overpass API ab und speichert sie in einer lokalen SQLite-Datenbank. Analysiert anschliessend DNS-Einträge (MX, SPF, IMAP, Webmail) und berechnet einen Souveränitäts-Score je Institution.
+Python-Pipeline (Python 3.12+, [uv](https://docs.astral.sh/uv/)). Baut aus
+**Wikidata** eine Liste von Organisationen (Universitäten, Krankenhäuser, Schulen,
+Gerichte, Städte) für DE/AT/CH auf, löst je Domain die **MX-/IP-/ASN-/PTR-/SMTP-/
+IMAP**-Einträge auf, erkennt Mailprodukte und Hersteller per **Regex-Signaturen**,
+speichert alles in einem versionierten **SQLite**-Schema (Historie je Scan-Lauf),
+berechnet den **Souveränitätsindex V2** und exportiert das Ergebnis als JSON.
 
-Die Pipeline ist nach dem Medallion-Muster aufgebaut (Bronze / Silver / Gold). Die Bronze-Stufe (Rohdatenerfassung) ist implementiert, Silver und Gold folgen.
+→ [Technische Doku](docs/scanner/technical.de.md) · [Benutzerhandbuch](docs/scanner/user.de.md)
 
-Siehe [Scanner-Dokumentation](Dokumentation/02_Scanner.md) für Details.
+### Frontend (`frontend/`)
 
-### Frontend
+Single Page Application auf Basis von **React 19 + Vite + TypeScript** (Mantine,
+Leaflet, i18next). Stellt die Scan-Ergebnisse auf einer interaktiven Karte, in
+einem Statistik-Dashboard und in einer filterbaren Tabelle dar — zweisprachig
+(DE/EN). Deployt auf **GitHub Pages**; alle Daten werden zur Buildzeit gebündelt.
 
-Single Page Application auf Basis von React und TypeScript. Stellt die Scan-Ergebnisse auf einer interaktiven Karte dar, mit Filterung nach Institutionstyp und Detailansicht je Einrichtung.
-
-Erste Komponenten (Statistik-Dashboard mit Souveränitätskennzahlen) und das Datenmodell sind implementiert. Kartenansicht und weitere Features folgen. Siehe [Frontend-Dokumentation](Dokumentation/03_Frontend.md) für Details.
+→ [Technische Doku](docs/frontend/technical.de.md) · [Benutzerhandbuch](docs/frontend/user.de.md)
 
 ## Schnellstart
 
+### Scanner
+
+Voraussetzung: Python 3.12+ und [uv](https://docs.astral.sh/uv/).
+
+```bash
+cd scanner
+uv sync
+uv run main.py
+```
+
+Der Export landet in `scanner/database/export/organizations.json` (plus eine
+datierte Übersichtsdatei). Details: [Scanner-Benutzerhandbuch](docs/scanner/user.de.md).
+
 ### Frontend
 
-Voraussetzung: Node.js 22+
+Voraussetzung: Node.js 22+.
 
 ```bash
 cd frontend
@@ -46,27 +72,25 @@ npm run dev
 
 Die App läuft dann unter `http://localhost:5173`.
 
-### Scanner
-
-Setup-Anleitung folgt nach Abschluss der Technologieentscheidung für den Scanner.
-
 ## Dokumentation
 
-| Dokument | Inhalt |
-|---|---|
-| [Projektübersicht](Dokumentation/00_Uebersicht.md) | Ziel, Scope, fachlicher Kontext |
-| [Systemarchitektur](Dokumentation/01_Architektur.md) | Komponenten, Datenfluss, Technologiestack |
-| [Scanner](Dokumentation/02_Scanner.md) | Pipeline-Aufbau, Datenbankschema, Logik |
-| [Frontend](Dokumentation/03_Frontend.md) | Tech-Stack, geplante Features, CI |
-| [Entwicklungsumgebung](Dokumentation/04_Entwicklungsumgebung.md) | Lokales Setup Schritt für Schritt |
-| [Entwicklungskonventionen](Dokumentation/05_Entwicklungskonventionen.md) | Branching, PR-Regeln, Coding Standards |
+Die vollständige Dokumentation liegt im Ordner [`docs/`](docs/README.md) —
+technisch und Benutzer, je auf Deutsch und Englisch:
 
-## Offene Punkte
+| Komponente | Technisch | Benutzer |
+|---|---|---|
+| Scanner | [technical.de.md](docs/scanner/technical.de.md) / [.en](docs/scanner/technical.en.md) | [user.de.md](docs/scanner/user.de.md) / [.en](docs/scanner/user.en.md) |
+| Frontend | [technical.de.md](docs/frontend/technical.de.md) / [.en](docs/frontend/technical.en.md) | [user.de.md](docs/frontend/user.de.md) / [.en](docs/frontend/user.en.md) |
 
-- Technologiewahl für den Scanner (Kandidaten: TypeScript/Node.js, Java, Python)
-- Implementierung der Silver Pipeline (DNS-Analyse, Score-Berechnung)
-- Implementierung der Gold Pipeline und API-Schicht
-- Frontend-Anbindung an die Daten
+Weitere Referenzen:
+
+- [Souveränitätsindex V2 – Spezifikation](Souveränitätsindex_V2_Spezifikation.md) — die Bewertungsmethodik
+- [DEVELOPMENT.md](DEVELOPMENT.md) — Branching, PR-Regeln, Coding Standards
+
+> **Hinweis:** Der ältere Ordner [`Dokumentation/`](Dokumentation/) stammt aus einer
+> frühen Projektphase und ist in Teilen veraltet (er beschreibt u. a. eine
+> OpenStreetMap/Overpass-basierte „Bronze-Pipeline“ und eine noch offene
+> Technologieentscheidung). Maßgeblich ist die Dokumentation in [`docs/`](docs/README.md).
 
 ## Lizenz
 
