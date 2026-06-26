@@ -87,11 +87,6 @@ Weitere Referenzen:
 - [Souveränitätsindex V2 – Spezifikation](Souveränitätsindex_V2_Spezifikation.md) — die Bewertungsmethodik
 - [DEVELOPMENT.md](DEVELOPMENT.md) — Branching, PR-Regeln, Coding Standards
 
-> **Hinweis:** Der ältere Ordner [`Dokumentation/`](Dokumentation/) stammt aus einer
-> frühen Projektphase und ist in Teilen veraltet (er beschreibt u. a. eine
-> OpenStreetMap/Overpass-basierte „Bronze-Pipeline“ und eine noch offene
-> Technologieentscheidung). Maßgeblich ist die Dokumentation in [`docs/`](docs/README.md).
-
 ## Lizenz
 
 Noch nicht festgelegt.
