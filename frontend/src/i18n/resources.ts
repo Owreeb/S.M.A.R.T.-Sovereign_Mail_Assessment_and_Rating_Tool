@@ -2,6 +2,7 @@ import deCommon from './locales/de/common'
 import deFeatures from './locales/de/features'
 import deFooter from './locales/de/footer'
 import deHero from './locales/de/hero'
+import deMail from './locales/de/mail'
 import deMap from './locales/de/map'
 import deNavbar from './locales/de/navbar'
 import deSovereignty from './locales/de/sovereignty'
@@ -11,6 +12,7 @@ import enCommon from './locales/en/common'
 import enFeatures from './locales/en/features'
 import enFooter from './locales/en/footer'
 import enHero from './locales/en/hero'
+import enMail from './locales/en/mail'
 import enMap from './locales/en/map'
 import enNavbar from './locales/en/navbar'
 import enSovereignty from './locales/en/sovereignty'
@@ -26,6 +28,7 @@ const langEn = {
   footer: enFooter,
   statistics: enStatistics,
   map: enMap,
+  mail: enMail,
   table: enTable,
 } as const
 
@@ -38,6 +41,7 @@ const langDe: typeof langEn = {
   footer: deFooter,
   statistics: deStatistics,
   map: deMap,
+  mail: deMail,
   table: deTable,
 }
 

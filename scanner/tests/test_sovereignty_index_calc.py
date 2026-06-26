@@ -111,6 +111,41 @@ class TestComputeSovereigntyIndex:
         assert result == 3
 
 
+class TestIpOnlyFallback:
+    """
+    The generic 'Unidentified Mail Server' fallback (to_db) carries no vendor
+    markers and is scored on IP geography alone. These tests pin down that this
+    is exactly on the edge the data-quality brake allows.
+    """
+
+    @staticmethod
+    def _ip_only(country_rating, hoster_rating):
+        return {
+            "ips": [_ip(country_rating=country_rating, hoster_rating=hoster_rating)],
+            "vendor_category_rating": None,
+            "vendor_country_rating": None,
+            "open_source_rating": None,
+            "proxy": None,
+        }
+
+    def test_german_hosting_scores_sovereign(self):
+        # DE country (1) + private EU hoster (2) -> mean 1.5 -> grade 2
+        assert compute_sovereignty_index({"smtp_in": [self._ip_only(1, 2)]}) == 2
+
+    def test_us_hosting_scores_not_sovereign(self):
+        # both IP markers at US level -> grade 5
+        assert compute_sovereignty_index({"smtp_in": [self._ip_only(5, 5)]}) == 5
+
+    def test_two_ip_markers_pass_the_brake(self):
+        # exactly 3 of 5 markers missing -> still rated (brake threshold is 3)
+        assert compute_sovereignty_index({"smtp_in": [self._ip_only(2, 2)]}) is not None
+
+    def test_single_ip_marker_is_suppressed(self):
+        # only one usable marker (4 missing) -> too thin -> unrated
+        system = self._ip_only(1, None)
+        assert compute_sovereignty_index({"smtp_in": [system]}) is None
+
+
 class TestComputeAverageIndex:
     def test_empty_list(self):
         assert compute_average_index([]) == (None, 0)

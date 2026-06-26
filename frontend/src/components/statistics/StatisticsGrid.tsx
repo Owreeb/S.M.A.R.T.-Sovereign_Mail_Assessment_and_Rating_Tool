@@ -28,6 +28,7 @@ const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElemen
       value: currentData.overview.sovereigntyIndex,
       diff: getDiffOrZero(currentData.overview.sovereigntyIndex, previousData?.overview.sovereigntyIndex),
       diffLabel: t('diffSinceLastScan'),
+      isReversed: true,
     },
     {
       title: t('domainsScannedTitle'),
@@ -47,6 +48,7 @@ const StatisticsGrid = ({ currentData, previousData }: Props): React.ReactElemen
             value={stat.value}
             diff={stat.diff}
             diffLabel={stat.diffLabel}
+            isReversed={stat.isReversed ?? false}
           />
         ))}
       </div>

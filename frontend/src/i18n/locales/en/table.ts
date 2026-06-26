@@ -7,6 +7,8 @@ const table = {
   colCategory: 'Type',
   colProvider: 'Provider',
   colSoftware: 'Mail software',
+  colClass: 'Vendor class',
+  colHosting: 'Hosting',
   colStatus: 'Sovereignty',
   colScore: 'Index',
   colCountry: 'Country',

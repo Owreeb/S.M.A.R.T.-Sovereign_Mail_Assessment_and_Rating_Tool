@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { FILTER_FIELDS, type FilterField, type FilterKey, type FilterState } from '@constants/filterFields'
 import type { Organization } from '@models/organization'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
-import { categoryLabel } from '@utils/categoryUtils'
+import { COUNTRY_FILTER_VALUES, categoryLabel, countryFilterLabel } from '@utils/categoryUtils'
 
 import styles from './FilterPanel.module.scss'
 
@@ -19,6 +20,9 @@ type Props = {
 }
 
 const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
+  // The country filter is limited to DE/CH/AT regardless of stray data values.
+  if (field.key === 'country') return [...COUNTRY_FILTER_VALUES]
+
   const values = new Set<string>()
   orgs.forEach((org) => {
     const value = org[field.key]
@@ -26,6 +30,12 @@ const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
     else if (value != null) values.add(value)
   })
   return [...values].sort((a, b) => a.localeCompare(b))
+}
+
+const optionLabel = (field: FilterField, value: string, t: TFunction<'map'>): string => {
+  if (field.key === 'category') return categoryLabel(t, value)
+  if (field.key === 'country') return countryFilterLabel(t, value)
+  return value
 }
 
 const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props): React.ReactElement => {
@@ -74,7 +84,7 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
                         checked={selected[field.key].includes(value)}
                         onChange={() => onToggle(field.key, value)}
                       />
-                      <span>{field.key === 'category' ? categoryLabel(t, value) : value}</span>
+                      <span>{optionLabel(field, value, t)}</span>
                     </label>
                   ))}
                 </div>

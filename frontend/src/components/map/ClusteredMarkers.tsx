@@ -6,18 +6,24 @@ import 'leaflet.markercluster'
 import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-leaflet'
 
-import type { MappableOrganization } from '@models/organization'
+import type { MailSystem, MailSystemRole, MappableOrganization } from '@models/organization'
 import { categoryLabel } from '@utils/categoryUtils'
+import { roleGroups, vendorCategoryMeta } from '@utils/mailInsights'
 import { sovereigntyColor, sovereigntyLevel } from '@utils/sovereignty'
 
 import styles from './ClusteredMarkers.module.scss'
 
+type CategoryKey = 'catPublic' | 'catEuVendor' | 'catEuSub' | 'catIntl' | 'catHyperscaler' | 'catUnknown'
+
 type PopupLabels = {
   sovereignty: string
-  providers: string
   lastChecked: string
   levelLabel: string
   category: string
+  roles: Record<MailSystemRole, string>
+  categories: Record<CategoryKey, string>
+  unidentified: string
+  via: (name: string) => string
 }
 
 type Props = {
@@ -44,6 +50,50 @@ const createIcon = (color: string): L.DivIcon =>
     popupAnchor: [0, -34],
   })
 
+const renderFlags = (codes: string[]): string =>
+  codes.length
+    ? `<span class="${styles.flags}">${codes
+        .map((code) => `<span class="fi fi-${escapeHtml(code.toLowerCase())}" title="${escapeHtml(code)}"></span>`)
+        .join('')}</span>`
+    : ''
+
+// One mail system: software name, a vendor-category pill, the hosting country
+// flags and — when present — the security proxy sitting in front of it.
+const renderSystem = (system: MailSystem, labels: PopupLabels): string => {
+  const meta = vendorCategoryMeta(system.vendor_category)
+  const name = system.software ?? labels.unidentified
+  const badge = `<span class="${styles.badge}" style="color:${meta.color};background:${meta.color}1a">${escapeHtml(
+    labels.categories[meta.key as CategoryKey],
+  )}</span>`
+  const proxy = system.proxy
+    ? `<div class="${styles.proxy}">${escapeHtml(labels.via(system.proxy.software ?? '—'))} ${renderFlags(
+        system.proxy.countries,
+      )}</div>`
+    : ''
+  return `<div class="${styles.system}">
+      <span class="${styles.sysName}">${escapeHtml(name)}</span>
+      ${badge}
+      ${renderFlags(system.countries)}
+      ${proxy}
+    </div>`
+}
+
+// The per-role mail-flow breakdown (Inbound / Mailbox / Outbound).
+const renderMailFlow = (org: MappableOrganization, labels: PopupLabels): string => {
+  const groups = roleGroups(org)
+  if (!groups.length) return ''
+  const rows = groups
+    .map(
+      (group) => `
+      <div class="${styles.flowRow}">
+        <span class="${styles.roleLabel}">${escapeHtml(labels.roles[group.role])}</span>
+        <div class="${styles.systems}">${group.systems.map((s) => renderSystem(s, labels)).join('')}</div>
+      </div>`,
+    )
+    .join('')
+  return `<div class="${styles.flow}">${rows}</div>`
+}
+
 const renderPopup = (org: MappableOrganization, labels: PopupLabels): string => {
   const index = org.sovereignty_index
   const color = sovereigntyColor(index)
@@ -52,12 +102,6 @@ const renderPopup = (org: MappableOrganization, labels: PopupLabels): string => 
   const checked = org.last_checked ? dayjs(org.last_checked).format('DD.MM.YYYY HH:mm') : '—'
 
   const domainRow = domain ? `<p class="${styles.domain}">${escapeHtml(domain)}</p>` : ''
-  const providersRow = org.providers.length
-    ? `<div class="${styles.row}">
-        <span class="${styles.label}">${escapeHtml(labels.providers)}</span>
-        <span>${escapeHtml(org.providers.join(', '))}</span>
-      </div>`
-    : ''
 
   return `
     <div class="${styles.popup}">
@@ -68,7 +112,7 @@ const renderPopup = (org: MappableOrganization, labels: PopupLabels): string => 
         <span class="${styles.label}">${escapeHtml(labels.sovereignty)}</span>
         <span class="${styles.score}" style="color: ${color}">${escapeHtml(scoreText)}</span>
       </div>
-      ${providersRow}
+      ${renderMailFlow(org, labels)}
       <div class="${styles.row}">
         <span class="${styles.label}">${escapeHtml(labels.lastChecked)}</span>
         <span>${escapeHtml(checked)}</span>
@@ -80,6 +124,7 @@ const renderPopup = (org: MappableOrganization, labels: PopupLabels): string => 
 const ClusteredMarkers = ({ orgs }: Props): null => {
   const map = useMap()
   const { t } = useTranslation('map')
+  const { t: tMail } = useTranslation('mail')
 
   useEffect(() => {
     const cluster = L.markerClusterGroup({
@@ -95,10 +140,25 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
       marker.bindPopup(
         renderPopup(org, {
           sovereignty: t('popupSovereignty'),
-          providers: t('popupProviders'),
           lastChecked: t('popupLastChecked'),
           levelLabel: t(`levels.${sovereigntyLevel(org.sovereignty_index)}`),
           category: categoryLabel(t, org.category),
+          roles: {
+            smtp_in: tMail('roles.smtp_in'),
+            imap_pop3: tMail('roles.imap_pop3'),
+            smtp_out: tMail('roles.smtp_out'),
+            webmailer: tMail('roles.webmailer'),
+          },
+          categories: {
+            catPublic: tMail('catPublic'),
+            catEuVendor: tMail('catEuVendor'),
+            catEuSub: tMail('catEuSub'),
+            catIntl: tMail('catIntl'),
+            catHyperscaler: tMail('catHyperscaler'),
+            catUnknown: tMail('catUnknown'),
+          },
+          unidentified: tMail('unidentified'),
+          via: (name: string) => tMail('via', { name }),
         }),
       )
       cluster.addLayer(marker)
@@ -109,7 +169,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
     return () => {
       map.removeLayer(cluster)
     }
-  }, [map, orgs, t])
+  }, [map, orgs, t, tMail])
 
   return null
 }

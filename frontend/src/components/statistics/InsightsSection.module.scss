@@ -1,0 +1,79 @@
+.section {
+  margin: 40px 10% 0;
+  font-family: Inter, sans-serif;
+}
+
+.heading {
+  margin: 0 0 20px;
+  padding-left: 12px;
+  border-left: 4px solid #f0792e;
+  font-size: 20px;
+  font-weight: 700;
+  color: #15171a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.block {
+  padding: 20px 24px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+}
+
+.blockTitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #868e96;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.label {
+  flex: 0 0 92px;
+  color: #495057;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track {
+  flex: 1;
+  min-width: 0;
+  height: 10px;
+  background: #f1f3f5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 6px;
+}
+
+.value {
+  flex: 0 0 auto;
+  min-width: 40px;
+  text-align: right;
+  font-weight: 600;
+  color: #212529;
+}
+
+@media (max-width: 768px) {
+  .section {
+    margin: 32px 4% 0;
+  }
+}

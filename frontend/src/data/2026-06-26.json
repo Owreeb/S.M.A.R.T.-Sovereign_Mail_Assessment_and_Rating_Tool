@@ -1,0 +1,91 @@
+{
+  "overview": {
+    "orgsScanned": 5025,
+    "domainsScanned": 173,
+    "sovereigntyIndex": 2.33
+  },
+  "topMailVendors": [
+    {
+      "name": "PZD-SVN",
+      "share": 0.13
+    },
+    {
+      "name": "Microsoft",
+      "share": 0.11
+    },
+    {
+      "name": "Open-Xchange / Dovecot",
+      "share": 0.1
+    },
+    {
+      "name": "KV Baden-Württemberg",
+      "share": 0.07
+    },
+    {
+      "name": "Freistaat Bayern",
+      "share": 0.05
+    },
+    {
+      "name": "IONOS",
+      "share": 0.04
+    },
+    {
+      "name": "Justiz Baden-Württemberg",
+      "share": 0.04
+    },
+    {
+      "name": "Hornetsecurity",
+      "share": 0.03
+    },
+    {
+      "name": "Land Niedersachsen",
+      "share": 0.03
+    },
+    {
+      "name": "STRATO",
+      "share": 0.03
+    }
+  ],
+  "topHosters": [
+    {
+      "name": "DTAG - Deutsche Telekom AG, DE",
+      "share": 0.1
+    },
+    {
+      "name": "MICROSOFT-CORP-MSN-AS-BLOCK - Microsoft Corporation, US",
+      "share": 0.07
+    },
+    {
+      "name": "DFN - Verein zur Foerderung eines Deutschen Forschungsnetzes e.V., DE",
+      "share": 0.07
+    },
+    {
+      "name": "VODANET - Vodafone GmbH, DE",
+      "share": 0.05
+    },
+    {
+      "name": "Komm-ONE-AS - civillent GmbH, DE",
+      "share": 0.05
+    },
+    {
+      "name": "IT-NRW - IT-NRW, DE",
+      "share": 0.04
+    },
+    {
+      "name": "EWETEL - EWE TEL GmbH, DE",
+      "share": 0.03
+    },
+    {
+      "name": "Wista-AS - WISTA Management GmbH, DE",
+      "share": 0.03
+    },
+    {
+      "name": "MK-NETZDIENSTE-AS - MK Netzdienste Verwaltungs GmbH trading as MK Netzdienste GmbH & Co. KG, DE",
+      "share": 0.03
+    },
+    {
+      "name": "IONOS-AS - IONOS SE, DE",
+      "share": 0.03
+    }
+  ]
+}

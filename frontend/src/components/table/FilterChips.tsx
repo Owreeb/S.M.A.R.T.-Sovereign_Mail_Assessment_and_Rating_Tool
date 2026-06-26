@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { FILTER_FIELDS, type FilterKey, type FilterState } from '@constants/filterFields'
 import { IconX } from '@tabler/icons-react'
-import { categoryLabel } from '@utils/categoryUtils'
+import { categoryLabel, countryFilterLabel } from '@utils/categoryUtils'
 
 import styles from './FilterChips.module.scss'
 
@@ -33,7 +33,13 @@ const FilterChips = ({ selected, activeCount, onRemove, onReset }: Props): React
             onClick={() => onRemove(field.key, value)}
           >
             <span className={styles.chipLabel}>{t(`map:${field.labelKey}`)}:</span>
-            <span>{field.key === 'category' ? categoryLabel(tMap, value) : value}</span>
+            <span>
+              {field.key === 'category'
+                ? categoryLabel(tMap, value)
+                : field.key === 'country'
+                  ? countryFilterLabel(tMap, value)
+                  : value}
+            </span>
             <IconX size={13} />
           </button>
         )),
