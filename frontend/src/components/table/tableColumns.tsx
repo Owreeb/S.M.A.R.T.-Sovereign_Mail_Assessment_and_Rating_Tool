@@ -3,12 +3,13 @@ import React from 'react'
 import type { ParseKeys, TFunction } from 'i18next'
 
 import type { Organization, SovereigntyLevel } from '@models/organization'
+import { hostingCountries, vendorCategoryMeta, worstVendorCategory } from '@utils/mailInsights'
 import { sovereigntyColor, sovereigntyLevel } from '@utils/sovereignty'
 
 import styles from './OrgTable.module.scss'
 
 type TableKey = ParseKeys<'table'>
-type Translate = TFunction<'table'>
+type Translate = TFunction<['table', 'mail']>
 
 // Add new columns here
 export type TableColumn = {
@@ -44,6 +45,38 @@ const mailSoftware = (org: Organization): string => {
   return [...names].join(', ')
 }
 
+// i18n keys for the vendor-category badge (kept as literals for type-safe t()).
+const CATEGORY_TKEY = {
+  catPublic: 'mail:catPublic',
+  catEuVendor: 'mail:catEuVendor',
+  catEuSub: 'mail:catEuSub',
+  catIntl: 'mail:catIntl',
+  catHyperscaler: 'mail:catHyperscaler',
+  catUnknown: 'mail:catUnknown',
+} as const
+
+const renderClass = (org: Organization, t: Translate): React.ReactNode => {
+  const meta = vendorCategoryMeta(worstVendorCategory(org))
+  const key = meta.key as keyof typeof CATEGORY_TKEY
+  return (
+    <span className={styles.badge} style={{ color: meta.color, background: `${meta.color}1a` }}>
+      {t(CATEGORY_TKEY[key])}
+    </span>
+  )
+}
+
+const renderHosting = (org: Organization): React.ReactNode => {
+  const codes = hostingCountries(org)
+  if (!codes.length) return '—'
+  return (
+    <span className={styles.hosts}>
+      {codes.map((code) => (
+        <span key={code} className={`fi fi-${code.toLowerCase()}`} title={code} />
+      ))}
+    </span>
+  )
+}
+
 export const TABLE_COLUMNS: TableColumn[] = [
   {
     key: 'domain',
@@ -64,6 +97,18 @@ export const TABLE_COLUMNS: TableColumn[] = [
   { key: 'provider', labelKey: 'colProvider', accessor: (org) => org.providers.join(', ') },
   { key: 'software', labelKey: 'colSoftware', accessor: mailSoftware },
   {
+    key: 'class',
+    labelKey: 'colClass',
+    accessor: (org) => worstVendorCategory(org) ?? '',
+    render: renderClass,
+  },
+  {
+    key: 'hosting',
+    labelKey: 'colHosting',
+    accessor: (org) => hostingCountries(org).join(' '),
+    render: renderHosting,
+  },
+  {
     key: 'status',
     labelKey: 'colStatus',
     accessor: (org) => sovereigntyLevel(org.sovereignty_index),
@@ -83,5 +128,4 @@ export const TABLE_COLUMNS: TableColumn[] = [
       </span>
     ),
   },
-  { key: 'country', labelKey: 'colCountry', accessor: (org) => org.country ?? '' },
 ]

@@ -6,6 +6,14 @@ const statistics = {
   topMailVendorsTitle: 'TOP MAIL-ANBIETER',
   topHostersTitle: 'TOP HOSTER',
   diffSinceLastScan: 'seit letztem Scan',
+  insightsTitle: 'Mail-Souveränität',
+  scoreDistTitle: 'VERTEILUNG DER BEWERTUNGEN',
+  bySectorTitle: 'Ø SOUVERÄNITÄT NACH SEKTOR',
+  residencyTitle: 'WO DIE MAILS GEHOSTET WERDEN',
+  resDe: 'Deutschland',
+  resEu: 'EU / EWR / CH',
+  resOther: 'Andere',
+  resUs: 'USA',
 }
 
 export default statistics

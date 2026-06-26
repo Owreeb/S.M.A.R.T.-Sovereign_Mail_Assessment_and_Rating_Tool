@@ -1,5 +1,5 @@
 ﻿- regex: '(?i)kvnbw\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (KV Baden-Württemberg)"
   vendor: "KV Baden-Württemberg"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -31,7 +31,7 @@
   # Hinweis: stark MSP-/Security-orientiert, oft Exchange Online davor geschaltet
 
 - regex: '(?i)pzd-svn\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (PZD-SVN)"
   vendor: "PZD-SVN"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -42,7 +42,7 @@
   # Hinweis: unklar ob eigener Mailstack oder zentraler Landesdienstleister
 
 - regex: '(?i)kgrz-ks\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (KGRZ Kassel)"
   vendor: "KGRZ Kassel"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -63,7 +63,7 @@
   # Hinweis: häufig als Zusatzlayer hinter M365 oder IONOS genutzt
 
 - regex: '(?i)ekom21\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (ekom21)"
   vendor: "ekom21"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -83,7 +83,7 @@
   vendor_category_rating: 2
 
 - regex: '(?i)regioit-aachen\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (regio iT GmbH)"
   vendor: "regio iT GmbH"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -94,7 +94,7 @@
   # Hinweis: typischer kommunaler IT-Dienstleister mit eigenem RZ-Mailbetrieb
 
 - regex: '(?i)itebo\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (ITEBO)"
   vendor: "ITEBO"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -114,7 +114,7 @@
   vendor_category_rating: 2
 
 - regex: '(?i)civitec\.de$'
-  software: "Unknown Mail Gateway"
+  software: "Unknown Mail Gateway (Civitec)"
   vendor: "Civitec"
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
@@ -223,9 +223,10 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-- regex: '(?i)bund\.de$'
-  software: "Government Mail Gateway"
+- regex: '(?i)(^|\.)bund\.de$'
+  software: "Government Mail Gateway (Bundesrepublik Deutschland)"
   vendor: "Bundesrepublik Deutschland"
+  # Anker verhindert Fehltreffer auf z.B. *verbund.de (private Klinikverbünde)
   vendor_country: "DE"
   vendor_category: "Community / Public Sector / Gemeinwohl"
   role: "smtp_in"
@@ -252,3 +253,370 @@
   open_source_rating: 6
   vendor_country_rating: 1
   vendor_category_rating: 2
+
+# =====================================================================
+# Deutsche Landes-/Bundesverwaltung & Justiz (eigenbetriebene Mailsysteme)
+# Die MX laufen unter der amtlichen Landes-/Justizdomain -> öffentlicher
+# Träger, Betrieb in DE. Software unbekannt -> open_source_rating 6 wie bei
+# den übrigen "Unknown Mail Gateway"-Einträgen. Anker (^|\.) verhindert
+# Fehltreffer (z.B. matcht 'bayern.de' nicht 'oberbayern.de').
+# =====================================================================
+
+- regex: '(?i)(^|\.)justiz-bw\.de$'
+  software: "Government Mail Gateway (Justiz Baden-Württemberg)"
+  vendor: "Justiz Baden-Württemberg"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)niedersachsen\.de$'
+  software: "Government Mail Gateway (Land Niedersachsen)"
+  vendor: "Land Niedersachsen"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)bayern\.de$'
+  software: "Government Mail Gateway (Freistaat Bayern)"
+  vendor: "Freistaat Bayern"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)rlp\.de$'
+  software: "Government Mail Gateway (Land Rheinland-Pfalz)"
+  vendor: "Land Rheinland-Pfalz"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)hessen\.de$'
+  software: "Government Mail Gateway (Land Hessen)"
+  vendor: "Land Hessen"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)thueringen\.de$'
+  software: "Government Mail Gateway (Freistaat Thüringen)"
+  vendor: "Freistaat Thüringen"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)sachsen-anhalt\.de$'
+  software: "Government Mail Gateway (Land Sachsen-Anhalt)"
+  vendor: "Land Sachsen-Anhalt"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)brandenburg\.de$'
+  software: "Government Mail Gateway (Land Brandenburg)"
+  vendor: "Land Brandenburg"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)saarland\.de$'
+  software: "Government Mail Gateway (Saarland)"
+  vendor: "Saarland"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)berlin\.de$'
+  software: "Government Mail Gateway (Land Berlin)"
+  vendor: "Land Berlin"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)hamburg\.de$'
+  software: "Government Mail Gateway (Freie und Hansestadt Hamburg)"
+  vendor: "Freie und Hansestadt Hamburg"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)landsh\.de$'
+  software: "Government Mail Gateway (Land Schleswig-Holstein (Dataport))"
+  vendor: "Land Schleswig-Holstein (Dataport)"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+# =====================================================================
+# Kommunale Rechenzentren / öffentliche IT-Dienstleister (wie ekom21,
+# regio iT, ITEBO, Civitec). Öffentlicher Träger, Betrieb in DE.
+# =====================================================================
+
+- regex: '(?i)(^|\.)kommunale\.it$'
+  software: "Unknown Mail Gateway (Südwestfalen-IT)"
+  vendor: "Südwestfalen-IT"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)krz\.de$'
+  software: "Unknown Mail Gateway (KRZ Minden-Ravensberg/Lippe)"
+  vendor: "KRZ Minden-Ravensberg/Lippe"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)kdo\.de$'
+  software: "Unknown Mail Gateway (KDO Oldenburg)"
+  vendor: "KDO Oldenburg"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)kdvz-frechen\.de$'
+  software: "Unknown Mail Gateway (KDVZ Rhein-Erft-Rur)"
+  vendor: "KDVZ Rhein-Erft-Rur"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)itk-rheinland\.de$'
+  software: "Unknown Mail Gateway (ITK Rheinland)"
+  vendor: "ITK Rheinland"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)gkd-re\.net$'
+  software: "Unknown Mail Gateway (GKD Recklinghausen)"
+  vendor: "GKD Recklinghausen"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)hannit\.de$'
+  software: "Unknown Mail Gateway (hannIT (Region Hannover))"
+  vendor: "hannIT (Region Hannover)"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)sis-schwerin\.de$'
+  software: "Unknown Mail Gateway (SIS Schwerin)"
+  vendor: "SIS Schwerin"
+  vendor_country: "DE"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 1
+
+# =====================================================================
+# Österreichische / Schweizer öffentliche Verwaltung
+# gv.at = amtliche Behördendomain Österreichs; admin.ch = Schweizer Bund.
+# =====================================================================
+
+- regex: '(?i)(^|\.)gv\.at$'
+  software: "Government Mail Gateway (Republik Österreich)"
+  vendor: "Republik Österreich (Behördennetz)"
+  vendor_country: "AT"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)sozvers\.at$'
+  software: "Government Mail Gateway (Österreichische Sozialversicherung)"
+  vendor: "Österreichische Sozialversicherung"
+  vendor_country: "AT"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 1
+
+- regex: '(?i)(^|\.)admin\.ch$'
+  software: "Government Mail Gateway (Schweizerische Eidgenossenschaft)"
+  vendor: "Schweizerische Eidgenossenschaft"
+  vendor_country: "CH"
+  vendor_category: "Community / Public Sector / Gemeinwohl"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 1
+
+# =====================================================================
+# Kommerzielle DE/EU-Hoster und Mail-Security-Dienste
+# Land sicher zuordenbar; Kategorie konservativ als EU Software Vendor.
+# =====================================================================
+
+- regex: '(?i)(^|\.)kundenserver\.de$'
+  software: "IONOS Mail Gateway"
+  vendor: "IONOS"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)kasserver\.com$'
+  software: "ALL-INKL Mail Gateway"
+  vendor: "ALL-INKL.COM / Neue Medien Münnich"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)ispgateway\.de$'
+  software: "Host Europe Mail Gateway"
+  vendor: "Host Europe GmbH"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)variomedia\.de$'
+  software: "Variomedia Mail Gateway"
+  vendor: "Variomedia AG"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)retarus\.com$'
+  software: "Retarus Mail Security Gateway"
+  vendor: "Retarus GmbH"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)snafu\.de$'
+  software: "SNAFU Mail Gateway"
+  vendor: "SNAFU GmbH"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "smtp_in"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)verwaltungsportal\.de$'
+  software: "Unknown Mail Gateway (verwaltungsportal.de)"
+  vendor: "verwaltungsportal.de (kommunaler Hosting-Dienst)"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)as-scan\.de$'
+  software: "AS-Scan Mail Security Gateway"
+  vendor: "AS-Scan"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)cm-system\.de$'
+  software: "Unknown Mail Gateway (CM-System)"
+  vendor: "CM-System"
+  vendor_country: "DE"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+# =====================================================================
+# Internationale Anbieter
+# =====================================================================
+
+- regex: '(?i)(^|\.)atos-services\.net$'
+  software: "Atos Mail Gateway"
+  vendor: "Atos SE"
+  vendor_country: "FR"
+  vendor_category: "EU Software Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 2
+  vendor_category_rating: 2
+
+- regex: '(?i)(^|\.)trendmicro\.eu$'
+  software: "Trend Micro Email Security"
+  vendor: "Trend Micro"
+  vendor_country: "JP"
+  vendor_category: "International Vendor"
+  role: "proxy"
+  open_source_rating: 6
+  vendor_country_rating: 3
+  vendor_category_rating: 4

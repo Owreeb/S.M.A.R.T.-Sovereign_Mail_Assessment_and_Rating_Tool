@@ -73,6 +73,14 @@ def _as_uuid(value) -> uuid.UUID:
 
 _PROXY_ROLE = MailSystemRole.PROXY.value
 
+# Identity of the generic fallback system. When an organisation's MX resolves to
+# real IPs but no signature matches, we still know *where* the mail is hosted.
+# This shared system carries no vendor markers (all None); it is scored on the
+# IP geography alone (ip_country + ip_hoster). The data-quality brake in the
+# scorer suppresses it again when even the IP markers are too thin.
+_FALLBACK_SOFTWARE = "Unidentified Mail Server"
+_FALLBACK_ROLE = MailSystemRole.SMTP_IN
+
 
 def _build_org_domain(domain_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -404,6 +412,113 @@ def _sync_mail_system_ip_history(
         )
 
 
+def _detected_org_ids(
+    org_domain: pd.DataFrame,
+    mx_df: pd.DataFrame,
+    mx_detections: pd.DataFrame,
+    domain_detections: pd.DataFrame,
+) -> set:
+    """
+    The organisation ids that already have at least one signature-based
+    detection (via an MX host or via an IMAP host).
+
+    These orgs are left untouched by the fallback so it can never change a
+    rating that a real signature produced.
+    """
+    detected: set = set()
+
+    if not mx_detections.empty and {"domain", "mx_domain"} <= set(mx_df.columns):
+        org_mx_det = org_domain.merge(
+            mx_df[["domain", "mx_domain"]], on="domain"
+        ).merge(mx_detections[["mx_domain"]].drop_duplicates(), on="mx_domain")
+        detected.update(org_mx_det["organisation_id"].tolist())
+
+    if not domain_detections.empty:
+        org_dom_det = org_domain.merge(
+            domain_detections[["domain"]].drop_duplicates(), on="domain"
+        )
+        detected.update(org_dom_det["organisation_id"].tolist())
+
+    return {str(org_id) for org_id in detected}
+
+
+def _sync_fallback_mail_systems(
+    session: Session,
+    run: ScannerRun,
+    org_domain: pd.DataFrame,
+    mx_df: pd.DataFrame,
+    mx_detections: pd.DataFrame,
+    domain_detections: pd.DataFrame,
+    ip_df: pd.DataFrame,
+    ip_map: dict[str, IpAddress],
+) -> None:
+    """
+    Link organisations with a resolvable MX but no signature match to a generic
+    fallback system, scored on IP geography alone.
+
+    Only orgs that would otherwise be unrated are touched (those with no
+    signature detection at all). Their MX IPs are linked to the shared
+    ``Unidentified Mail Server`` so the scorer can use ip_country / ip_hoster.
+    """
+    if (
+        org_domain.empty
+        or ip_df.empty
+        or "ip" not in ip_df.columns
+        or not {"domain", "mx_domain"} <= set(mx_df.columns)
+    ):
+        return
+
+    detected = _detected_org_ids(org_domain, mx_df, mx_detections, domain_detections)
+
+    # org -> mx_domain -> ip, for orgs without any detection
+    org_ip = (
+        org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
+        .merge(ip_df[["mx_domain", "ip"]], on="mx_domain")[["organisation_id", "ip"]]
+        .dropna()
+        .drop_duplicates()
+    )
+    org_ip = org_ip[~org_ip["organisation_id"].astype(str).isin(detected)]
+    if org_ip.empty:
+        return
+
+    fallback, _ = get_or_create(
+        session, MailSystem, software=_FALLBACK_SOFTWARE, role=_FALLBACK_ROLE
+    )
+    session.flush()
+
+    linked_orgs: set = set()
+    for row in org_ip.to_dict(orient="records"):
+        org_id = row["organisation_id"]
+        ip = ip_map.get(row["ip"])
+        if ip is None:
+            continue
+
+        if str(org_id) not in linked_orgs:
+            update_history(
+                session,
+                OrgMailSystemHistory,
+                run,
+                match={
+                    "organisation_id": _as_uuid(org_id),
+                    "mail_system_id": fallback.id,
+                },
+                tracked={"proxy_system_id": None},
+            )
+            linked_orgs.add(str(org_id))
+
+        update_history(
+            session,
+            MailSystemIpHistory,
+            run,
+            match={
+                "organisation_id": _as_uuid(org_id),
+                "mail_system_id": fallback.id,
+                "ip_address_id": ip.id,
+            },
+            tracked={},
+        )
+
+
 def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
     """
     Persist a whole Registry of scan results into the database.
@@ -430,6 +545,12 @@ def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
     )
     _sync_mail_system_ip_history(
         session, run, org_domain, mx_df, mx_detections, ip_df, ms_map, ip_map
+    )
+
+    # generic IP-only fallback for orgs that resolved an MX but matched no
+    # signature (kept last so it only ever fills gaps, never overrides)
+    _sync_fallback_mail_systems(
+        session, run, org_domain, mx_df, mx_detections, domain_detections, ip_df, ip_map
     )
 
     session.commit()

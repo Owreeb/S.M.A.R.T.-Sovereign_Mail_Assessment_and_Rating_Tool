@@ -3,6 +3,7 @@ import React from 'react'
 import Footer from '@components/landing/Footer.tsx'
 import Navbar from '@components/landing/Navbar.tsx'
 import MapView from '@components/map/MapView.tsx'
+import InsightsSection from '@components/statistics/InsightsSection.tsx'
 import OverviewSection from '@components/statistics/OverviewSection.tsx'
 import OrgTable from '@components/table/OrgTable.tsx'
 import { useOrgFilters } from '@hooks/useOrgFilters.ts'
@@ -28,6 +29,7 @@ const Dashboard = (): React.ReactElement => {
     <>
       <Navbar />
       <OverviewSection currentData={currentData} previousData={previousData} />
+      <InsightsSection orgs={organizations} />
       <MapView orgs={organizations} filters={filters} />
       <OrgTable orgs={filters.filteredOrgs} filters={filters} />
       <Footer />

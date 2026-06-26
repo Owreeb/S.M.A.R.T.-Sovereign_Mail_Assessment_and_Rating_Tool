@@ -26,6 +26,11 @@ const map = {
     city: 'Municipality',
     courthouse: 'Courthouse',
   },
+  countries: {
+    de: 'Germany',
+    ch: 'Switzerland',
+    at: 'Austria',
+  },
 }
 
 export default map

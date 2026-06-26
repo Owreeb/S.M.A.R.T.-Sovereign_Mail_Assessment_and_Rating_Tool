@@ -48,3 +48,65 @@
 .score {
   font-weight: 600;
 }
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 2px;
+  padding-top: 6px;
+  border-top: 1px solid #f1f3f5;
+}
+
+.flowRow {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.roleLabel {
+  flex: 0 0 56px;
+  color: gray;
+  font-weight: 600;
+  padding-top: 2px;
+}
+
+.systems {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.system {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.sysName {
+  font-weight: 500;
+  color: #212529;
+}
+
+.badge {
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.flags {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.proxy {
+  flex-basis: 100%;
+  font-size: 11px;
+  color: #868e96;
+}
