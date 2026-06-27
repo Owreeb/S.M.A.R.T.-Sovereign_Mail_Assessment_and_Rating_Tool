@@ -56,6 +56,7 @@ entity ORG_MAIL_SYSTEM_HISTORY #FAE5C0 {
 entity MAIL_SYSTEM_IP_HISTORY #FAE5C0 {
   * id               : UUID <<PK>>
   ==
+  * organisation_id  : UUID <<FK>>
   * mail_system_id   : UUID <<FK>>
   * ip_address_id    : UUID <<FK>>
   * valid_from_run   : UUID <<FK>>
@@ -118,6 +119,7 @@ SCANNER_RUNS  "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : valid_from/to >
 
 ORGANISATIONS  "1" ---> "0..*"  ORG_DOMAIN_HISTORY       : has >
 ORGANISATIONS  "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : has >
+ORGANISATIONS  "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : has >
 MAIL_SYSTEMS   "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : used as proxy >
 MAIL_SYSTEMS   "1" ---> "0..*"  ORG_MAIL_SYSTEM_HISTORY  : referenced in >
 MAIL_SYSTEMS   "1" ---> "0..*"  MAIL_SYSTEM_IP_HISTORY   : has >

@@ -54,28 +54,3 @@ def create_all(engine: Engine) -> None:
         engine: The engine to create the tables on.
     """
     Base.metadata.create_all(engine)
-
-
-def migrate_legacy_schema(engine: Engine) -> None:
-    """
-    Apply one-off schema migrations that create_all can not do on its own.
-
-    create_all only creates missing tables, it never adds a column to an
-    existing one. mail_system_ip_history gained an organisation_id column (IP
-    links are now scoped per organisation). If a database still has the old
-    table without that column, drop it here so create_all rebuilds it. Its rows
-    were the globally-pooled links and get repopulated on the next scan anyway.
-
-    Args:
-        engine: The engine whose database to migrate.
-    """
-    from sqlalchemy import inspect, text
-
-    inspector = inspect(engine)
-    if "mail_system_ip_history" not in inspector.get_table_names():
-        return
-    columns = {col["name"] for col in inspector.get_columns("mail_system_ip_history")}
-    if "organisation_id" not in columns:
-        print("Migrating: dropping legacy mail_system_ip_history (rebuilt org-scoped)")
-        with engine.begin() as conn:
-            conn.execute(text("DROP TABLE mail_system_ip_history"))

@@ -61,8 +61,8 @@ That's it — `uv` reads `pyproject.toml`/`uv.lock` and sets everything up.
 
 ## 4. Running a scan
 
-The main run scans every current domain already stored in the database and
-produces the JSON export:
+The main run refreshes the organisation list from Wikidata, scans every current
+domain and produces the JSON export:
 
 ```bash
 cd scanner
@@ -72,10 +72,17 @@ uv run main.py
 What happens:
 
 1. A new **scan run** is recorded (its ID is printed).
-2. Every organisation's domains are resolved (MX → IP → ASN → SMTP/IMAP/…).
-3. Mail products and vendors are fingerprinted.
-4. Results are stored in the database (with full history — old runs are kept).
-5. The JSON export is written and the number of organisations is printed.
+2. The **organisation/domain state is refreshed from Wikidata** and recorded as a
+   new version in the history, so changes to an organisation's domains are tracked
+   over time (universities, hospitals, schools, … for DE/AT/CH, configured in
+   `config.yaml`).
+3. Every organisation's domains are resolved (MX → IP → ASN → SMTP/IMAP/…).
+4. Mail products and vendors are fingerprinted.
+5. Results are stored in the database (with full history — old runs are kept).
+6. The JSON export is written and the number of organisations is printed.
+
+> **Note — internet & runtime.** Because step 2 queries Wikidata on every run, a
+> full run also depends on the Wikidata endpoint being reachable.
 
 > **Tip — test runs.** A full scan touches thousands of domains and takes a while.
 > To try it on a small sample, open `scanner/main.py` and set
@@ -163,17 +170,20 @@ ratable) rather than getting a misleading grade.
 
 ---
 
-## 8. Rebuilding the organisation list (advanced)
+## 8. The organisation list
 
-The list of organisations comes from **Wikidata**. Rebuilding it is a **separate**
-step and not part of `main.py`. It fetches universities, hospitals, schools,
-courthouses and cities for Germany, Austria and Switzerland (configured in
-`scanner/src/domainlist_pipline/config.yaml`), and an optional website crawler
-fills in missing e-mail domains.
+The list of organisations comes from **Wikidata** and is **refreshed on every run**
+as the first step of `main.py` — not rebuilt from scratch, but recorded as a new
+version in the history so domain changes are tracked over time. It fetches
+universities, hospitals, schools, courthouses, cities, political parties and
+newspapers for Germany, Austria and Switzerland (configured in
+`scanner/src/domainlist_pipline/config.yaml`).
 
-You normally only do this when you want to add or refresh the set of
-organisations. Day-to-day scanning re-uses the organisations already in the
-database.
+To change *which* organisations are covered, edit `config.yaml` (add an
+institution type or a country — no code changes needed) and run `uv run main.py`
+as usual. A website crawler that fills in missing e-mail domains (`run_scraper`)
+exists in the code but is **not run** at the moment — wiring it into the flow is
+still an open task.
 
 ---
 

@@ -38,41 +38,42 @@ sovereign**, `null` = could not be rated.
 
 ```
                  ┌─────────────────────────────────────────────────────────┐
-                 │  Wikidata (QLever SPARQL)  +  website e-mail scraper      │
+                 │  Wikidata (QLever SPARQL)                               │
                  └───────────────────────────┬─────────────────────────────┘
                                              │  organisations + domains
                                              ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  SQLite:  organisations · org_domain_history                       │
+        │  SQLite:  organisations · org_domain_history                     │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  current domains
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Scan pipeline (async):  MX → IP → ASN → PTR / SMTP / IMAP / SPF   │
+        │  Scan pipeline (async):  MX → IP → ASN → PTR / SMTP / IMAP / SPF │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  raw observations (pandas frames)
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Signature matcher:  MX host / SMTP banner / IMAP banner → vendor  │
+        │  Signature matcher:  MX host / SMTP banner / IMAP banner → vendor│
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  detections
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  to_db:  mail_systems · ip_addresses · *_history link tables       │
+        │  to_db:  mail_systems · ip_addresses · *_history link tables     │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  scored structure
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Sovereignty index calc  +  JSON dump (+ Brotli)                   │
+        │  Sovereignty index calc  +  JSON dump (+ Brotli)                 │
         └───────────────────────────┬──────────────────────────────────────┘
                                      ▼
               database/export/organizations.json   (per-org detail)
               database/export/<YYYY-MM-DD>.json     (aggregate overview)
 ```
 
-The domain-list build (step 0) is run **separately** and on demand. `main.py`
-runs only steps **scan → to_db → dump** against the domains already in the
-database.
+`main.py` runs the full chain **version org state → scan → to_db → dump**. Step 0
+is **not** a from-scratch rebuild of the list: it records the current Wikidata org
++ domain state as a new SCD-2 history version for the run, so domain changes
+between runs are tracked over time. It then scans the resulting current domains.
 
 ---
 
@@ -103,7 +104,7 @@ Dev group: `pytest`, `pytest-cov`.
 
 ```
 scanner/
-├── main.py                       # entrypoint: scan → to_db → dump
+├── main.py                       # entrypoint: version org state → scan → to_db → dump
 ├── pyproject.toml / uv.lock      # deps, locked
 ├── database/
 │   ├── SMART.db                  # the working database
@@ -131,10 +132,9 @@ scanner/
     │       ├── mx.yaml           # matched against MX hostnames
     │       ├── smtp.yaml         # matched against SMTP banners
     │       └── imap.yaml         # matched against IMAP banners + host
-    ├── json_dumper/
-    │   ├── dump.py               # serialises orgs → JSON, builds overview
-    │   └── sovereignty_index_calc.py   # the scoring algorithm
-    └── enricher/                 # legacy prototype (NOT wired into main.py)
+    └── json_dumper/
+        ├── dump.py               # serialises orgs → JSON, builds overview
+        └── sovereignty_index_calc.py   # the scoring algorithm
 ```
 
 ---
@@ -152,13 +152,19 @@ SAMPLE_LIMIT: int | None = None   # set to an int to scan only N domains (testin
 `main(db_path=None, sample_limit=SAMPLE_LIMIT)` does:
 
 1. Resolve the DB path (default `scanner/database/SMART.db`).
-2. `make_engine` → `migrate_legacy_schema` → `create_all` → `make_session`.
+2. `make_engine` → `create_all` → `make_session`.
 3. Open a `scanner_run(session)` context (inserts a `ScannerRun` row, prints
    `run.id`).
-4. **Scan** — `Registry.from_sqlite(db_path, _domain_query(sample_limit))`, then
+4. **Version org state** — `wikidata_fetch_and_persist(session, run, WIKIDATA_CONFIG)`
+   records the current Wikidata org + domain state as a new SCD-2 history version
+   for this run (not a from-scratch rebuild); `update_history` only opens a new row
+   when a tracked domain actually changed, so domain changes are tracked over time.
+   Then `session.commit()` so the fresh orgs are visible to the next step (which
+   reads through its own independent `sqlite3` connection).
+5. **Scan** — `Registry.from_sqlite(db_path, _domain_query(sample_limit))`, then
    `asyncio.run(registry.run_queue())`.
-5. **Persist** — `to_db(session, run, registry)`.
-6. **Export** — `count = write_dump(session)`; prints the org count.
+6. **Persist** — `to_db(session, run, registry)`.
+7. **Export** — `count = write_dump(session)`; prints the org count.
 
 `_domain_query()` selects the domains to scan:
 
@@ -175,8 +181,11 @@ Run it with `cd scanner && uv run main.py`.
 
 ## 6. Step 0 — Building the organisation/domain list
 
-This stage populates `organisations` and `org_domain_history`. It is **not**
-called by `main.py`; run it separately when you want to (re)build the org list.
+This stage maintains `organisations` and `org_domain_history`. `main.py` runs it
+first on every run via `wikidata_fetch_and_persist`, before the scan. It does not
+rebuild the list from scratch: each run records the current Wikidata org + domain
+state as a new SCD-2 history version (see §9.1), so the **temporal** dimension —
+when an organisation's domains change — is captured run over run.
 
 ### 6.1 Wikidata fetch — `org_list_pipeline.py`
 
@@ -186,11 +195,13 @@ called by `main.py`; run it separately when you want to (re)build the org list.
 
   ```yaml
   institutions:                 # Wikidata QIDs + extra SPARQL filters
-    university: { qid: Q3918 }
-    hospital:   { qid: Q16917 }
-    school:     { qid: Q132050, filters: [ "FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }" ] }
-    courthouse: { qid: Q41487 }
-    city:       { qid: Q515 }
+    university:      { qid: Q3918 }
+    hospital:        { qid: Q16917 }
+    school:          { qid: Q132050, filters: [ "FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }" ] }
+    courthouse:      { qid: Q41487 }
+    city:            { qid: Q515 }
+    political party: { qid: Q7278, filters: [ "?item wdt:P31 wd:Q7278." ] }
+    newspaper:       { qid: Q11032 }
   areas:                        # which countries to cover
     germany: Q183
     austria: Q40
@@ -200,6 +211,25 @@ called by `main.py`; run it separately when you want to (re)build the org list.
   The pipeline fetches the **cross-product** institution × area. Selected
   properties: label, website (`P856`), e-mail (`P968`), coordinates (`P625`),
   city / state / country (German labels).
+
+  How the config maps to the SPARQL query:
+
+  - **`institutions`** — each entry is one organisation type to fetch. The **key**
+    (e.g. `university`) is stored on the organisation as its `category_tag`.
+    - **`qid`** — the base query matches any item that is an *instance of, or
+      subclass of*, this QID (`?item wdt:P31/wdt:P279* wd:<qid>`).
+    - **`filters`** — optional extra SPARQL lines injected into the `WHERE` block
+      (replacing the `{EXTRA_FILTERS}` placeholder), used to narrow or exclude
+      results. `school` excludes anything that is also a university so universities
+      don't appear twice; `political party` restricts to a *direct* instance of
+      `Q7278` (`?item wdt:P31 wd:Q7278.`) rather than also pulling in subclasses; an
+      empty `filters: []` adds no restriction beyond the base query.
+  - **`areas`** — maps a country name to its Wikidata QID; the base query filters on
+    `?item wdt:P17 wd:<qid>` (country of the item), so only organisations located in
+    that country are returned.
+
+  To add a new organisation type or country, just add another entry — no code
+  changes are needed.
 
 - Normalisation helpers:
   - `extract_website_domain()` → registered domain via `tldextract`
@@ -212,8 +242,12 @@ called by `main.py`; run it separately when you want to (re)build the org list.
 
 ### 6.2 E-mail scraper — `email_scraper.py`
 
-Fills `email_domain` for current orgs that still have none, using a **Scrapy**
-spider (`mailto_spider`):
+> **Not currently wired into `main.py`.** `run_scraper` exists but nothing invokes
+> it during a run; only its helpers are unit-tested. Its open integration question
+> is tracked in §13.
+
+When run, it fills `email_domain` for current orgs that still have none, using a
+**Scrapy** spider (`mailto_spider`):
 
 - Settings: `DOWNLOAD_TIMEOUT=12`, `ROBOTSTXT_OBEY=True`, `CONCURRENT_REQUESTS=16`,
   `CONCURRENT_REQUESTS_PER_DOMAIN=2`, `DOWNLOAD_DELAY=0.5`, UA `SMART-BOT/1.4`.
@@ -428,9 +462,10 @@ the database keeps full history across runs.
 | `ip_address_id` | FK → ip_addresses |
 | `valid_from_run`, `valid_to_run`, `is_current` | versioning |
 
-> `base.py::migrate_legacy_schema` exists exactly because of the last point: an
-> older global-pool `mail_system_ip_history` (without `organisation_id`) is
-> dropped and rebuilt org-scoped; the data is repopulated on the next scan.
+> The database lives outside version control (`scanner/database/` is gitignored)
+> and is rebuilt locally, so the schema is always created fresh by `create_all`;
+> there is no in-place column migration. If you carry an old local `SMART.db` from
+> before `organisation_id` was added, delete it and re-scan.
 
 ### 9.2 Rating derivation — `db/models.py`
 
@@ -617,18 +652,16 @@ Run with `cd scanner && uv run pytest`.
 
 These are documented honestly so future maintainers aren't surprised:
 
-- **Two scanning code paths exist.** The canonical one is `scanner_pipeline/`
-  (used by `main.py`). `enricher/` is an older "bronze" prototype with hard-coded
-  `/home/julian/…` paths reading a separate `raw_data.db`; it is **not** wired into
-  `main.py`.
-- **`scanner/README.md` is stale** — it says the DB is `domainlist.db`; the actual
-  file is `SMART.db`.
+- **The e-mail scraper (`email_scraper.py::run_scraper`) is not yet integrated
+  into the run.** It is implemented but never called by `main.py`. The open piece
+  to implement is the **coordination with the scanner about *when* e-mails must be
+  scraped** — the scraper's decision to crawl depends on scan results (it skips
+  orgs that already have an `smtp_in` mail system and only crawls those without a
+  resolvable MX), so it cannot simply run as a fixed step before or after the scan.
+  The ordering/trigger between scan and scrape still needs to be designed and wired
+  in.
 - **`SPF` is scanned but never persisted** by `to_db.py`.
-- **`config.yml`** (in `src/`) is a separate, apparently unused rating config — the
-  live ratings come from the signature YAMLs and `db/models.py`.
 - **`extract.py`** in the signatures pipeline is an empty stub.
-- **`tldextract`** is imported but not declared in `pyproject.toml`.
-- **`scanner/docs/db/db.puml`** (ER diagram) omits `mail_system_ip_history.organisation_id`.
 - Per the V2 spec's open TODOs: `vendor_category_rating` should be re-mapped so
   community/public-sector vendors like DFN grade 1 (not 2), and the open-source
   scale currently only uses 1 and 6 in real data.

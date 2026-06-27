@@ -15,6 +15,13 @@ institutions:
   city:
     qid: "Q515"
     filters: []
+  political party:
+    qid: "Q7278"
+    filters: 
+      - "?item wdt:P31 wd:Q7278."
+  newspaper:
+    qid: "Q11032"
+    filters: []
 areas:
   germany: "Q183"
   austria: "Q40"

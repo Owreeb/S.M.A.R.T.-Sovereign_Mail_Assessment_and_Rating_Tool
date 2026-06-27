@@ -97,32 +97,3 @@ class Registry:
         if export_results:
             registry.export_results(export_path)
         return registry
-    
-    @classmethod
-    def create_testing_registry(cls):
-        export_path="/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/exports"
-        registry = Registry()
-        registry.results[ASN] = pd.read_csv(export_path+"/asn.csv")
-        registry.results[Combiner] = pd.read_csv(export_path+"/combiner.csv")
-        registry.results[ASN] = pd.read_csv(export_path+"/asn.csv")
-        registry.results[Domain] = pd.read_csv(export_path+"/domain.csv")
-        registry.results[IMAP] = pd.read_csv(export_path+"/imap.csv")
-        registry.results[IP] = pd.read_csv(export_path+"/ip.csv")
-        registry.results[MX] = pd.read_csv(export_path+"/mx.csv")
-        registry.results[PTR] = pd.read_csv(export_path+"/ptr.csv")
-        registry.results[SMTP] = pd.read_csv(export_path+"/smtp.csv")
-
-        return registry
-
-
-if __name__ == "__main__":
-    
-    registry = Registry.from_sqlite(
-        "/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/database/SMART.db",
-        "SELECT * FROM org_domain_history"
-    )
-    registry.results[Domain] = registry.results[Domain].sample(100)
-    asyncio.run(registry.run_queue())
-    registry.export_results("/home/julian/Projects/S.M.A.R.T.-Sovereign_Mail_Assessment_and_Rating_Tool/scanner/test_exports")
-    # registry = Registry.create_testing_registry()
-    print(registry.results)

@@ -40,41 +40,43 @@ Die Skala ist eine Schulnoten-Skala: **1 = sehr souverän … 6 = nicht souverä
 
 ```
                  ┌─────────────────────────────────────────────────────────┐
-                 │  Wikidata (QLever SPARQL)  +  Website-E-Mail-Scraper      │
+                 │  Wikidata (QLever SPARQL)                               │
                  └───────────────────────────┬─────────────────────────────┘
                                              │  Organisationen + Domains
                                              ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  SQLite:  organisations · org_domain_history                       │
+        │  SQLite:  organisations · org_domain_history                     │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  aktuelle Domains
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Scan-Pipeline (async):  MX → IP → ASN → PTR / SMTP / IMAP / SPF   │
+        │  Scan-Pipeline (async):  MX → IP → ASN → PTR / SMTP / IMAP / SPF │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  Rohbeobachtungen (pandas)
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Signatur-Matcher:  MX-Host / SMTP-Banner / IMAP-Banner → Vendor   │
+        │  Signatur-Matcher:  MX-Host / SMTP-Banner / IMAP-Banner → Vendor │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  Detections
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  to_db:  mail_systems · ip_addresses · *_history-Linktabellen      │
+        │  to_db:  mail_systems · ip_addresses · *_history-Linktabellen    │
         └───────────────────────────┬──────────────────────────────────────┘
                                      │  bewertete Struktur
                                      ▼
         ┌──────────────────────────────────────────────────────────────────┐
-        │  Souveränitätsindex-Berechnung  +  JSON-Export (+ Brotli)         │
+        │  Souveränitätsindex-Berechnung  +  JSON-Export (+ Brotli)        │
         └───────────────────────────┬──────────────────────────────────────┘
                                      ▼
               database/export/organizations.json   (Detail je Org)
               database/export/<YYYY-MM-DD>.json     (Aggregat-Übersicht)
 ```
 
-Der Aufbau der Domain-Liste (Schritt 0) läuft **separat** und bei Bedarf.
-`main.py` führt nur die Schritte **scan → to_db → dump** über die bereits in der
-Datenbank stehenden Domains aus.
+`main.py` führt die komplette Kette **Org-Zustand versionieren → scan → to_db →
+dump** aus. Schritt 0 ist **kein** Neuaufbau der Liste von Grund auf: Er schreibt
+den aktuellen Wikidata-Org-/Domain-Zustand als neue SCD-2-History-Version des Laufs
+fort, sodass Domain-Änderungen zwischen den Läufen über die Zeit erfasst werden.
+Anschließend werden die resultierenden aktuellen Domains gescannt.
 
 ---
 
@@ -105,7 +107,7 @@ Wichtige Laufzeit-Abhängigkeiten (`pyproject.toml`): `aiodns`, `brotli`,
 
 ```
 scanner/
-├── main.py                       # Einstieg: scan → to_db → dump
+├── main.py                       # Einstieg: Org-Zustand versionieren → scan → to_db → dump
 ├── pyproject.toml / uv.lock      # Abhängigkeiten, gelockt
 ├── database/
 │   ├── SMART.db                  # die Arbeitsdatenbank
@@ -133,10 +135,9 @@ scanner/
     │       ├── mx.yaml           # gegen MX-Hostnamen
     │       ├── smtp.yaml         # gegen SMTP-Banner
     │       └── imap.yaml         # gegen IMAP-Banner + Host
-    ├── json_dumper/
-    │   ├── dump.py               # serialisiert Orgs → JSON, baut Übersicht
-    │   └── sovereignty_index_calc.py   # der Bewertungsalgorithmus
-    └── enricher/                 # Legacy-Prototyp (NICHT in main.py eingebunden)
+    └── json_dumper/
+        ├── dump.py               # serialisiert Orgs → JSON, baut Übersicht
+        └── sovereignty_index_calc.py   # der Bewertungsalgorithmus
 ```
 
 ---
@@ -154,13 +155,20 @@ SAMPLE_LIMIT: int | None = None   # Integer = nur N Domains scannen (zum Testen)
 `main(db_path=None, sample_limit=SAMPLE_LIMIT)` macht:
 
 1. DB-Pfad auflösen (Default `scanner/database/SMART.db`).
-2. `make_engine` → `migrate_legacy_schema` → `create_all` → `make_session`.
+2. `make_engine` → `create_all` → `make_session`.
 3. `scanner_run(session)`-Kontext öffnen (legt eine `ScannerRun`-Zeile an, gibt
    `run.id` aus).
-4. **Scan** — `Registry.from_sqlite(db_path, _domain_query(sample_limit))`, dann
+4. **Org-Zustand versionieren** — `wikidata_fetch_and_persist(session, run, WIKIDATA_CONFIG)`
+   schreibt den aktuellen Wikidata-Org-/Domain-Zustand als neue SCD-2-History-Version
+   des Laufs fort (kein Neuaufbau von Grund auf); `update_history` öffnet nur dann
+   eine neue Zeile, wenn sich eine getrackte Domain wirklich geändert hat — so werden
+   Domain-Änderungen über die Zeit erfasst. Danach `session.commit()`, damit die
+   frischen Orgs für den nächsten Schritt sichtbar sind (der über eine eigene
+   unabhängige `sqlite3`-Verbindung liest).
+5. **Scan** — `Registry.from_sqlite(db_path, _domain_query(sample_limit))`, dann
    `asyncio.run(registry.run_queue())`.
-5. **Persistenz** — `to_db(session, run, registry)`.
-6. **Export** — `count = write_dump(session)`; gibt die Org-Anzahl aus.
+6. **Persistenz** — `to_db(session, run, registry)`.
+7. **Export** — `count = write_dump(session)`; gibt die Org-Anzahl aus.
 
 `_domain_query()` wählt die zu scannenden Domains:
 
@@ -177,9 +185,12 @@ Start mit `cd scanner && uv run main.py`.
 
 ## 6. Schritt 0 — Aufbau der Organisations-/Domain-Liste
 
-Diese Stufe füllt `organisations` und `org_domain_history`. Sie wird **nicht** von
-`main.py` aufgerufen; sie läuft separat, wenn die Org-Liste (neu) aufgebaut werden
-soll.
+Diese Stufe pflegt `organisations` und `org_domain_history`. `main.py` führt sie bei
+jedem Lauf zuerst über `wikidata_fetch_and_persist` aus, noch vor dem Scan. Sie baut
+die Liste **nicht** von Grund auf neu: Jeder Lauf schreibt den aktuellen
+Wikidata-Org-/Domain-Zustand als neue SCD-2-History-Version fort (siehe §9.1), sodass
+die **zeitliche** Dimension — wann sich die Domains einer Organisation ändern — Lauf
+für Lauf erfasst wird.
 
 ### 6.1 Wikidata-Abruf — `org_list_pipeline.py`
 
@@ -189,11 +200,13 @@ soll.
 
   ```yaml
   institutions:                 # Wikidata-QIDs + zusätzliche SPARQL-Filter
-    university: { qid: Q3918 }
-    hospital:   { qid: Q16917 }
-    school:     { qid: Q132050, filters: [ "FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }" ] }
-    courthouse: { qid: Q41487 }
-    city:       { qid: Q515 }
+    university:      { qid: Q3918 }
+    hospital:        { qid: Q16917 }
+    school:          { qid: Q132050, filters: [ "FILTER NOT EXISTS { ?item wdt:P31/wdt:P279* wd:Q3918. }" ] }
+    courthouse:      { qid: Q41487 }
+    city:            { qid: Q515 }
+    political party: { qid: Q7278, filters: [ "?item wdt:P31 wd:Q7278." ] }
+    newspaper:       { qid: Q11032 }
   areas:                        # abzudeckende Länder
     germany: Q183
     austria: Q40
@@ -203,6 +216,27 @@ soll.
   Die Pipeline ruft das **Kreuzprodukt** Institution × Gebiet ab. Ausgewählte
   Properties: Label, Website (`P856`), E-Mail (`P968`), Koordinaten (`P625`),
   Stadt / Bundesland / Land (deutsche Labels).
+
+  Wie die Config auf die SPARQL-Query abbildet:
+
+  - **`institutions`** — jeder Eintrag ist ein abzurufender Organisationstyp. Der
+    **Schlüssel** (z. B. `university`) wird als `category_tag` der Organisation
+    gespeichert.
+    - **`qid`** — die Basisquery matcht jedes Item, das *Instanz von oder
+      Unterklasse von* diesem QID ist (`?item wdt:P31/wdt:P279* wd:<qid>`).
+    - **`filters`** — optionale zusätzliche SPARQL-Zeilen, die in den `WHERE`-Block
+      eingefügt werden (ersetzen den Platzhalter `{EXTRA_FILTERS}`), um Ergebnisse
+      einzuschränken oder auszuschließen. `school` schließt alles aus, das zugleich
+      Universität ist, damit Unis nicht doppelt erscheinen; `political party`
+      beschränkt auf eine *direkte* Instanz von `Q7278`
+      (`?item wdt:P31 wd:Q7278.`) statt auch Unterklassen zu ziehen; ein leeres
+      `filters: []` fügt keine Einschränkung über die Basisquery hinaus hinzu.
+  - **`areas`** — bildet einen Ländernamen auf seine Wikidata-QID ab; die Basisquery
+    filtert auf `?item wdt:P17 wd:<qid>` (Land des Items), sodass nur Organisationen
+    in diesem Land zurückkommen.
+
+  Um einen neuen Organisationstyp oder ein neues Land zu ergänzen, genügt ein
+  weiterer Eintrag — keine Code-Änderung nötig.
 
 - Normalisierungs-Helfer:
   - `extract_website_domain()` → registrierte Domain via `tldextract`
@@ -215,8 +249,12 @@ soll.
 
 ### 6.2 E-Mail-Scraper — `email_scraper.py`
 
-Füllt `email_domain` für aktuelle Orgs, die noch keine haben, mit einem
-**Scrapy**-Spider (`mailto_spider`):
+> **Aktuell nicht in `main.py` eingebunden.** `run_scraper` existiert, wird aber
+> während eines Laufs von nichts aufgerufen; nur die Helfer sind unit-getestet. Die
+> offene Integrationsfrage steht in §13.
+
+Wenn ausgeführt, füllt er `email_domain` für aktuelle Orgs, die noch keine haben,
+mit einem **Scrapy**-Spider (`mailto_spider`):
 
 - Einstellungen: `DOWNLOAD_TIMEOUT=12`, `ROBOTSTXT_OBEY=True`,
   `CONCURRENT_REQUESTS=16`, `CONCURRENT_REQUESTS_PER_DOMAIN=2`,
@@ -435,9 +473,11 @@ Geografie behält.
 | `ip_address_id` | FK → ip_addresses |
 | `valid_from_run`, `valid_to_run`, `is_current` | Versionierung |
 
-> `base.py::migrate_legacy_schema` existiert genau wegen des letzten Punkts: ein
-> älteres globales `mail_system_ip_history` (ohne `organisation_id`) wird verworfen
-> und org-bezogen neu aufgebaut; die Daten werden beim nächsten Scan neu befüllt.
+> Die Datenbank liegt außerhalb der Versionsverwaltung (`scanner/database/` ist
+> gitignored) und wird lokal neu aufgebaut, d. h. das Schema wird stets frisch von
+> `create_all` erzeugt; es gibt keine In-place-Spaltenmigration. Wer noch eine alte
+> lokale `SMART.db` von vor der `organisation_id`-Spalte hat, löscht sie und scannt
+> neu.
 
 ### 9.2 Ableitung der Ratings — `db/models.py`
 
@@ -627,20 +667,16 @@ Start mit `cd scanner && uv run pytest`.
 
 Ehrlich dokumentiert, damit künftige Betreuer nicht überrascht werden:
 
-- **Es existieren zwei Scan-Codepfade.** Der kanonische ist `scanner_pipeline/`
-  (von `main.py` genutzt). `enricher/` ist ein älterer „Bronze“-Prototyp mit
-  hartkodierten `/home/julian/…`-Pfaden, der eine separate `raw_data.db` liest; er
-  ist **nicht** in `main.py` eingebunden.
-- **`scanner/README.md` ist veraltet** — es nennt die DB `domainlist.db`; die
-  tatsächliche Datei ist `SMART.db`.
+- **Der E-Mail-Scraper (`email_scraper.py::run_scraper`) ist noch nicht in den Lauf
+  integriert.** Er ist implementiert, wird aber von `main.py` nie aufgerufen. Zu
+  implementieren ist noch die **Abstimmung mit dem Scanner, *wann* E-Mails gescrapt
+  werden müssen** — die Crawl-Entscheidung des Scrapers hängt von den Scan-Ergebnissen
+  ab (er überspringt Orgs, die bereits ein `smtp_in`-Mailsystem haben, und crawlt nur
+  die ohne auflösbaren MX), kann also nicht einfach als fester Schritt vor oder nach
+  dem Scan laufen. Die Reihenfolge/der Trigger zwischen Scan und Scrape muss noch
+  entworfen und eingebunden werden.
 - **`SPF` wird gescannt, aber nie persistiert** (von `to_db.py`).
-- **`config.yml`** (in `src/`) ist eine separate, offenbar ungenutzte
-  Rating-Konfiguration — die Live-Ratings stammen aus den Signatur-YAMLs und
-  `db/models.py`.
 - **`extract.py`** in der Signatur-Pipeline ist ein leerer Stub.
-- **`tldextract`** wird importiert, aber nicht in `pyproject.toml` deklariert.
-- **`scanner/docs/db/db.puml`** (ER-Diagramm) lässt
-  `mail_system_ip_history.organisation_id` weg.
 - Laut den offenen TODOs der V2-Spezifikation sollte `vendor_category_rating` neu
   gemappt werden, sodass gemeinwohlorientierte Vendors wie DFN Note 1 (statt 2)
   erhalten; die Open-Source-Skala nutzt in echten Daten aktuell nur 1 und 6.

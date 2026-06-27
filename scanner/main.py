@@ -1,26 +1,28 @@
 """
 End-to-end entrypoint for the S.M.A.R.T. scanner.
 
-Runs the full chain against the existing organisation database:
+Runs the full chain:
 
+    0. version the organisation/domain state from Wikidata
     1. scan the current domains (DNS/MX/IP/ASN/PTR/SMTP/IMAP),
     2. write the results into the DB (to_db),
     3. dump the DB into the frontend JSON with the sovereignty index.
 
-The organisation list is expected to already be in the database (filled by the
-domainlist pipeline / wikidata fetch). Set SAMPLE_LIMIT to a number to scan
-only a slice (useful for testing); set it to None for the full run.
+Set SAMPLE_LIMIT to a number to scan only a slice (useful for testing); set it
+to None for the full run.
 """
 
 import asyncio
 from pathlib import Path
 
-from src.db import make_engine, make_session, create_all, migrate_legacy_schema, scanner_run
+from src.db import make_engine, make_session, create_all, scanner_run
+from src.domainlist_pipline.org_list_pipeline import wikidata_fetch_and_persist
 from src.scanner_pipeline.registry import Registry
 from src.scanner_pipeline.to_db import to_db
 from src.json_dumper.dump import write_dump
 
 DB_NAME = "SMART.db"
+WIKIDATA_CONFIG = Path("src") / "domainlist_pipline" / "config.yaml"
 
 # How many organisation domains to scan in one run.
 # An int scans only that many (good for testing); None scans everything.
@@ -41,7 +43,7 @@ def _domain_query(sample_limit: int | None) -> str:
 
 def main(db_path: str | Path | None = None, sample_limit: int | None = SAMPLE_LIMIT) -> None:
     """
-    Run the full scan -> to_db -> dump chain.
+    Run the full version-org-state -> scan -> to_db -> dump chain.
 
     Args:
         db_path: Path to the SQLite database. Defaults to ``database/SMART.db``
@@ -54,13 +56,16 @@ def main(db_path: str | Path | None = None, sample_limit: int | None = SAMPLE_LI
     db_path = Path(db_path)
 
     engine = make_engine(db_path)
-    migrate_legacy_schema(engine)
     create_all(engine)
     Session = make_session(engine)
 
     with Session() as session:
         with scanner_run(session) as run:
             print("Run ID:", run.id)
+
+            print("Step 0: Versioning the organisation/domain state from Wikidata")
+            wikidata_fetch_and_persist(session, run, base_dir / WIKIDATA_CONFIG)
+            session.commit()
 
             scope = "FULL" if sample_limit is None else f"sample of {sample_limit}"
             print(f"Step 1: Scanning domains ({scope})")

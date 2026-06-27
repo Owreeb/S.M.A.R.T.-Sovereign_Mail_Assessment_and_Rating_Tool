@@ -1,7 +1,7 @@
 [project]
 name = "scanner"
 version = "0.1.0"
-description = "Add your description here"
+description = "Scans the mail infrastructure of DACH public-sector organisations and rates its digital sovereignty."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -17,6 +17,7 @@ dependencies = [
     "requests",
     "scrapy>=2.16.0",
     "sqlalchemy",
+    "tldextract>=5.3.1",
 ]
 
 [dependency-groups]

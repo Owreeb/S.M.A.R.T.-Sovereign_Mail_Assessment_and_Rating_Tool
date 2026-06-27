@@ -1725,6 +1725,7 @@ dependencies = [
     { name = "requests" },
     { name = "scrapy" },
     { name = "sqlalchemy" },
+    { name = "tldextract" },
 ]
 
 [package.dev-dependencies]
@@ -1747,6 +1748,7 @@ requires-dist = [
     { name = "requests" },
     { name = "scrapy", specifier = ">=2.16.0" },
     { name = "sqlalchemy" },
+    { name = "tldextract", specifier = ">=5.3.1" },
 ]
 
 [package.metadata.requires-dev]
