@@ -1,0 +1,198 @@
+# IMAP / POP3 server signatures. Matched against the IMAP banner and host.
+# vendor_country_rating must equal VendorCountryRating.from_country_code(vendor_country)
+# and vendor_category_rating must equal VendorCategory(vendor_category).rating
+# (validated by parse_signature.py).
+
+# --- Open-source mail servers ---
+- regex: "(?i)dovecot"
+  software: Dovecot
+  vendor: Open-Xchange / Dovecot
+  vendor_country: FI
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: imap_pop3
+  open_source_rating: 1
+  vendor_country_rating: 2
+  vendor_category_rating: 1
+
+- regex: "(?i)cyrus"
+  software: Cyrus IMAP
+  vendor: Cyrus / Fastmail
+  vendor_country: US
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: imap_pop3
+  open_source_rating: 2
+  vendor_country_rating: 5
+  vendor_category_rating: 1
+
+- regex: "(?i)courier"
+  software: Courier IMAP
+  vendor: Double Precision Inc.
+  vendor_country: US
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: imap_pop3
+  open_source_rating: 2
+  vendor_country_rating: 5
+  vendor_category_rating: 1
+
+- regex: "(?i)hmailserver"
+  software: hMailServer
+  vendor: hMailServer
+  vendor_country: SE
+  vendor_category: Community / Public Sector / Gemeinwohl
+  role: imap_pop3
+  open_source_rating: 1
+  vendor_country_rating: 2
+  vendor_category_rating: 1
+
+# --- US hyperscalers (cloud mailboxes) ---
+- regex: '(?i)office365|outlook\.office365|outlook\.com|exchange online'
+  software: Microsoft Exchange Online
+  vendor: Microsoft
+  vendor_country: US
+  vendor_category: US Hyperscaler
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: "(?i)microsoft exchange"
+  software: Microsoft Exchange
+  vendor: Microsoft
+  vendor_country: US
+  vendor_category: US Hyperscaler
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+- regex: '(?i)gimap|imap\.gmail|googlemail|google'
+  software: Google Workspace (Gmail)
+  vendor: Google
+  vendor_country: US
+  vendor_category: US Hyperscaler
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 5
+
+# --- Commercial mail servers ---
+- regex: "(?i)zimbra"
+  software: Zimbra
+  vendor: Synacor / Zimbra
+  vendor_country: US
+  vendor_category: International Vendor
+  role: imap_pop3
+  open_source_rating: 4
+  vendor_country_rating: 5
+  vendor_category_rating: 4
+
+- regex: "(?i)icewarp"
+  software: IceWarp
+  vendor: IceWarp
+  vendor_country: CZ
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 4
+  vendor_country_rating: 2
+  vendor_category_rating: 2
+
+- regex: "(?i)kerio"
+  software: Kerio Connect
+  vendor: GFI Software
+  vendor_country: US
+  vendor_category: International Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 4
+
+- regex: "(?i)mdaemon|alt-n"
+  software: MDaemon
+  vendor: MDaemon Technologies
+  vendor_country: US
+  vendor_category: International Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 4
+
+- regex: "(?i)communigate"
+  software: CommuniGate Pro
+  vendor: Stalker Software
+  vendor_country: US
+  vendor_category: International Vendor
+  role: imap_pop3
+  open_source_rating: 4
+  vendor_country_rating: 5
+  vendor_category_rating: 4
+
+- regex: "(?i)smartermail"
+  software: SmarterMail
+  vendor: SmarterTools Inc.
+  vendor_country: US
+  vendor_category: International Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 5
+  vendor_category_rating: 4
+
+- regex: "(?i)popnet"
+  software: PopNet Mail Server
+  vendor: PopNet Informatik AG
+  vendor_country: CH
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 4
+  vendor_country_rating: 2
+  vendor_category_rating: 2
+
+# --- German / EU hosting providers ---
+- regex: "(?i)ionos|kundenserver|1and1"
+  software: IONOS Mailbox
+  vendor: IONOS
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)gmx|mail\.com'
+  software: GMX / mail.com Mailbox
+  vendor: United Internet
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: "(?i)kasserver|strato"
+  software: STRATO (KAS) Mail Server
+  vendor: STRATO
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: "(?i)alfahosting"
+  software: AlfaHosting Mailserver
+  vendor: AlfaHosting GmbH
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 6
+  vendor_country_rating: 1
+  vendor_category_rating: 2
+
+- regex: '(?i)mailbox\.org|open-xchange'
+  software: mailbox.org (Open-Xchange)
+  vendor: Open-Xchange / mailbox.org
+  vendor_country: DE
+  vendor_category: EU Software Vendor
+  role: imap_pop3
+  open_source_rating: 1
+  vendor_country_rating: 1
+  vendor_category_rating: 2
