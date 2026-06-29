@@ -1,0 +1,1101 @@
+- regex: "belwue"
+  organisation: "Universitaet Stuttgart"
+  asn_rating: 1
+- regex: "telekom"
+  organisation: "HL komm Telekommunikations GmbH"
+  asn_rating: 2
+- regex: "1&1"
+  organisation: "1&1 Versatel GmbH"
+  asn_rating: 2
+- regex: "hetzner"
+  organisation: "Hetzner Online GmbH"
+  asn_rating: 2
+- regex: "DFN"
+  organisation: "Verein zur Foerderung eines Deutschen Forschungsnetzes e.V."
+  asn_rating: 1
+- regex: "cisco"
+  organisation: "Cisco Systems Ironport Division"
+  asn_rating: 2
+- regex: "microsoft"
+  organisation: "Microsoft Corporation"
+  asn_rating: 5
+- regex: "mimecastrvices"
+  organisation: "Mimecast Services Limited"
+  asn_rating: 3
+- regex: "rheinland-pfaelzische"
+  organisation: "Rheinland-Pfaelzische Technische Universitaet Kaiserslautern-Landau"
+  asn_rating: 1
+- regex: "colt"
+  organisation: "COLT Technology Services Group Limited"
+  asn_rating: 4
+- regex: "johannes"
+  organisation: "Johannes Gutenberg-Universitaet Mainz"
+  asn_rating: 1
+- regex: "host"
+  organisation: "Host Europe GmbH"
+  asn_rating: 3
+- regex: "infomaniak"
+  organisation: "Infomaniak Network SA"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Deutsche Telekom AG"
+  asn_rating: 2
+- regex: "infoserve"
+  organisation: "InfoServe GmbH"
+  asn_rating: 2
+- regex: "ionos"
+  organisation: "IONOS SE"
+  asn_rating: 2
+- regex: "amazon"
+  organisation: "Amazon.com, Inc."
+  asn_rating: 5
+- regex: "google"
+  organisation: "Google LLC"
+  asn_rating: 5
+- regex: "ewe"
+  organisation: "EWE TEL GmbH"
+  asn_rating: 2
+- regex: "mk"
+  organisation: "MK Netzdienste Verwaltungs GmbH trading as MK Netzdienste GmbH & Co. KG"
+  asn_rating: 2
+- regex: "kyberio"
+  organisation: "kyberio GmbH"
+  asn_rating: 2
+- regex: "hkn"
+  organisation: "HKN GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "M-net Telekommunikations GmbH"
+  asn_rating: 2
+- regex: "evangelische"
+  organisation: "Evangelische Landeskirche Wuerttemberg"
+  asn_rating: 1
+- regex: "northc"
+  organisation: "NorthC Deutschland GmbH"
+  asn_rating: 2
+- regex: "rwth"
+  organisation: "RWTH Aachen University"
+  asn_rating: 1
+- regex: "dataport"
+  organisation: "Dataport AoR"
+  asn_rating: 1
+- regex: "staatsbetrieb"
+  organisation: "Staatsbetrieb Saechsische Informatik Dienste"
+  asn_rating: 1
+- regex: "bundesministerium"
+  organisation: "Bundesministerium des Innern und fuer Heimat"
+  asn_rating: 1
+- regex: "telekom"
+  organisation: "KEVAG Telekom GmbH"
+  asn_rating: 2
+- regex: "it-nrw"
+  organisation: "IT-NRW"
+  asn_rating: 1
+- regex: "dvz"
+  organisation: "DVZ Datenverarbeitungszentrum Mecklenburg-Vorpommern GmbH"
+  asn_rating: 1
+- regex: "dts"
+  organisation: "DTS Systeme GmbH"
+  asn_rating: 2
+- regex: "convotis"
+  organisation: "CONVOTIS Deutschland GmbH"
+  asn_rating: 2
+- regex: "robert"
+  organisation: "Robert Meyer trading as _Mittwald CM Service GmbH & Co. KG_"
+  asn_rating: 2
+- regex: "retarus"
+  organisation: "retarus GmbH"
+  asn_rating: 2
+- regex: "leibniz-rechenzentrum"
+  organisation: "Leibniz-Rechenzentrum"
+  asn_rating: 1
+- regex: "ovh"
+  organisation: "OVH SAS"
+  asn_rating: 2
+- regex: "hzd-as"
+  organisation: "HZD-AS"
+  asn_rating: 2
+- regex: "snafu"
+  organisation: "snafu Gesellschaft fuer interaktive Netzwerke mbH"
+  asn_rating: 2
+- regex: "heinlein-support"
+  organisation: "Heinlein-Support GmbH"
+  asn_rating: 2
+- regex: "strato"
+  organisation: "Strato GmbH"
+  asn_rating: 2
+- regex: "deutsche"
+  organisation: "Deutsche Gesetzliche Unfallversicherung e.V. (DGUV)"
+  asn_rating: 1
+- regex: "neue"
+  organisation: "Neue Medien Muennich GmbH"
+  asn_rating: 2
+- regex: "teamblue"
+  organisation: "team.blue Denmark A/S"
+  asn_rating: 2
+- regex: "net-build"
+  organisation: "Net-Build GmbH"
+  asn_rating: 2
+- regex: "freistaat"
+  organisation: "Freistaat Thueringen"
+  asn_rating: 2
+- regex: "dogado"
+  organisation: "dogado GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Telekom Deutschland GmbH"
+  asn_rating: 2
+- regex: "nethinks"
+  organisation: "NETHINKS GmbH"
+  asn_rating: 2
+- regex: "gesellschaft"
+  organisation: "Gesellschaft fuer wissenschaftliche Datenverarbeitung mbH, Goettingen"
+  asn_rating: 1
+- regex: "goetel"
+  organisation: "goetel GmbH"
+  asn_rating: 2
+- regex: "arelion"
+  organisation: "Arelion Sweden AB"
+  asn_rating: 4
+- regex: "internet"
+  organisation: "INTERNET AG Global Network"
+  asn_rating: 2
+- regex: "man-dade"
+  organisation: "Man-da.de GmbH"
+  asn_rating: 2
+- regex: "ruhr-universitaet"
+  organisation: "Ruhr-Universitaet Bochum"
+  asn_rating: 1
+- regex: "karlsruhe"
+  organisation: "Karlsruhe Institute of Technology"
+  asn_rating: 1
+- regex: "telekom"
+  organisation: "NetCologne Gesellschaft fur Telekommunikation mbH"
+  asn_rating: 2
+- regex: "ikaruscurity"
+  organisation: "IKARUS Security GmbH"
+  asn_rating: 2
+- regex: "universitaet"
+  organisation: "Universitaet zu Koeln"
+  asn_rating: 1
+- regex: "hochschule"
+  organisation: "Hochschule RheinMain"
+  asn_rating: 1
+- regex: "digitalocean"
+  organisation: "DigitalOcean, LLC"
+  asn_rating: 5
+- regex: "keyweb"
+  organisation: "Keyweb AG"
+  asn_rating: 2
+- regex: "individual"
+  organisation: "Individual Network Berlin (_IN-Berlin_) e.V."
+  asn_rating: 2
+- regex: "wilhelmtel"
+  organisation: "wilhelm.tel GmbH"
+  asn_rating: 2
+- regex: "iddqd-as"
+  organisation: "IDDQD-AS"
+  asn_rating: 2
+- regex: "aconet"
+  organisation: "ACONET"
+  asn_rating: 2
+- regex: "vienna"
+  organisation: "Vienna University Computer Center"
+  asn_rating: 1
+- regex: "kabelplus"
+  organisation: "kabelplus GmbH"
+  asn_rating: 1
+- regex: "t-mobile"
+  organisation: "T-Mobile Austria GmbH"
+  asn_rating: 2
+- regex: "wu"
+  organisation: "WU (Wirtschaftsuniversitaet Wien) - Vienna University of Economics and Business"
+  asn_rating: 1
+- regex: "university"
+  organisation: "University Linz"
+  asn_rating: 1
+- regex: "technische"
+  organisation: "Technische Universitat Wien"
+  asn_rating: 2
+- regex: "technische"
+  organisation: "Technische Universitaet Graz"
+  asn_rating: 1
+- regex: "universitaet"
+  organisation: "Universitaet Klagenfurt"
+  asn_rating: 1
+- regex: "universitaet"
+  organisation: "Universitaet fur Bodenkultur, Wien"
+  asn_rating: 1
+- regex: "core-backbone"
+  organisation: "Core-Backbone GmbH"
+  asn_rating: 2
+- regex: "vtxrvices"
+  organisation: "VTX Services SA"
+  asn_rating: 2
+- regex: "switch"
+  organisation: "SWITCH"
+  asn_rating: 2
+- regex: "proofpoint"
+  organisation: "Proofpoint, Inc."
+  asn_rating: 2
+- regex: "ip"
+  organisation: "IP worldcom SA"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "R-KOM Regensburger Telekommunikationsgesellschaft mbH"
+  asn_rating: 2
+- regex: "vodafone"
+  organisation: "Vodafone GmbH"
+  asn_rating: 2
+- regex: "cbxnet"
+  organisation: "CBXNET combox internet GmbH"
+  asn_rating: 2
+- regex: "thueringer"
+  organisation: "Thueringer Netkom GmbH"
+  asn_rating: 2
+- regex: "surfboxx"
+  organisation: "Surfboxx IT-Solutions GmbH"
+  asn_rating: 2
+- regex: "imos"
+  organisation: "imos Gesellschaft fuer Internet-Marketing und Online-Services mbH"
+  asn_rating: 2
+- regex: "plusnet"
+  organisation: "Plusnet GmbH"
+  asn_rating: 2
+- regex: "ecotel"
+  organisation: "ecotel communication ag"
+  asn_rating: 2
+- regex: "ibh"
+  organisation: "IBH connect GmbH"
+  asn_rating: 2
+- regex: "helios"
+  organisation: "Helios Kliniken GmbH"
+  asn_rating: 1
+- regex: "avency"
+  organisation: "avency GmbH"
+  asn_rating: 2
+- regex: "sachsengigabit"
+  organisation: "SachsenGigaBit GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "TelemaxX Telekommunikation GmbH"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Flensburg GmbH"
+  asn_rating: 2
+- regex: "bisping"
+  organisation: "BISPING"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Netcom Kassel Gesellschaft fuer Telekommunikation mbH"
+  asn_rating: 2
+- regex: "t-systems"
+  organisation: "T-Systems International GmbH"
+  asn_rating: 2
+- regex: "entega"
+  organisation: "ENTEGA Medianet GmbH"
+  asn_rating: 2
+- regex: "s-it"
+  organisation: "S-IT Verwaltungs GmbH trading as S-IT Informationstechnologie Betreiber GmbH & Co. KG im Nordschwarzwald"
+  asn_rating: 2
+- regex: "swisscom"
+  organisation: "Swisscom (Schweiz) AG"
+  asn_rating: 2
+- regex: "ekt"
+  organisation: "EKT AG"
+  asn_rating: 2
+- regex: "rackspace"
+  organisation: "Rackspace Hosting"
+  asn_rating: 2
+- regex: "cancom"
+  organisation: "CANCOM Managed Services GmbH"
+  asn_rating: 2
+- regex: "luenecom"
+  organisation: "LueneCom Kommunikationsloesungen GmbH"
+  asn_rating: 2
+- regex: "fortinet"
+  organisation: "Fortinet Inc."
+  asn_rating: 2
+- regex: "mdlink"
+  organisation: "MDlink online service center GmbH"
+  asn_rating: 2
+- regex: "cogent"
+  organisation: "Cogent Communications, LLC"
+  asn_rating: 4
+- regex: "n-able"
+  organisation: "N-able Technologies, Inc."
+  asn_rating: 2
+- regex: "n-able"
+  organisation: "N-able Acquisition Company B.V."
+  asn_rating: 2
+- regex: "vse"
+  organisation: "VSE NET GmbH"
+  asn_rating: 2
+- regex: "oberberg-online"
+  organisation: "Oberberg-Online Informationssysteme GmbH"
+  asn_rating: 2
+- regex: "gemeinnuetzige"
+  organisation: "Gemeinnuetzige Gesellschaft der Franziskanerinnen zu Olpe mbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "e.discom Telekommunikation GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "BITel Gesellschaft fuer Telekommunikation mbH"
+  asn_rating: 2
+- regex: "claranet"
+  organisation: "Claranet Limited"
+  asn_rating: 2
+- regex: "atos"
+  organisation: "Atos Information Technology GmbH"
+  asn_rating: 2
+- regex: "acp"
+  organisation: "ACP IT Solution AG"
+  asn_rating: 2
+- regex: "netcom"
+  organisation: "NetCom BW GmbH"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Goerlitz AG"
+  asn_rating: 2
+- regex: "htp"
+  organisation: "htp GmbH"
+  asn_rating: 2
+- regex: "twl-kom"
+  organisation: "TWL-KOM GmbH"
+  asn_rating: 2
+- regex: "leitwerk"
+  organisation: "LEITWERK AG"
+  asn_rating: 2
+- regex: "oracle"
+  organisation: "Oracle Corporation"
+  asn_rating: 5
+- regex: "omgde"
+  organisation: "OMG.de GmbH"
+  asn_rating: 2
+- regex: "buchholz"
+  organisation: "Buchholz Digital GmbH"
+  asn_rating: 2
+- regex: "kommunale"
+  organisation: "Kommunale Datenverarbeitung Oldenburg (KDO)"
+  asn_rating: 1
+- regex: "lwlcom"
+  organisation: "LWLcom GmbH"
+  asn_rating: 2
+- regex: "relaix"
+  organisation: "RelAix Networks GmbH"
+  asn_rating: 2
+- regex: "e-business"
+  organisation: "e.-business GmbH"
+  asn_rating: 2
+- regex: "wobcom"
+  organisation: "Wobcom GmbH"
+  asn_rating: 2
+- regex: "gopas"
+  organisation: "GOPAS Solutions GmbH"
+  asn_rating: 2
+- regex: "ith"
+  organisation: "ith Kommunikationstechnik GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "DOKOM Gesellschaft fuer Telekommunikation mbH"
+  asn_rating: 2
+- regex: "bechtle"
+  organisation: "Bechtle Managed Service GmbH"
+  asn_rating: 2
+- regex: "tng"
+  organisation: "TNG Stadtnetz GmbH"
+  asn_rating: 2
+- regex: "trellian"
+  organisation: "Trellian Pty. Limited"
+  asn_rating: 2
+- regex: "gesundheit"
+  organisation: "Gesundheit Nord Klinikverbund Bremen gGmbH"
+  asn_rating: 1
+- regex: "klinikumfd"
+  organisation: "KLINIKUMFD"
+  asn_rating: 1
+- regex: "qualityhosting"
+  organisation: "QualityHosting GmbH"
+  asn_rating: 2
+- regex: "iquernet"
+  organisation: "iquer.net GmbH & Co KG"
+  asn_rating: 2
+- regex: "klinikum"
+  organisation: "Klinikum Ingolstadt GmbH"
+  asn_rating: 1
+- regex: "internetx"
+  organisation: "InterNetX GmbH"
+  asn_rating: 2
+- regex: "odn"
+  organisation: "ODN OnlineDienst Nordbayern GmbH & Co. KG"
+  asn_rating: 2
+- regex: "glasfaser"
+  organisation: "GLASFASER RUHR GmbH & Co. KG"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Stadtnetz Bamberg Gesellschaft fuer Telekommunikation mbH"
+  asn_rating: 2
+- regex: "wiit"
+  organisation: "WIIT AG"
+  asn_rating: 2
+- regex: "forcepoint"
+  organisation: "Forcepoint UK Limited"
+  asn_rating: 3
+- regex: "telta"
+  organisation: "TELTA Citynetz GmbH"
+  asn_rating: 2
+- regex: "kommunale"
+  organisation: "Kommunale Datenverarbeitungszentrale Rhein-Erft-Rur"
+  asn_rating: 1
+- regex: "ipb"
+  organisation: "IPB Internet Provider in Berlin GmbH"
+  asn_rating: 2
+- regex: "vistec"
+  organisation: "VISTEC Internet Service GmbH"
+  asn_rating: 2
+- regex: "global"
+  organisation: "Global Village GmbH"
+  asn_rating: 2
+- regex: "pop-interactive"
+  organisation: "pop-interactive GmbH"
+  asn_rating: 2
+- regex: "wemaconnect"
+  organisation: "Wemaconnect GmbH"
+  asn_rating: 2
+- regex: "space"
+  organisation: "Space Exploration Technologies Corporation"
+  asn_rating: 2
+- regex: "gelsen-net"
+  organisation: "GELSEN-NET Kommunikationsgesellschaft mbH"
+  asn_rating: 2
+- regex: "i-netpartner"
+  organisation: "I-NetPartner GmbH Online Services"
+  asn_rating: 2
+- regex: "reputatio"
+  organisation: "reputatio AG"
+  asn_rating: 2
+- regex: "vegasystems"
+  organisation: "VegaSystems GmbH & Co. KG"
+  asn_rating: 2
+- regex: "akquinet"
+  organisation: "akquinet outsourcing gGmbH"
+  asn_rating: 2
+- regex: "peer"
+  organisation: "Peer Kohlstetter trading as Hessenkom GmbH & Co. KG"
+  asn_rating: 2
+- regex: "kues"
+  organisation: "KUES DATA GmbH"
+  asn_rating: 2
+- regex: "anschlusswerk"
+  organisation: "AnschlussWerk GmbH"
+  asn_rating: 2
+- regex: "verizon"
+  organisation: "Verizon Business"
+  asn_rating: 2
+- regex: "insigma"
+  organisation: "INSIGMA IT Engineering GmbH"
+  asn_rating: 2
+- regex: "iphh"
+  organisation: "IPHH Internet Port Hamburg GmbH"
+  asn_rating: 2
+- regex: "firstcolo"
+  organisation: "firstcolo GmbH"
+  asn_rating: 2
+- regex: "lew"
+  organisation: "LEW TelNet GmbH"
+  asn_rating: 2
+- regex: "spacenet"
+  organisation: "SpaceNet AG"
+  asn_rating: 2
+- regex: "pfalzkom"
+  organisation: "PFALZKOM GmbH"
+  asn_rating: 2
+- regex: "velianet"
+  organisation: "velia.net Internetdienste GmbH"
+  asn_rating: 2
+- regex: "hutchison"
+  organisation: "Hutchison Drei Austria GmbH"
+  asn_rating: 2
+- regex: "nessus"
+  organisation: "Nessus GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "A1 Telekom Austria AG"
+  asn_rating: 2
+- regex: "conova"
+  organisation: "conova communications GmbH"
+  asn_rating: 2
+- regex: "xt-as"
+  organisation: "XT-AS"
+  asn_rating: 2
+- regex: "russmedia"
+  organisation: "Russmedia IT GmbH"
+  asn_rating: 2
+- regex: "magistrat"
+  organisation: "Magistrat der Stadt Wien, Magistratsabteilung 01"
+  asn_rating: 1
+- regex: "ordensklinikum"
+  organisation: "Ordensklinikum Linz GmbH"
+  asn_rating: 1
+- regex: "sozvers-net"
+  organisation: "SOZVERS-NET"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Vorarlberger Informatik- und Telekommunikationsdienstleistungsgesellschaft mbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "SALZBURG AG fur Energie, Verkehr und Telekommunikation"
+  asn_rating: 2
+- regex: "oberoesterreichische"
+  organisation: "Oberoesterreichische Gesundheitsholding GmbH"
+  asn_rating: 2
+- regex: "innsbrucker"
+  organisation: "Innsbrucker Kommunalbetriebe AG"
+  asn_rating: 2
+- regex: "syseleven"
+  organisation: "SysEleven GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "WWZ Telekom AG"
+  asn_rating: 2
+- regex: "litecom"
+  organisation: "LITECOM AG"
+  asn_rating: 2
+- regex: "greench"
+  organisation: "green.ch AG"
+  asn_rating: 2
+- regex: "nts"
+  organisation: "NTS workspace AG"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "IWB Industrielle Werke Basel"
+  asn_rating: 2
+- regex: "sunrise"
+  organisation: "Sunrise GmbH"
+  asn_rating: 2
+- regex: "gas&com"
+  organisation: "GAS&COM AG"
+  asn_rating: 2
+- regex: "paraplegie"
+  organisation: "Paraplegie"
+  asn_rating: 2
+- regex: "universitaetsspital"
+  organisation: "Universitaetsspital Basel"
+  asn_rating: 1
+- regex: "stiftung"
+  organisation: "Stiftung Kantonsspital Graubuenden"
+  asn_rating: 1
+- regex: "tiggee"
+  organisation: "Tiggee LLC"
+  asn_rating: 2
+- regex: "novatrendrvices"
+  organisation: "NovaTrend Services GmbH"
+  asn_rating: 2
+- regex: "direction"
+  organisation: "Direction des Systemes d_Information, Etat de Vaud"
+  asn_rating: 2
+- regex: "everyware"
+  organisation: "EveryWare AG"
+  asn_rating: 2
+- regex: "metanet"
+  organisation: "METANET AG"
+  asn_rating: 2
+- regex: "wista"
+  organisation: "WISTA Management GmbH"
+  asn_rating: 1
+- regex: "civillent"
+  organisation: "civillent GmbH"
+  asn_rating: 2
+- regex: "envia"
+  organisation: "Envia Tel GmbH"
+  asn_rating: 2
+- regex: "michaelbastian"
+  organisation: "Michael Sebastian Schinzel trading as IP-Projects GmbH & Co. KG"
+  asn_rating: 2
+- regex: "bundesrechenzentrum"
+  organisation: "Bundesrechenzentrum GmbH"
+  asn_rating: 1
+- regex: "finanzdirektion"
+  organisation: "Finanzdirektion des Kantons Bern"
+  asn_rating: 1
+- regex: "swissgov"
+  organisation: "SWISSGOV"
+  asn_rating: 1
+- regex: "abraxas"
+  organisation: "Abraxas Informatik AG"
+  asn_rating: 2
+- regex: "datawire"
+  organisation: "DATAWIRE AG"
+  asn_rating: 2
+- regex: "cyon"
+  organisation: "cyon AG"
+  asn_rating: 2
+- regex: "obergericht"
+  organisation: "Obergericht Des Kanton Zurich"
+  asn_rating: 1
+- regex: "regioitaachen"
+  organisation: "regioitaachen"
+  asn_rating: 2
+- regex: "deutsche"
+  organisation: "Deutsche Glasfaser Wholesale GmbH"
+  asn_rating: 2
+- regex: "tele"
+  organisation: "TELE AG"
+  asn_rating: 2
+- regex: "scaleup"
+  organisation: "ScaleUp Technologies GmbH & Co. KG"
+  asn_rating: 2
+- regex: "suedwestfalen-it"
+  organisation: "Suedwestfalen-IT"
+  asn_rating: 2
+- regex: "net-and-phone"
+  organisation: "net-and-phone GmbH"
+  asn_rating: 2
+- regex: "key-systems"
+  organisation: "Key-Systems GmbH"
+  asn_rating: 2
+- regex: "sernetrvice"
+  organisation: "SerNet Service Network GmbH"
+  asn_rating: 2
+- regex: "becom"
+  organisation: "becom Systemhaus Verwaltungs-GmbH"
+  asn_rating: 2
+- regex: "kommunales"
+  organisation: "Kommunales Rechenzentrum Niederrhein"
+  asn_rating: 1
+- regex: "suec"
+  organisation: "suec // dacor GmbH"
+  asn_rating: 2
+- regex: "ludigssoft"
+  organisation: "Ludigssoft Management GmbH trading as Ludigssoft RZ GmbH & Co. KG"
+  asn_rating: 2
+- regex: "wizard"
+  organisation: "Wizard Computersysteme GmbH"
+  asn_rating: 2
+- regex: "gemeinsame"
+  organisation: "Gemeinsame Kommunale Datenzentrale Recklinghausen Zweckverband"
+  asn_rating: 1
+- regex: "mn"
+  organisation: "MN Glasfaser GmbH trading as MUENET GmbH & Co. KG"
+  asn_rating: 2
+- regex: "tkrz"
+  organisation: "TKRZ Stadtwerke GmbH"
+  asn_rating: 2
+- regex: "manfred"
+  organisation: "Manfred Casper trading as EURO-SAT"
+  asn_rating: 2
+- regex: "etn"
+  organisation: "ETN Internet GmbH & Co. KG"
+  asn_rating: 2
+- regex: "planet"
+  organisation: "PLANET IC GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "inexio Informationstechnologie und Telekommunikation Gmbh"
+  asn_rating: 2
+- regex: "dts"
+  organisation: "DTS Systeme Muenster GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Next Layer Telekommunikationsdienstleistungs- und Beratungs GmbH"
+  asn_rating: 2
+- regex: "itk"
+  organisation: "ITK Rheinland"
+  asn_rating: 2
+- regex: "level"
+  organisation: "Level 3 Parent, LLC"
+  asn_rating: 4
+- regex: "purtelcom"
+  organisation: "PURtel.com GmbH"
+  asn_rating: 2
+- regex: "tele"
+  organisation: "Tele Columbus AG"
+  asn_rating: 2
+- regex: "connectingbytes"
+  organisation: "ConnectingBytes GmbH"
+  asn_rating: 2
+- regex: "rechenzentrum"
+  organisation: "Rechenzentrum Hassfurt GmbH"
+  asn_rating: 2
+- regex: "telefonica"
+  organisation: "Telefonica Germany GmbH & Co.OHG"
+  asn_rating: 2
+- regex: "dsi"
+  organisation: "DSI GmbH Daten Service Informationssysteme"
+  asn_rating: 2
+- regex: "marc"
+  organisation: "Marc Pauls (AlphaCron Datensysteme)"
+  asn_rating: 2
+- regex: "netcup"
+  organisation: "netcup GmbH"
+  asn_rating: 2
+- regex: "addix"
+  organisation: "ADDIX GmbH"
+  asn_rating: 2
+- regex: "landeshauptstadt"
+  organisation: "Landeshauptstadt Muenchen, it@M"
+  asn_rating: 1
+- regex: "teutel"
+  organisation: "Teutel GmbH"
+  asn_rating: 2
+- regex: "psv"
+  organisation: "PSV Neo GmbH"
+  asn_rating: 2
+- regex: "stadtwerker"
+  organisation: "stadtwerker Versorgungs GmbH"
+  asn_rating: 2
+- regex: "jonas"
+  organisation: "Jonas Frey trading as Probe Networks"
+  asn_rating: 2
+- regex: "newone-as"
+  organisation: "NEWONE-AS"
+  asn_rating: 2
+- regex: "essener"
+  organisation: "Essener Systemhaus"
+  asn_rating: 1
+- regex: "duisburger"
+  organisation: "Duisburger Versorgungs- und Verkehrsgesellschaft mbH"
+  asn_rating: 2
+- regex: "stadtverwaltung"
+  organisation: "Stadtverwaltung Remscheid"
+  asn_rating: 1
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Bielefeld GmbH"
+  asn_rating: 2
+- regex: "ropa"
+  organisation: "ropa GmbH"
+  asn_rating: 2
+- regex: "artfiles"
+  organisation: "Artfiles New Media GmbH"
+  asn_rating: 2
+- regex: "in(n)"
+  organisation: "In(n) Energie GmbH"
+  asn_rating: 2
+- regex: "stadt"
+  organisation: "Stadt Bremerhaven trading as Betrieb fuer Informationstechnologie Bremerhaven"
+  asn_rating: 2
+- regex: "stadt"
+  organisation: "Stadt Augsburg - Amt fur Digitalisierung, Organisation und Informationstechnik"
+  asn_rating: 1
+- regex: "it-consult"
+  organisation: "IT-Consult Halle GmbH"
+  asn_rating: 2
+- regex: "informationsverarbeitung"
+  organisation: "Informationsverarbeitung Leverkusen GmbH"
+  asn_rating: 2
+- regex: "csl"
+  organisation: "CSL Computer Service Langenbach GmbH"
+  asn_rating: 2
+- regex: "wissenschaftsstadt"
+  organisation: "Wissenschaftsstadt Darmstadt"
+  asn_rating: 2
+- regex: "haendle"
+  organisation: "Haendle & Korte GmbH"
+  asn_rating: 2
+- regex: "stadt"
+  organisation: "Stadt Regensburg"
+  asn_rating: 1
+- regex: "clevernet"
+  organisation: "Clevernet GmbH"
+  asn_rating: 2
+- regex: "stadtverwaltung"
+  organisation: "Stadtverwaltung Offenbach"
+  asn_rating: 1
+- regex: "stadtverwaltung"
+  organisation: "Stadtverwaltung Pforzheim"
+  asn_rating: 1
+- regex: "avacon"
+  organisation: "Avacon Connect GmbH"
+  asn_rating: 2
+- regex: "stadt"
+  organisation: "Stadt Flensburg"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "Daten- und Telekommunikations GmbH Dessau"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Marburg GmbH"
+  asn_rating: 2
+- regex: "rheinet"
+  organisation: "RheiNet GmbH"
+  asn_rating: 2
+- regex: "lb"
+  organisation: "LB GmbH"
+  asn_rating: 2
+- regex: "tmt"
+  organisation: "TMT GmbH & Co. KG"
+  asn_rating: 2
+- regex: "hertener"
+  organisation: "Hertener Stadtwerke GmbH"
+  asn_rating: 2
+- regex: "teledata"
+  organisation: "TeleData GmbH"
+  asn_rating: 2
+- regex: "bn:t"
+  organisation: "bn:t Blatzheim Networks Telecom GmbH"
+  asn_rating: 2
+- regex: "vitroconnect"
+  organisation: "vitroconnect GmbH"
+  asn_rating: 2
+- regex: "qbeyond"
+  organisation: "q.beyond AG"
+  asn_rating: 2
+- regex: "telepark"
+  organisation: "Telepark Passau GmbH"
+  asn_rating: 2
+- regex: "david"
+  organisation: "David Doepelheuer"
+  asn_rating: 2
+- regex: "equinix"
+  organisation: "Equinix (Germany) GmbH"
+  asn_rating: 4
+- regex: "lfnet"
+  organisation: "LF.net Netzwerksysteme GmbH"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Lutherstadt Eisleben GmbH"
+  asn_rating: 2
+- regex: "marco"
+  organisation: "Marco Bungalski GmbH"
+  asn_rating: 2
+- regex: "ratiokontakt"
+  organisation: "ratiokontakt GmbH"
+  asn_rating: 2
+- regex: "marc-christian"
+  organisation: "Marc-Christian Schroeer trading as _ingenit GmbH & Co. KG_"
+  asn_rating: 2
+- regex: "hostingde"
+  organisation: "Hosting.de GmbH"
+  asn_rating: 2
+- regex: "onecom"
+  organisation: "One.com A/S"
+  asn_rating: 2
+- regex: "vereinigte"
+  organisation: "Vereinigte Stadtwerke Media GmbH"
+  asn_rating: 1
+- regex: "kapelan"
+  organisation: "KAPELAN Medien GmbH"
+  asn_rating: 2
+- regex: "synaforce"
+  organisation: "synaforce GmbH"
+  asn_rating: 2
+- regex: "wornet"
+  organisation: "WorNet AG"
+  asn_rating: 2
+- regex: "noris"
+  organisation: "noris network AG"
+  asn_rating: 2
+- regex: "infraleuna"
+  organisation: "InfraLeuna GmbH"
+  asn_rating: 2
+- regex: "idkom"
+  organisation: "IDKOM Networks GmbH"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Neustrelitz GmbH"
+  asn_rating: 2
+- regex: "gridscale"
+  organisation: "gridscale GmbH"
+  asn_rating: 2
+- regex: "bradler"
+  organisation: "Bradler & Krantz GmbH & Co. KG"
+  asn_rating: 2
+- regex: "weberdigital"
+  organisation: "weber.digital GmbH"
+  asn_rating: 2
+- regex: "rh-tec"
+  organisation: "rh-tec Business GmbH"
+  asn_rating: 2
+- regex: "georg"
+  organisation: "Georg Kroeber"
+  asn_rating: 2
+- regex: "wortmann"
+  organisation: "Wortmann AG"
+  asn_rating: 2
+- regex: "neu-itec"
+  organisation: "neu-itec GmbH"
+  asn_rating: 2
+- regex: "hostserver"
+  organisation: "Hostserver GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "WEMACOM Telekommunikation GmbH"
+  asn_rating: 2
+- regex: "plusserver"
+  organisation: "PlusServer GmbH"
+  asn_rating: 2
+- regex: "swn"
+  organisation: "SWN Stadtwerke Neumuenster GmbH"
+  asn_rating: 2
+- regex: "treml+sturm"
+  organisation: "Treml+Sturm Datentechnik GmbH"
+  asn_rating: 2
+- regex: "randy"
+  organisation: "Randy Sieber"
+  asn_rating: 2
+- regex: "fnoh"
+  organisation: "FNOH DSL Suedheide GmbH"
+  asn_rating: 2
+- regex: "equada"
+  organisation: "equada network GmbH"
+  asn_rating: 2
+- regex: "ertel"
+  organisation: "Ertel & Friends Multimedia GmbH"
+  asn_rating: 2
+- regex: "host-onrvice"
+  organisation: "Host-On Service Provider GmbH"
+  asn_rating: 2
+- regex: "lumi"
+  organisation: "LUMi GmbH"
+  asn_rating: 2
+- regex: "vautron"
+  organisation: "Vautron Rechenzentrum AG"
+  asn_rating: 2
+- regex: "contabo"
+  organisation: "Contabo GmbH"
+  asn_rating: 2
+- regex: "ica-net"
+  organisation: "ICA-NET GmbH"
+  asn_rating: 2
+- regex: "it"
+  organisation: "IT Heinrich GmbH"
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Schwedt GmbH"
+  asn_rating: 2
+- regex: "lkg"
+  organisation: "LKG Lausitzer Kabelbetriebsgesellschaft mbH"
+  asn_rating: 2
+- regex: "greenfiber"
+  organisation: "Greenfiber Internet & Dienste GmbH"
+  asn_rating: 2
+- regex: "stiegeler"
+  organisation: "Stiegeler Internet Service GmbH"
+  asn_rating: 2
+- regex: "netplans"
+  organisation: "NetPlans GmbH"
+  asn_rating: 2
+- regex: "michael"
+  organisation: "Michael Rottmann trading as Pixel X e.K."
+  asn_rating: 2
+- regex: "stadtwerke"
+  organisation: "Stadtwerke Teterow GmbH"
+  asn_rating: 2
+- regex: "ud"
+  organisation: "UD Media GmbH"
+  asn_rating: 2
+- regex: "dns:net"
+  organisation: "DNS:NET Internet Service GmbH"
+  asn_rating: 2
+- regex: "pdv-systeme"
+  organisation: "pdv-systeme Sachsen GmbH"
+  asn_rating: 2
+- regex: "wittenberg-net"
+  organisation: "Wittenberg-net GmbH"
+  asn_rating: 2
+- regex: "elementmedia"
+  organisation: "ELEMENTMEDIA GmbH"
+  asn_rating: 2
+- regex: "epcan"
+  organisation: "Epcan GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "HeLi NET Telekommunikation GmbH & Co."
+  asn_rating: 2
+- regex: "rockenstein"
+  organisation: "Rockenstein AG"
+  asn_rating: 2
+- regex: "true"
+  organisation: "true global communications GmbH"
+  asn_rating: 2
+- regex: "infotech"
+  organisation: "Infotech EDV-Systeme GmbH"
+  asn_rating: 2
+- regex: "magistrat"
+  organisation: "Magistrat Graz"
+  asn_rating: 1
+- regex: "hallag"
+  organisation: "HALLAG Kommunal GmbH"
+  asn_rating: 2
+- regex: "mynet"
+  organisation: "myNet GmbH"
+  asn_rating: 2
+- regex: "telekom"
+  organisation: "LINZ STROM GAS WAERME GmbH fuer Energiedienstleistungen und Telekommunikation"
+  asn_rating: 2
+- regex: "eww"
+  organisation: "eww ag"
+  asn_rating: 2
+- regex: "ckw"
+  organisation: "CKW Fiber Services AG"
+  asn_rating: 2
+- regex: "etat"
+  organisation: "Etat de Geneve"
+  asn_rating: 2
+- regex: "azienda"
+  organisation: "Azienda Multiservizi Bellinzona"
+  asn_rating: 2
+- regex: "kanton"
+  organisation: "Kanton Zug"
+  asn_rating: 1
+- regex: "ip-max"
+  organisation: "IP-Max SA"
+  asn_rating: 2
+- regex: "naveum"
+  organisation: "Naveum AG"
+  asn_rating: 2
+- regex: "improware"
+  organisation: "ImproWare AG"
+  asn_rating: 2
+- regex: "northc"
+  organisation: "NorthC Schweiz AG"
+  asn_rating: 2
+- regex: "talus"
+  organisation: "Talus Informatik AG"
+  asn_rating: 2
+- regex: "informatik"
+  organisation: "Informatik Schaffhausen (ITSH)"
+  asn_rating: 2
+- regex: "assolo"
+  organisation: "Assolo Networks SA"
+  asn_rating: 2
+- regex: "gib-solutions"
+  organisation: "GIB-Solutions AG"
+  asn_rating: 2
+- regex: "bse"
+  organisation: "BSE Software GmbH"
+  asn_rating: 2
+- regex: "stadt"
+  organisation: "Stadt Chur"
+  asn_rating: 1
+- regex: "scaleway"
+  organisation: "Scaleway SAS"
+  asn_rating: 2
+- regex: "mtf"
+  organisation: "MTF Solutions AG"
+  asn_rating: 2
+- regex: "hosttech"
+  organisation: "hosttech GmbH"
+  asn_rating: 2
+- regex: "administration"
+  organisation: "Administration communale de Pully"
+  asn_rating: 1
+- regex: "services"
+  organisation: "Services Industriels de Lausanne (SIL)"
+  asn_rating: 1
+- regex: "netplusch"
+  organisation: "netplus.ch SA"
+  asn_rating: 2
+- regex: "comune"
+  organisation: "Comune di Lugano"
+  asn_rating: 2
+- regex: "quickline"
+  organisation: "Quickline AG"
+  asn_rating: 2
+- regex: "bwi"
+  organisation: "BWI GmbH"
+  asn_rating: 1
+- regex: "amt"
+  organisation: "Amt der Salzburger Landesregierung"
+  asn_rating: 1

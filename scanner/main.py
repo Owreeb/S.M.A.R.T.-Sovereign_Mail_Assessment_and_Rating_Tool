@@ -43,7 +43,7 @@ def main() -> None:
 
             # print("Step 2: Scraping email domains where Website Domain != Email Domain")
             # run_scraper(session, run)
-            # session.commit()
+            session.commit()
 
     print("Finished!")
 

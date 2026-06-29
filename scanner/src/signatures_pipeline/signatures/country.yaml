@@ -1,0 +1,51 @@
+﻿- regex: "DE"
+  country_name: "Deutschland"
+  country_rating: 1
+
+- regex: "EU"
+  country_name: "Europäische Union"
+  country_rating: 2
+
+- regex: "EWR"
+  country_name: "Europäischer Wirtschaftsraum"
+  country_rating: 2
+
+- regex: "CH"
+  country_name: "Schweiz"
+  country_rating: 2
+
+- regex: "FR"
+  country_name: "Frankreich"
+  country_rating: 2
+
+- regex: "DK"
+  country_name: "Dänemark"
+  country_rating: 2
+
+- regex: "SE"
+  country_name: "Schweden"
+  country_rating: 2
+
+- regex: "AT"
+  country_name: "Österreich"
+  country_rating: 2
+
+- regex: "IE"
+  country_name: "Irland"
+  country_rating: 2
+
+- regex: "GB"
+  country_name: "Großbritannien"
+  country_rating: 3
+
+- regex: "UK"
+  country_name: "Vereinigtes Königreich"
+  country_rating: 3
+
+- regex: "AU"
+  country_name: "Australien"
+  country_rating: 3
+
+- regex: "US"
+  country_name: "Vereinigte Staaten"
+  country_rating: 5
