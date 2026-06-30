@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { useTranslation } from 'react-i18next'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 import LanguageSwitch from '@components/common/LanguageSwitch'
 
@@ -15,7 +15,7 @@ const Navbar = (): React.ReactElement => {
 
   return (
     <header className={styles.navbar}>
-      <a className={styles.invisibleLink} href="/">
+      <Link className={styles.invisibleLink} to="/">
         <div className={styles.brand}>
           <span className={styles.logo}>
             s.m.a.r<span className={styles.logoAccent}>.t.</span>
@@ -26,7 +26,7 @@ const Navbar = (): React.ReactElement => {
             DACH
           </span>
         </div>
-      </a>
+      </Link>
       <nav className={styles.links}>
         <NavLink className={linkClass} to="/" end>
           {t('home')}
