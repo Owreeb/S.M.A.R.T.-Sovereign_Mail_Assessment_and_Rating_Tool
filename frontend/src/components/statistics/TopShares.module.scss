@@ -1,7 +1,13 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: minmax(300px, 1fr) minmax(340px, 1.5fr);
   gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .list {
@@ -9,6 +15,7 @@
   background: white;
   border: 1px solid #e9ecef;
   border-radius: 10px;
+  container-type: inline-size;
 }
 
 .title {
@@ -20,30 +27,22 @@
   color: #868e96;
 }
 
-.row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  margin-bottom: 4px;
-  font-size: 13px;
-  border-radius: 6px;
-  overflow: hidden;
+.rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
-.bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: #e7f0fb;
-  border-radius: 6px;
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  min-width: 0;
 }
 
 .name {
-  position: relative;
-  flex: 1;
+  flex: 0 0 42%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -51,9 +50,41 @@
   color: #212529;
 }
 
+.track {
+  flex: 1;
+  min-width: 0;
+  height: 10px;
+  background: #f1f3f5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: #f0792e;
+  border-radius: 5px;
+}
+
 .share {
-  position: relative;
-  flex-shrink: 0;
+  flex: 0 0 34px;
+  text-align: right;
   font-weight: 600;
-  color: #1f4ea1;
+  color: #212529;
+}
+
+@container (max-width: 520px) {
+  .name {
+    flex-basis: 50%;
+  }
+}
+
+@container (max-width: 400px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .name {
+    flex-basis: 100%;
+  }
 }

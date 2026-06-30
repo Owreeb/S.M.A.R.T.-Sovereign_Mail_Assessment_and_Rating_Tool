@@ -34,8 +34,8 @@ const Navbar = (): React.ReactElement => {
         <NavLink className={linkClass} to="/dashboard">
           {t('domainStatistics')}
         </NavLink>
-        <NavLink className={linkClass} to="/score-info">
-          {t('scoreInfo')}
+        <NavLink className={linkClass} to="/about">
+          {t('about')}
         </NavLink>
         <LanguageSwitch />
       </nav>

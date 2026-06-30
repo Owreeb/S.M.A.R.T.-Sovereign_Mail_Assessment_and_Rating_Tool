@@ -57,8 +57,6 @@ const renderFlags = (codes: string[]): string =>
         .join('')}</span>`
     : ''
 
-// One mail system: software name, a vendor-category pill, the hosting country
-// flags and — when present — the security proxy sitting in front of it.
 const renderSystem = (system: MailSystem, labels: PopupLabels): string => {
   const meta = vendorCategoryMeta(system.vendor_category)
   const name = system.software ?? labels.unidentified
@@ -78,7 +76,6 @@ const renderSystem = (system: MailSystem, labels: PopupLabels): string => {
     </div>`
 }
 
-// The per-role mail-flow breakdown (Inbound / Mailbox / Outbound).
 const renderMailFlow = (org: MappableOrganization, labels: PopupLabels): string => {
   const groups = roleGroups(org)
   if (!groups.length) return ''

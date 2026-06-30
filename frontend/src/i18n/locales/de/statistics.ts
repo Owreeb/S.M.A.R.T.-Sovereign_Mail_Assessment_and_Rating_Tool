@@ -3,7 +3,7 @@ const statistics = {
   orgsScannedTitle: 'ORGANISATIONEN GESCANNT',
   sovereigntyIndexTitle: 'Ø SOUVERÄNITÄTSINDEX',
   domainsScannedTitle: 'DOMAINS ANALYSIERT',
-  topMailVendorsTitle: 'TOP MAIL-ANBIETER',
+  vendorClassTitle: 'ANBIETERKLASSEN',
   topHostersTitle: 'TOP HOSTER',
   diffSinceLastScan: 'seit letztem Scan',
   insightsTitle: 'Mail-Souveränität',

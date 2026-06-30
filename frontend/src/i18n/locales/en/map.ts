@@ -8,6 +8,7 @@ const map = {
   providerLabel: 'Provider',
   categoryLabel: 'Category',
   countryLabel: 'Country',
+  vendorClassLabel: 'Provider class',
   searchLabel: 'Search for city or address',
   popupSovereignty: 'Sovereignty',
   popupProviders: 'Providers',

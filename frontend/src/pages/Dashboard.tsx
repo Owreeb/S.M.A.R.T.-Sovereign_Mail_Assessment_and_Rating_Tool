@@ -19,7 +19,6 @@ const sortedFiles = Object.keys(dataFiles)
 
 const currentData = dataFiles[sortedFiles[0]] as StatisticsData
 const previousData = dataFiles[sortedFiles[1]] as StatisticsData | undefined
-// Only show organizations that received a sovereignty rating; unrated (null) entries are dropped.
 const organizations = (organizationsData as Organization[]).filter((org) => org.sovereignty_index != null)
 
 const Dashboard = (): React.ReactElement => {
@@ -28,7 +27,7 @@ const Dashboard = (): React.ReactElement => {
   return (
     <>
       <Navbar />
-      <OverviewSection currentData={currentData} previousData={previousData} />
+      <OverviewSection currentData={currentData} previousData={previousData} orgs={organizations} />
       <InsightsSection orgs={organizations} />
       <MapView orgs={organizations} filters={filters} />
       <OrgTable orgs={filters.filteredOrgs} filters={filters} />

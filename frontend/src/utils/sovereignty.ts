@@ -1,7 +1,5 @@
 import type { SovereigntyLevel } from '@models/organization.ts'
 
-// Souveränitätsindex V2 is an integer 1..6 where 1 = most sovereign and
-// 6 = least sovereign; null means the organization could not be rated.
 const LEVEL_BY_INDEX: Record<number, SovereigntyLevel> = {
   1: 'sehr-hoch',
   2: 'hoch',
@@ -12,15 +10,15 @@ const LEVEL_BY_INDEX: Record<number, SovereigntyLevel> = {
 }
 
 const COLOR_BY_INDEX: Record<number, string> = {
-  1: '#2f9e44', // Grün – am souveränsten
+  1: '#2f9e44', // Grün
   2: '#74b816', // Hellgrün
   3: '#f2cc0c', // Gelb
   4: '#f76707', // Orange
   5: '#e03131', // Rot
-  6: '#c92a2a', // Dunkelrot – am wenigsten souverän
+  6: '#c92a2a', // Dunkelrot
 }
 
-const UNKNOWN_COLOR = '#adb5bd' // Grau – nicht bewertet
+const UNKNOWN_COLOR = '#adb5bd' // Grau
 
 export const sovereigntyLevel = (index: number | null): SovereigntyLevel =>
   index == null ? 'unbekannt' : (LEVEL_BY_INDEX[index] ?? 'unbekannt')
@@ -28,7 +26,6 @@ export const sovereigntyLevel = (index: number | null): SovereigntyLevel =>
 export const sovereigntyColor = (index: number | null): string =>
   index == null ? UNKNOWN_COLOR : (COLOR_BY_INDEX[index] ?? UNKNOWN_COLOR)
 
-// Legend entries, best (most sovereign) first.
 export const SOVEREIGNTY_LEGEND: { index: number; color: string; level: SovereigntyLevel }[] = [1, 2, 3, 4, 5, 6].map(
   (index) => ({ index, color: COLOR_BY_INDEX[index], level: LEVEL_BY_INDEX[index] }),
 )

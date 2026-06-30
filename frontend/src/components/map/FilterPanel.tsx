@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { FILTER_FIELDS, type FilterField, type FilterKey, type FilterState } from '@constants/filterFields'
 import type { Organization } from '@models/organization'
 import { IconChevronDown, IconX } from '@tabler/icons-react'
-import { COUNTRY_FILTER_VALUES, categoryLabel, countryFilterLabel } from '@utils/categoryUtils'
+import { COUNTRY_FILTER_VALUES, categoryLabel, countryFilterLabel, vendorClassLabel } from '@utils/categoryUtils'
+import { VENDOR_CLASS_KEYS } from '@utils/mailInsights'
 
 import styles from './FilterPanel.module.scss'
 
@@ -20,26 +21,33 @@ type Props = {
 }
 
 const optionsFor = (orgs: Organization[], field: FilterField): string[] => {
-  // The country filter is limited to DE/CH/AT regardless of stray data values.
   if (field.key === 'country') return [...COUNTRY_FILTER_VALUES]
 
   const values = new Set<string>()
   orgs.forEach((org) => {
-    const value = org[field.key]
+    const value = field.accessor(org)
     if (Array.isArray(value)) value.forEach((v) => values.add(v))
     else if (value != null) values.add(value)
   })
+  if (field.key === 'vendorClass') return VENDOR_CLASS_KEYS.filter((key) => values.has(key))
   return [...values].sort((a, b) => a.localeCompare(b))
 }
 
-const optionLabel = (field: FilterField, value: string, t: TFunction<'map'>): string => {
+const optionLabel = (
+  field: FilterField,
+  value: string,
+  t: TFunction<'map'>,
+  tMail: TFunction<'mail'>,
+): string => {
   if (field.key === 'category') return categoryLabel(t, value)
   if (field.key === 'country') return countryFilterLabel(t, value)
+  if (field.key === 'vendorClass') return vendorClassLabel(tMail, value)
   return value
 }
 
 const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props): React.ReactElement => {
   const { t } = useTranslation('map')
+  const { t: tMail } = useTranslation('mail')
   const [openSection, setOpenSection] = useState<string | null>(null)
 
   const toggleOpen = (key: string): void => setOpenSection((prev) => (prev === key ? null : key))
@@ -84,7 +92,7 @@ const FilterPanel = ({ orgs, selected, open, onToggle, onReset, onClose }: Props
                         checked={selected[field.key].includes(value)}
                         onChange={() => onToggle(field.key, value)}
                       />
-                      <span>{optionLabel(field, value, t)}</span>
+                      <span>{optionLabel(field, value, t, tMail)}</span>
                     </label>
                   ))}
                 </div>

@@ -11,7 +11,7 @@ export type OrgFilters = {
   reset: () => void
 }
 
-const emptyFilterState = (): FilterState => ({ providers: [], category: [], country: [] })
+const emptyFilterState = (): FilterState => ({ providers: [], category: [], country: [], vendorClass: [] })
 
 export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
   const [selected, setSelected] = useState<FilterState>(emptyFilterState)
@@ -22,7 +22,7 @@ export const useOrgFilters = (orgs: Organization[]): OrgFilters => {
         FILTER_FIELDS.every((field) => {
           const chosen = selected[field.key]
           if (chosen.length === 0) return true
-          const value = org[field.key]
+          const value = field.accessor(org)
           if (Array.isArray(value)) return value.some((v) => chosen.includes(v))
           return value != null && chosen.includes(value)
         }),

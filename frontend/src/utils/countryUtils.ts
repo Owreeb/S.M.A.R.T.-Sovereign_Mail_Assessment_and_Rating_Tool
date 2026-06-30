@@ -1,5 +1,3 @@
-// EU / EEA / Switzerland — mirrors the scanner's VendorCountryRating mapping.
-// Used to judge where mail infrastructure sits on the sovereignty gradient.
 export const EU_EEA_CH = new Set([
   'AT',
   'FR',
@@ -35,7 +33,6 @@ export const EU_EEA_CH = new Set([
 
 export type CountryTier = 'de' | 'eu' | 'other' | 'us'
 
-// Where a hosting country sits on the sovereignty gradient (best -> worst).
 export const countryTier = (code: string): CountryTier => {
   if (code === 'DE') return 'de'
   if (EU_EEA_CH.has(code)) return 'eu'
@@ -45,7 +42,6 @@ export const countryTier = (code: string): CountryTier => {
 
 const TIER_ORDER: Record<CountryTier, number> = { de: 0, eu: 1, other: 2, us: 3 }
 
-// The least-sovereign tier among a set of hosting countries.
 export const worstTier = (codes: string[]): CountryTier => {
   let worst: CountryTier = 'de'
   for (const code of codes) {

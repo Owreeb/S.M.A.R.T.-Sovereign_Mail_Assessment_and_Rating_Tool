@@ -2,7 +2,7 @@ const navbar = {
   tagline: 'EMAIL SOVEREIGNTY',
   home: 'HOME',
   domainStatistics: 'DOMAIN STATISTICS',
-  scoreInfo: 'SCORING',
+  about: 'METHOD',
 }
 
 export default navbar

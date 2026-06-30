@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { FILTER_FIELDS, type FilterKey, type FilterState } from '@constants/filterFields'
 import { IconX } from '@tabler/icons-react'
-import { categoryLabel, countryFilterLabel } from '@utils/categoryUtils'
+import { categoryLabel, countryFilterLabel, vendorClassLabel } from '@utils/categoryUtils'
 
 import styles from './FilterChips.module.scss'
 
@@ -18,6 +18,7 @@ type Props = {
 const FilterChips = ({ selected, activeCount, onRemove, onReset }: Props): React.ReactElement | null => {
   const { t } = useTranslation(['table', 'map'])
   const { t: tMap } = useTranslation('map')
+  const { t: tMail } = useTranslation('mail')
 
   if (activeCount === 0) return null
 
@@ -38,7 +39,9 @@ const FilterChips = ({ selected, activeCount, onRemove, onReset }: Props): React
                 ? categoryLabel(tMap, value)
                 : field.key === 'country'
                   ? countryFilterLabel(tMap, value)
-                  : value}
+                  : field.key === 'vendorClass'
+                    ? vendorClassLabel(tMail, value)
+                    : value}
             </span>
             <IconX size={13} />
           </button>

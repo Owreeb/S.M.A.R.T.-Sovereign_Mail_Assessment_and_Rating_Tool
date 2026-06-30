@@ -1,6 +1,5 @@
 export interface StatisticsData {
   overview: Overview
-  topMailVendors: Share[]
   topHosters: Share[]
 }
 

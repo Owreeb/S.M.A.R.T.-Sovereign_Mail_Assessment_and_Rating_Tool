@@ -30,12 +30,10 @@ export interface Organization {
   long: number | null
   last_checked: string | null
 
-  // Souveränitätsindex V2: 1 = most sovereign ... 6 = least sovereign, null = not rated.
   sovereignty_index: number | null
   providers: string[]
   hosters: string[]
   mail_systems: MailSystems
 }
 
-// An organization that has coordinates and can be placed on the map.
 export type MappableOrganization = Organization & { lat: number; long: number }

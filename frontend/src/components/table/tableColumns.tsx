@@ -45,7 +45,6 @@ const mailSoftware = (org: Organization): string => {
   return [...names].join(', ')
 }
 
-// i18n keys for the vendor-category badge (kept as literals for type-safe t()).
 const CATEGORY_TKEY = {
   catPublic: 'mail:catPublic',
   catEuVendor: 'mail:catEuVendor',
