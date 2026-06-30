@@ -24,12 +24,9 @@ const VendorClassChart = ({ orgs }: Props): React.ReactElement => {
   const { t: tMail } = useTranslation('mail')
   const distribution = vendorClassDistribution(orgs).filter((entry) => entry.count > 0)
 
-  let offset = 0
-  const segments = distribution.map((entry) => {
-    const length = entry.share * CIRCUMFERENCE
-    const segment = { ...entry, length, offset }
-    offset += length
-    return segment
+  const segments = distribution.map((entry, index) => {
+    const precedingShare = distribution.slice(0, index).reduce((sum, e) => sum + e.share, 0)
+    return { ...entry, length: entry.share * CIRCUMFERENCE, offset: precedingShare * CIRCUMFERENCE }
   })
 
   return (

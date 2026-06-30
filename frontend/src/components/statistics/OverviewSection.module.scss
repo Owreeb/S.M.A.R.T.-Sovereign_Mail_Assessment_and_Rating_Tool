@@ -11,3 +11,9 @@
   font-weight: 700;
   color: #15171a;
 }
+
+@media (max-width: 768px) {
+  .section {
+    margin: 32px 4% 0;
+  }
+}
