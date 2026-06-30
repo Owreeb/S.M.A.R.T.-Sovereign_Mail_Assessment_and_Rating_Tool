@@ -1,4 +1,5 @@
 from src.json_dumper.sovereignty_index_calc import (
+    FALLBACK_SOFTWARE,
     _weighted_mean,
     _system_score,
     _role_score,
@@ -113,14 +114,16 @@ class TestComputeSovereigntyIndex:
 
 class TestIpOnlyFallback:
     """
-    The generic 'Unidentified Mail Server' fallback (to_db) carries no vendor
-    markers and is scored on IP geography alone. These tests pin down that this
-    is exactly on the edge the data-quality brake allows.
+    The generic 'Unidentified Mail Server' fallback (to_db) only knows where the
+    mail is hosted, not which software runs there. Such a component is treated as
+    null: it is excluded from scoring, so an org with nothing but the fallback
+    stays unrated, no matter how sovereign its hosting looks.
     """
 
     @staticmethod
     def _ip_only(country_rating, hoster_rating):
         return {
+            "software": FALLBACK_SOFTWARE,
             "ips": [_ip(country_rating=country_rating, hoster_rating=hoster_rating)],
             "vendor_category_rating": None,
             "vendor_country_rating": None,
@@ -128,22 +131,22 @@ class TestIpOnlyFallback:
             "proxy": None,
         }
 
-    def test_german_hosting_scores_sovereign(self):
-        # DE country (1) + private EU hoster (2) -> mean 1.5 -> grade 2
-        assert compute_sovereignty_index({"smtp_in": [self._ip_only(1, 2)]}) == 2
+    def test_german_hosting_is_unrated(self):
+        # DE country (1) + private EU hoster (2): would score 2, but the
+        # component is null -> no grade
+        assert compute_sovereignty_index({"smtp_in": [self._ip_only(1, 2)]}) is None
 
-    def test_us_hosting_scores_not_sovereign(self):
-        # both IP markers at US level -> grade 5
-        assert compute_sovereignty_index({"smtp_in": [self._ip_only(5, 5)]}) == 5
+    def test_us_hosting_is_unrated(self):
+        # both IP markers at US level: still excluded -> no grade
+        assert compute_sovereignty_index({"smtp_in": [self._ip_only(5, 5)]}) is None
 
-    def test_two_ip_markers_pass_the_brake(self):
-        # exactly 3 of 5 markers missing -> still rated (brake threshold is 3)
-        assert compute_sovereignty_index({"smtp_in": [self._ip_only(2, 2)]}) is not None
-
-    def test_single_ip_marker_is_suppressed(self):
-        # only one usable marker (4 missing) -> too thin -> unrated
-        system = self._ip_only(1, None)
-        assert compute_sovereignty_index({"smtp_in": [system]}) is None
+    def test_fallback_is_ignored_next_to_a_real_system(self):
+        # a real identified system scores normally; the fallback in another role
+        # neither lifts nor drags the grade
+        result = compute_sovereignty_index(
+            {"imap_pop3": [_system(4)], "smtp_in": [self._ip_only(1, 1)]}
+        )
+        assert result == 4
 
 
 class TestComputeAverageIndex:

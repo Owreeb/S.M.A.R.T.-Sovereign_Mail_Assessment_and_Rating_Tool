@@ -24,6 +24,7 @@ import pandas as pd
 from src.scanner_pipeline.registry import Registry
 from src.scanner_pipeline.step import ASN, IMAP, IP, MX, PTR, SMTP, Domain
 from src.signatures_pipeline.matcher import SIGNATURE_FIELDS, match_signature
+from src.json_dumper.sovereignty_index_calc import FALLBACK_SOFTWARE
 from src.db.history import (
     Session,
     get_or_create,
@@ -74,11 +75,11 @@ def _as_uuid(value) -> uuid.UUID:
 _PROXY_ROLE = MailSystemRole.PROXY.value
 
 # Identity of the generic fallback system. When an organisation's MX resolves to
-# real IPs but no signature matches, we still know *where* the mail is hosted.
-# This shared system carries no vendor markers (all None); it is scored on the
-# IP geography alone (ip_country + ip_hoster). The data-quality brake in the
-# scorer suppresses it again when even the IP markers are too thin.
-_FALLBACK_SOFTWARE = "Unidentified Mail Server"
+# real IPs but no signature matches, we still know *where* the mail is hosted, so
+# this shared system surfaces the hoster / country in the export. It carries no
+# vendor markers (all None) and an unidentified software, so the scorer treats it
+# as a null component and excludes it from the sovereignty index.
+_FALLBACK_SOFTWARE = FALLBACK_SOFTWARE
 _FALLBACK_ROLE = MailSystemRole.SMTP_IN
 
 
@@ -454,11 +455,13 @@ def _sync_fallback_mail_systems(
 ) -> None:
     """
     Link organisations with a resolvable MX but no signature match to a generic
-    fallback system, scored on IP geography alone.
+    fallback system that surfaces the hoster / country without producing a grade.
 
     Only orgs that would otherwise be unrated are touched (those with no
     signature detection at all). Their MX IPs are linked to the shared
-    ``Unidentified Mail Server`` so the scorer can use ip_country / ip_hoster.
+    ``Unidentified Mail Server``. Because its software is unidentified, the scorer
+    treats it as a null component and excludes it from the sovereignty index, so
+    these orgs stay unrated (``sovereignty_index = null``).
     """
     if (
         org_domain.empty

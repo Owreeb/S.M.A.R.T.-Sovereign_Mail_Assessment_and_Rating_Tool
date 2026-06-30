@@ -11,12 +11,22 @@ Souveränitätsindex V2 specification in three stages:
    weakest link; several systems of one role are averaged,
 3. org grade: 0.6 * weighted role mean + 0.4 * worst role.
 
-Missing markers/roles are dropped and the remaining weights are rescaled. 
+Missing markers/roles are dropped and the remaining weights are rescaled.
 If not enough data is available, the org gets no grade.
+
+A system whose software could not be identified (only the IP / hoster is known,
+``software == FALLBACK_SOFTWARE``) is treated as a *null component*: it carries no
+reliable markers, so it is excluded from scoring instead of being graded on its IP
+geography alone. An org that has nothing but such fallbacks therefore stays unrated.
 
 Scale everywhere: 1 = very sovereign ... 6 = not sovereign.
 """
 from typing import Any
+
+# Software label of the generic IP-only fallback system (set in
+# scanner_pipeline.to_db). A component carrying this label has an unidentified
+# mail server and is excluded from the sovereignty score.
+FALLBACK_SOFTWARE = "Unidentified Mail Server"
 
 # Weights for the five per-system markers
 SYS_MARKER_WEIGHTS = {
@@ -104,6 +114,11 @@ def _role_score(systems: list[dict[str, Any]]) -> tuple[float | None, int]:
     notes = []
     nb_count = 0
     for system in systems:
+        # Unidentified software (only the IP / hoster is known): a null component
+        # that must not pull the grade towards its IP geography. Skip it entirely
+        # so it neither scores nor counts as missing markers.
+        if system.get("software") == FALLBACK_SOFTWARE:
+            continue
         score, n_markers = _system_score(system)
         nb_count += len(SYS_MARKER_WEIGHTS) - n_markers
         proxy = system.get("proxy")

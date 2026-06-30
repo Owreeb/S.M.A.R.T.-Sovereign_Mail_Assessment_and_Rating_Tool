@@ -515,8 +515,9 @@ International Vendor=4, US-Hyperscaler=5, Unbekannt/Sanktioniert=6.
    verknüpfen.
 7. `_sync_fallback_mail_systems` — Orgs mit auflösbarem MX, aber **ohne**
    Signaturtreffer, werden mit einem geteilten `Unidentified Mail Server`
-   (`smtp_in`) plus ihren MX-IPs verknüpft, damit sie noch über die IP-Geografie
-   bewertet werden können.
+   (`smtp_in`) plus ihren MX-IPs verknüpft. So bleiben Hoster und Land im Export
+   sichtbar; da die Software unbekannt ist, fließt diese Komponente jedoch nicht
+   in den Index ein (siehe Stufe 2).
 
 ---
 
@@ -548,6 +549,9 @@ Datenlücke erzeugt also weder eine künstlich gute noch schlechte Note. Rückga
 
 Je Rolle (`imap_pop3`, `smtp_in`, `smtp_out`, `webmailer`):
 
+- **Null-Komponente:** Systeme mit unidentifizierter Software (nur IP/Hoster
+  bekannt, `software == "Unidentified Mail Server"`) werden komplett übersprungen
+  — sie liefern keine Note und zählen auch nicht als fehlende Marker.
 - **Proxy-max-Regel:** sitzt ein Proxy davor, gilt `score = max(System, Proxy)` —
   ein Pfad ist nur so souverän wie sein schwächstes (höchstes) Glied, da die Mail
   im Klartext durch den Proxy läuft.
@@ -569,9 +573,9 @@ note   = kaufmännisch_runden(final)               # Ganzzahl 1..6
 **Datenqualitäts-Bremse:** fehlen — gemittelt über die bewerteten Rollen — mehr
 als 3 der 5 Per-System-Marker (`nb_total > 3 × Anzahl_bewertete_Rollen`), wird
 **keine Note** vergeben und die Org als *n.b.* ausgewiesen
-(`sovereignty_index = null`). Deshalb liegt der IP-only-Fallback
-(`Unidentified Mail Server`, 2 Marker / 3 fehlend) genau an der Schwelle und wird
-noch bewertet, während eine Org mit nur einem Marker unterdrückt wird.
+(`sovereignty_index = null`). Eine Org, deren einzige Komponente der IP-only-Fallback
+(`Unidentified Mail Server`) ist, bleibt damit grundsätzlich unbewertet, der
+Hoster wird zwar angezeigt, fließt aber nicht in eine Note ein.
 
 `compute_average_index(orgs)` liefert das Mittel aller nicht-`null`-Noten (für die
 Übersichtsdatei).

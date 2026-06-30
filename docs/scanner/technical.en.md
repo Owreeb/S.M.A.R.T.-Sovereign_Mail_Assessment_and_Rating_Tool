@@ -501,7 +501,9 @@ US Hyperscaler=5, Unknown/Sanctioned=6.
 6. `_sync_mail_system_ip_history` — link each org's MX IPs to its mail systems.
 7. `_sync_fallback_mail_systems` — orgs that have a resolvable MX but **no**
    signature match are linked to a shared `Unidentified Mail Server` (`smtp_in`)
-   plus their MX IPs, so they can still be scored on IP geography alone.
+   plus their MX IPs. This keeps the hoster / country visible in the export, but
+   because the software is unidentified the component is excluded from the index
+   (see Stage 2).
 
 ---
 
@@ -533,6 +535,9 @@ data gap produces neither an artificially good nor bad grade. Returns
 
 For each role (`imap_pop3`, `smtp_in`, `smtp_out`, `webmailer`):
 
+- **Null component:** systems with unidentified software (only the IP / hoster is
+  known, `software == "Unidentified Mail Server"`) are skipped entirely, they
+  neither produce a score nor count as missing markers.
 - **Proxy max-rule:** if a proxy sits in front, `score = max(system, proxy)` — a
   path is only as sovereign as its weakest (highest-numbered) link, because mail
   passes through the proxy in clear text.
@@ -554,9 +559,8 @@ grade  = round_half_up(final)                    # integer 1..6
 **Data-quality brake:** if, averaged over the rated roles, more than 3 of the 5
 per-system markers are missing (`nb_total > 3 × number_of_rated_roles`), **no
 grade is produced** and the org is reported as *n.b.* (`sovereignty_index = null`).
-This is why an IP-only fallback (`Unidentified Mail Server`, 2 markers / 3 missing)
-is exactly at the threshold and still rated, while a single-marker org is
-suppressed.
+An org whose only component is the IP-only fallback (`Unidentified Mail Server`)
+therefore stays unrated, its hoster is shown, but it never produces a grade.
 
 `compute_average_index(orgs)` returns the mean of all non-null grades (used for the
 overview file).
