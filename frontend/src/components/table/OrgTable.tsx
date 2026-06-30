@@ -30,7 +30,7 @@ const pageItems = (current: number, total: number): (number | 'ellipsis')[] => {
 }
 
 const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
-  const { t } = useTranslation(['table', 'mail'])
+  const { t } = useTranslation(['table', 'mail', 'common'])
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
 

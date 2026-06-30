@@ -39,14 +39,14 @@ const RESIDENCY_KEY = {
 } as const
 
 const InsightsSection = ({ orgs }: Props): React.ReactElement => {
-  const { t } = useTranslation('statistics')
+  const { t } = useTranslation(['statistics', 'common'])
   const { t: tMap } = useTranslation('map')
 
   const histogram = scoreHistogram(orgs)
   const maxScoreCount = Math.max(1, ...histogram.map((b) => b.count))
   const scoreRows: Row[] = histogram.map((bucket) => ({
     key: String(bucket.index),
-    label: `${bucket.index}/6`,
+    label: t('common:grade', { score: bucket.index }),
     value: bucket.count.toLocaleString(),
     ratio: bucket.count / maxScoreCount,
     color: sovereigntyColor(bucket.index),

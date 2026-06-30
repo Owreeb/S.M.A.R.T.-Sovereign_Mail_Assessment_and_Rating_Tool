@@ -19,6 +19,7 @@ type PopupLabels = {
   sovereignty: string
   lastChecked: string
   levelLabel: string
+  grade: (score: number) => string
   category: string
   roles: Record<MailSystemRole, string>
   categories: Record<CategoryKey, string>
@@ -94,7 +95,7 @@ const renderMailFlow = (org: MappableOrganization, labels: PopupLabels): string 
 const renderPopup = (org: MappableOrganization, labels: PopupLabels): string => {
   const index = org.sovereignty_index
   const color = sovereigntyColor(index)
-  const scoreText = index == null ? labels.levelLabel : `${labels.levelLabel} (${index}/6)`
+  const scoreText = index == null ? labels.levelLabel : `${labels.levelLabel} (${labels.grade(index)})`
   const domain = org.domain ?? org.email_domain
   const checked = org.last_checked ? dayjs(org.last_checked).format('DD.MM.YYYY HH:mm') : '—'
 
@@ -122,6 +123,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
   const map = useMap()
   const { t } = useTranslation('map')
   const { t: tMail } = useTranslation('mail')
+  const { t: tCommon } = useTranslation('common')
 
   useEffect(() => {
     const cluster = L.markerClusterGroup({
@@ -139,6 +141,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
           sovereignty: t('popupSovereignty'),
           lastChecked: t('popupLastChecked'),
           levelLabel: t(`levels.${sovereigntyLevel(org.sovereignty_index)}`),
+          grade: (score: number) => tCommon('grade', { score }),
           category: categoryLabel(t, org.category),
           roles: {
             smtp_in: tMail('roles.smtp_in'),
@@ -166,7 +169,7 @@ const ClusteredMarkers = ({ orgs }: Props): null => {
     return () => {
       map.removeLayer(cluster)
     }
-  }, [map, orgs, t, tMail])
+  }, [map, orgs, t, tMail, tCommon])
 
   return null
 }

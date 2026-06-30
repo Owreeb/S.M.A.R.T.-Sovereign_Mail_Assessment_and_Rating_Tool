@@ -9,7 +9,7 @@ import { sovereigntyColor, sovereigntyLevel } from '@utils/sovereignty'
 import styles from './OrgTable.module.scss'
 
 type TableKey = ParseKeys<'table'>
-type Translate = TFunction<['table', 'mail']>
+type Translate = TFunction<['table', 'mail', 'common']>
 
 // Add new columns here
 export type TableColumn = {
@@ -121,9 +121,9 @@ export const TABLE_COLUMNS: TableColumn[] = [
     key: 'score',
     labelKey: 'colScore',
     accessor: (org) => (org.sovereignty_index == null ? '—' : String(org.sovereignty_index)),
-    render: (org) => (
+    render: (org, t) => (
       <span className={styles.score} style={{ color: sovereigntyColor(org.sovereignty_index) }}>
-        {org.sovereignty_index == null ? '—' : `${org.sovereignty_index}/6`}
+        {org.sovereignty_index == null ? '—' : t('common:grade', { score: org.sovereignty_index })}
       </span>
     ),
   },

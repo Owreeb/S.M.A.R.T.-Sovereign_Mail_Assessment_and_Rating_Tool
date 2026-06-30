@@ -1,4 +1,5 @@
 const common = {
+  grade: 'Grade {{score}}',
   languageSwitchLabel: 'Language',
   german: 'Deutsch',
   english: 'English',
