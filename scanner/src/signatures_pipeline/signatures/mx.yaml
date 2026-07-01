@@ -1,15 +1,4 @@
-﻿- regex: '(?i)kvnbw\.de$'
-  software: "Unknown Mail Gateway (KV Baden-Württemberg)"
-  vendor: "KV Baden-Württemberg"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-  # Hinweis: wahrscheinlich zentraler Behörden-/RZ-Mailrelay, kein klassischer Produktvendor
-
-- regex: '(?i)\.ionos\.de$'
+﻿- regex: '(?i)\.ionos\.de$'
   software: "IONOS Mail Gateway"
   vendor: "IONOS"
   vendor_country: "DE"
@@ -30,27 +19,6 @@
   vendor_category_rating: 2
   # Hinweis: stark MSP-/Security-orientiert, oft Exchange Online davor geschaltet
 
-- regex: '(?i)pzd-svn\.de$'
-  software: "Unknown Mail Gateway (PZD-SVN)"
-  vendor: "PZD-SVN"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-  # Hinweis: unklar ob eigener Mailstack oder zentraler Landesdienstleister
-
-- regex: '(?i)kgrz-ks\.de$'
-  software: "Unknown Mail Gateway (KGRZ Kassel)"
-  vendor: "KGRZ Kassel"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
 - regex: "(?i)sophos"
   software: "Sophos Email Gateway"
   vendor: "Sophos"
@@ -62,16 +30,6 @@
   vendor_category_rating: 4
   # Hinweis: häufig als Zusatzlayer hinter M365 oder IONOS genutzt
 
-- regex: '(?i)ekom21\.de$'
-  software: "Unknown Mail Gateway (ekom21)"
-  vendor: "ekom21"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
 - regex: '(?i)rzone\.de$'
   software: "IONOS Mail Gateway"
   vendor: "IONOS"
@@ -82,27 +40,6 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-- regex: '(?i)regioit-aachen\.de$'
-  software: "Unknown Mail Gateway (regio iT GmbH)"
-  vendor: "regio iT GmbH"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-  # Hinweis: typischer kommunaler IT-Dienstleister mit eigenem RZ-Mailbetrieb
-
-- regex: '(?i)itebo\.de$'
-  software: "Unknown Mail Gateway (ITEBO)"
-  vendor: "ITEBO"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
 - regex: '(?i)abxsec\.com$'
   software: "ABXSEC Mail Security Gateway"
   vendor: "ABXSEC"
@@ -112,16 +49,6 @@
   open_source_rating: 6
   vendor_country_rating: 1
   vendor_category_rating: 2
-
-- regex: '(?i)civitec\.de$'
-  software: "Unknown Mail Gateway (Civitec)"
-  vendor: "Civitec"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
 
 - regex: "(?i)(google|aspmx)"
   software: "Google Mail Gateway"
@@ -383,91 +310,6 @@
   vendor_category_rating: 1
 
 # =====================================================================
-# Kommunale Rechenzentren / öffentliche IT-Dienstleister (wie ekom21,
-# regio iT, ITEBO, Civitec). Öffentlicher Träger, Betrieb in DE.
-# =====================================================================
-
-- regex: '(?i)(^|\.)kommunale\.it$'
-  software: "Unknown Mail Gateway (Südwestfalen-IT)"
-  vendor: "Südwestfalen-IT"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)krz\.de$'
-  software: "Unknown Mail Gateway (KRZ Minden-Ravensberg/Lippe)"
-  vendor: "KRZ Minden-Ravensberg/Lippe"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)kdo\.de$'
-  software: "Unknown Mail Gateway (KDO Oldenburg)"
-  vendor: "KDO Oldenburg"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)kdvz-frechen\.de$'
-  software: "Unknown Mail Gateway (KDVZ Rhein-Erft-Rur)"
-  vendor: "KDVZ Rhein-Erft-Rur"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)itk-rheinland\.de$'
-  software: "Unknown Mail Gateway (ITK Rheinland)"
-  vendor: "ITK Rheinland"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)gkd-re\.net$'
-  software: "Unknown Mail Gateway (GKD Recklinghausen)"
-  vendor: "GKD Recklinghausen"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)hannit\.de$'
-  software: "Unknown Mail Gateway (hannIT (Region Hannover))"
-  vendor: "hannIT (Region Hannover)"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-- regex: '(?i)(^|\.)sis-schwerin\.de$'
-  software: "Unknown Mail Gateway (SIS Schwerin)"
-  vendor: "SIS Schwerin"
-  vendor_country: "DE"
-  vendor_category: "Community / Public Sector / Gemeinwohl"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 1
-
-# =====================================================================
 # Österreichische / Schweizer öffentliche Verwaltung
 # gv.at = amtliche Behördendomain Österreichs; admin.ch = Schweizer Bund.
 # =====================================================================
@@ -567,29 +409,9 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-- regex: '(?i)(^|\.)verwaltungsportal\.de$'
-  software: "Unknown Mail Gateway (verwaltungsportal.de)"
-  vendor: "verwaltungsportal.de (kommunaler Hosting-Dienst)"
-  vendor_country: "DE"
-  vendor_category: "EU Software Vendor"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 2
-
 - regex: '(?i)(^|\.)as-scan\.de$'
   software: "AS-Scan Mail Security Gateway"
   vendor: "AS-Scan"
-  vendor_country: "DE"
-  vendor_category: "EU Software Vendor"
-  role: "proxy"
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 2
-
-- regex: '(?i)(^|\.)cm-system\.de$'
-  software: "Unknown Mail Gateway (CM-System)"
-  vendor: "CM-System"
   vendor_country: "DE"
   vendor_category: "EU Software Vendor"
   role: "proxy"
