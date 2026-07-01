@@ -26,6 +26,8 @@ const map = {
     university: 'University',
     city: 'Municipality',
     courthouse: 'Courthouse',
+    newspaper: 'Newspaper',
+    'political party': 'Political party',
   },
   countries: {
     de: 'Germany',

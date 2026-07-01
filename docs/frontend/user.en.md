@@ -25,8 +25,10 @@ Every organisation gets a single **sovereignty grade from 1 to 6**:
 | **6** | dark red | not sovereign / high-risk |
 | — | grey | not enough data ("unknown") |
 
-Lower is better. Organisations without enough data to rate are not shown on the
-dashboard.
+Lower is better. Organisations we couldn't grade are still shown (in grey) as long
+as some mail infrastructure was found for them — they are only left out of the
+grade-based statistics. Only organisations with no detectable mail system at all are
+omitted.
 
 ---
 
@@ -68,7 +70,8 @@ Below the cards, two **"top shares"** lists show the most common **mail vendors*
 
 The insights section shows three bar charts computed from the data:
 
-1. **Score distribution** — how many organisations fall into each grade 1–6.
+1. **Score distribution** — how many organisations fall into each grade 1–6, plus an
+   **"Ungraded"** bar for organisations that couldn't be graded.
 2. **Average sovereignty by sector** — the average grade per organisation type
    (city, hospital, university, courthouse, …).
 3. **Hosting residency** — where the mail is hosted, grouped into Germany, EU,
@@ -89,8 +92,9 @@ its sovereignty grade (green = sovereign … dark red = not sovereign).
   ("via …") that sits in front. The popup also shows when the data was last checked.
 - **Legend** — the legend (corner of the map) explains the pin colours.
 - **Filters** — click the filter button to narrow the map (and the table) by
-  provider, organisation category, or country. The button shows how many filters are
-  active. Filters apply to both the map and the table at the same time.
+  provider, vendor class, organisation category, or country. The button shows how
+  many filters are active. Filters apply to both the map and the table at the same
+  time.
 
 ### 3.4 The organisation table
 
@@ -126,9 +130,11 @@ organisation can still receive a poorer grade. The full method is explained on t
 
 ## 5. Frequently asked questions
 
-**Why are some organisations missing?**
-Organisations that couldn't be rated (not enough data) are deliberately left off
-the dashboard, so the numbers aren't skewed by guesses.
+**Why do some organisations show no grade?**
+Some organisations can't be graded — often we can see where their mail is hosted but
+not which software runs it. They are still shown (in grey, as "unknown") but kept out
+of the grade-based statistics so the averages aren't skewed by guesses. Only
+organisations where no mail system was found at all are omitted entirely.
 
 **Why does a German organisation have a red grade?**
 Most often because its mail is run on Microsoft 365 / Google Workspace, or because a

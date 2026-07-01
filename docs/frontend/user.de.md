@@ -25,8 +25,10 @@ Jede Organisation erhält eine einzige **Souveränitätsnote von 1 bis 6**:
 | **6** | dunkelrot | nicht souverän / Hochrisiko |
 | — | grau | zu wenig Daten („unbekannt“) |
 
-Niedriger ist besser. Organisationen ohne ausreichende Datenbasis werden im
-Dashboard nicht angezeigt.
+Niedriger ist besser. Organisationen, die wir nicht benoten konnten, werden weiterhin
+(in Grau) angezeigt, solange Mail-Infrastruktur gefunden wurde — sie bleiben nur aus
+den notenbasierten Statistiken heraus. Nur Organisationen ganz ohne erkennbares
+Mail-System werden weggelassen.
 
 ---
 
@@ -71,7 +73,8 @@ Organisationen.
 
 Die Insights-Sektion zeigt drei aus den Daten berechnete Balkendiagramme:
 
-1. **Score-Verteilung** — wie viele Organisationen auf jede Note 1–6 entfallen.
+1. **Score-Verteilung** — wie viele Organisationen auf jede Note 1–6 entfallen, plus
+   ein **„Unbenotet"**-Balken für Organisationen, die nicht benotet werden konnten.
 2. **Ø-Souveränität je Sektor** — die Durchschnittsnote je Organisationstyp (Stadt,
    Krankenhaus, Universität, Gericht, …).
 3. **Hosting-Residenz** — wo die Mail gehostet wird, gruppiert nach Deutschland,
@@ -93,8 +96,8 @@ ihre Souveränitätsnote ist (grün = souverän … dunkelrot = nicht souverän)
   wann die Daten zuletzt geprüft wurden.
 - **Legende** — die Legende (Kartenecke) erklärt die Pin-Farben.
 - **Filter** — über den Filter-Button die Karte (und die Tabelle) nach Provider,
-  Organisationskategorie oder Land einschränken. Der Button zeigt, wie viele Filter
-  aktiv sind. Filter wirken gleichzeitig auf Karte und Tabelle.
+  Anbieterklasse, Organisationskategorie oder Land einschränken. Der Button zeigt,
+  wie viele Filter aktiv sind. Filter wirken gleichzeitig auf Karte und Tabelle.
 
 ### 3.4 Die Organisationstabelle
 
@@ -132,9 +135,12 @@ Info**.
 
 ## 5. Häufige Fragen
 
-**Warum fehlen manche Organisationen?**
-Organisationen, die nicht bewertet werden konnten (zu wenig Daten), bleiben bewusst
-weg, damit die Zahlen nicht durch Schätzungen verzerrt werden.
+**Warum haben manche Organisationen keine Note?**
+Manche Organisationen lassen sich nicht benoten — oft sehen wir zwar, wo ihre Mail
+gehostet wird, aber nicht, welche Software läuft. Sie werden trotzdem angezeigt (grau,
+als „unbekannt"), aber aus den notenbasierten Statistiken herausgehalten, damit die
+Durchschnitte nicht durch Schätzungen verzerrt werden. Nur Organisationen, für die gar
+kein Mail-System gefunden wurde, bleiben ganz weg.
 
 **Warum hat eine deutsche Organisation eine rote Note?**
 Meist, weil ihre Mail auf Microsoft 365 / Google Workspace läuft oder weil ein

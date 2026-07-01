@@ -24,6 +24,8 @@ export const VENDOR_CLASS_KEYS = [
 
 const systemsOf = (org: Organization): MailSystem[] => Object.values(org.mail_systems).flat()
 
+export const hasMailSystems = (org: Organization): boolean => systemsOf(org).length > 0
+
 const CATEGORY_RANK: Record<string, number> = {
   'Community / Public Sector / Gemeinwohl': 1,
   'EU Software Vendor': 2,
@@ -98,7 +100,6 @@ export const hostingResidency = (orgs: Organization[]): ResidencyStat[] => {
   const counts: Record<ResidencyStat['tier'], number> = { de: 0, eu: 0, other: 0, us: 0 }
   let total = 0
   for (const org of orgs) {
-    if (org.sovereignty_index == null) continue
     const countries = hostingCountries(org)
     if (countries.length === 0) continue
     counts[worstTier(countries)] += 1

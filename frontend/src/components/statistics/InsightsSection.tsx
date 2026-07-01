@@ -43,14 +43,24 @@ const InsightsSection = ({ orgs }: Props): React.ReactElement => {
   const { t: tMap } = useTranslation('map')
 
   const histogram = scoreHistogram(orgs)
-  const maxScoreCount = Math.max(1, ...histogram.map((b) => b.count))
-  const scoreRows: Row[] = histogram.map((bucket) => ({
-    key: String(bucket.index),
-    label: t('common:grade', { score: bucket.index }),
-    value: bucket.count.toLocaleString(),
-    ratio: bucket.count / maxScoreCount,
-    color: sovereigntyColor(bucket.index),
-  }))
+  const unratedCount = orgs.filter((org) => org.sovereignty_index == null).length
+  const maxScoreCount = Math.max(1, ...histogram.map((b) => b.count), unratedCount)
+  const scoreRows: Row[] = [
+    ...histogram.map((bucket) => ({
+      key: String(bucket.index),
+      label: t('common:grade', { score: bucket.index }),
+      value: bucket.count.toLocaleString(),
+      ratio: bucket.count / maxScoreCount,
+      color: sovereigntyColor(bucket.index),
+    })),
+    {
+      key: 'unrated',
+      label: t('unrated'),
+      value: unratedCount.toLocaleString(),
+      ratio: unratedCount / maxScoreCount,
+      color: sovereigntyColor(null),
+    },
+  ]
 
   const sectorRows: Row[] = sovereigntyBySector(orgs).map((sector) => ({
     key: sector.category,

@@ -11,6 +11,7 @@ import { useDeferredMount } from '@hooks/useDeferredMount.ts'
 import { useOrgFilters } from '@hooks/useOrgFilters.ts'
 import type { Organization } from '@models/organization.ts'
 import type { StatisticsData } from '@models/statisticsData.ts'
+import { hasMailSystems } from '@utils/mailInsights.ts'
 
 import organizationsData from '../data/organizations.json'
 
@@ -21,7 +22,7 @@ const sortedFiles = Object.keys(dataFiles)
 
 const currentData = dataFiles[sortedFiles[0]] as StatisticsData
 const previousData = dataFiles[sortedFiles[1]] as StatisticsData | undefined
-const organizations = (organizationsData as Organization[]).filter((org) => org.sovereignty_index != null)
+const organizations = (organizationsData as Organization[]).filter(hasMailSystems)
 
 const Dashboard = (): React.ReactElement => {
   const ready = useDeferredMount()

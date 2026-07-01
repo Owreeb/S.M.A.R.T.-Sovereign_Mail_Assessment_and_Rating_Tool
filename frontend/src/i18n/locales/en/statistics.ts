@@ -8,6 +8,7 @@ const statistics = {
   diffSinceLastScan: 'since last scan',
   insightsTitle: 'Mail sovereignty',
   scoreDistTitle: 'SCORE DISTRIBUTION',
+  unrated: 'Ungraded',
   bySectorTitle: 'AVG SOVEREIGNTY BY SECTOR',
   residencyTitle: 'WHERE THE MAIL IS HOSTED',
   resDe: 'Germany',

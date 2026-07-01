@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest'
 import type { MailSystem, MailSystemRole, MailSystems, Organization } from '@models/organization'
 import {
   UNKNOWN_CATEGORY,
+  hasMailSystems,
   hostingCountries,
   hostingResidency,
   roleGroups,
@@ -133,16 +134,34 @@ describe('sovereigntyBySector', () => {
 })
 
 describe('hostingResidency', () => {
-  test('counts and shares per tier', () => {
+  test('counts unrated orgs with known hosting and shares per tier', () => {
     const result = hostingResidency([
       withSystems('smtp_in', [mailSystem({ countries: ['DE'] })], { sovereignty_index: 1 }),
       withSystems('smtp_in', [mailSystem({ countries: ['US'] })], { sovereignty_index: 5 }),
-      org({ sovereignty_index: null }),
+      withSystems('smtp_in', [mailSystem({ countries: ['DE'] })], { sovereignty_index: null }),
     ])
     const de = result.find((r) => r.tier === 'de')!
     const us = result.find((r) => r.tier === 'us')!
-    expect(de).toStrictEqual({ tier: 'de', count: 1, share: 0.5 })
-    expect(us).toStrictEqual({ tier: 'us', count: 1, share: 0.5 })
+    expect(de).toStrictEqual({ tier: 'de', count: 2, share: 2 / 3 })
+    expect(us).toStrictEqual({ tier: 'us', count: 1, share: 1 / 3 })
+  })
+
+  test('skips orgs without any known hosting country', () => {
+    const result = hostingResidency([
+      withSystems('smtp_in', [mailSystem({ countries: ['DE'] })], { sovereignty_index: 1 }),
+      org({ sovereignty_index: null }),
+    ])
+    expect(result.find((r) => r.tier === 'de')).toStrictEqual({ tier: 'de', count: 1, share: 1 })
+  })
+})
+
+describe('hasMailSystems', () => {
+  test('true when any role has a system', () => {
+    expect(hasMailSystems(withSystems('smtp_in', [mailSystem()]))).toBe(true)
+  })
+
+  test('false when the org has no mail systems', () => {
+    expect(hasMailSystems(org())).toBe(false)
   })
 })
 

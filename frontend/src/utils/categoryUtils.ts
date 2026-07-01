@@ -1,6 +1,6 @@
 import type { ParseKeys, TFunction } from 'i18next'
 
-export const CATEGORY_KEYS = ['hospital', 'university', 'city', 'courthouse'] as const
+export const CATEGORY_KEYS = ['hospital', 'university', 'city', 'courthouse', 'newspaper', 'political party'] as const
 type CategoryKey = (typeof CATEGORY_KEYS)[number]
 
 const isKnownCategory = (value: string): value is CategoryKey => (CATEGORY_KEYS as readonly string[]).includes(value)
@@ -21,5 +21,4 @@ export const countryFilterLabel = (t: TFunction<'map'>, value: string): string =
   return key ? t(key) : value
 }
 
-export const vendorClassLabel = (t: TFunction<'mail'>, key: string): string =>
-  t(key as ParseKeys<'mail'>) as string
+export const vendorClassLabel = (t: TFunction<'mail'>, key: string): string => t(key as ParseKeys<'mail'>) as string

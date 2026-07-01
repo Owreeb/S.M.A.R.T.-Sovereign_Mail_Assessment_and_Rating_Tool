@@ -33,6 +33,8 @@ const CATEGORY_KEY: Record<string, TableKey> = {
   university: 'catUniversity',
   city: 'catCity',
   courthouse: 'catCourthouse',
+  newspaper: 'catNewspaper',
+  'political party': 'catParty',
 }
 
 const mailSoftware = (org: Organization): string => {
@@ -94,7 +96,12 @@ export const TABLE_COLUMNS: TableColumn[] = [
     },
   },
   { key: 'provider', labelKey: 'colProvider', accessor: (org) => org.providers.join(', ') },
-  { key: 'software', labelKey: 'colSoftware', accessor: mailSoftware },
+  {
+    key: 'software',
+    labelKey: 'colSoftware',
+    accessor: mailSoftware,
+    render: (org) => <span className={styles.software}>{mailSoftware(org) || '—'}</span>,
+  },
   {
     key: 'class',
     labelKey: 'colClass',

@@ -1,0 +1,91 @@
+{
+  "overview": {
+    "orgsScanned": 5480,
+    "domainsScanned": 195,
+    "sovereigntyIndex": 2.52
+  },
+  "topMailVendors": [
+    {
+      "name": "Microsoft",
+      "share": 0.13
+    },
+    {
+      "name": "PZD-SVN",
+      "share": 0.12
+    },
+    {
+      "name": "Open-Xchange / Dovecot",
+      "share": 0.11
+    },
+    {
+      "name": "KV Baden-Württemberg",
+      "share": 0.06
+    },
+    {
+      "name": "IONOS",
+      "share": 0.05
+    },
+    {
+      "name": "Freistaat Bayern",
+      "share": 0.04
+    },
+    {
+      "name": "Justiz Baden-Württemberg",
+      "share": 0.03
+    },
+    {
+      "name": "Hornetsecurity",
+      "share": 0.03
+    },
+    {
+      "name": "Land Niedersachsen",
+      "share": 0.03
+    },
+    {
+      "name": "STRATO",
+      "share": 0.03
+    }
+  ],
+  "topHosters": [
+    {
+      "name": "DTAG - Deutsche Telekom AG, DE",
+      "share": 0.1
+    },
+    {
+      "name": "MICROSOFT-CORP-MSN-AS-BLOCK - Microsoft Corporation, US",
+      "share": 0.09
+    },
+    {
+      "name": "DFN - Verein zur Foerderung eines Deutschen Forschungsnetzes e.V., DE",
+      "share": 0.06
+    },
+    {
+      "name": "VODANET - Vodafone GmbH, DE",
+      "share": 0.05
+    },
+    {
+      "name": "Komm-ONE-AS - civillent GmbH, DE",
+      "share": 0.05
+    },
+    {
+      "name": "IT-NRW - IT-NRW, DE",
+      "share": 0.04
+    },
+    {
+      "name": "EWETEL - EWE TEL GmbH, DE",
+      "share": 0.03
+    },
+    {
+      "name": "IONOS-AS - IONOS SE, DE",
+      "share": 0.03
+    },
+    {
+      "name": "Wista-AS - WISTA Management GmbH, DE",
+      "share": 0.03
+    },
+    {
+      "name": "HETZNER-AS - Hetzner Online GmbH, DE",
+      "share": 0.03
+    }
+  ]
+}

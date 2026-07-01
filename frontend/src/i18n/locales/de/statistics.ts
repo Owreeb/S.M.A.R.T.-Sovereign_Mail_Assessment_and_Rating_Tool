@@ -8,6 +8,7 @@ const statistics = {
   diffSinceLastScan: 'seit letztem Scan',
   insightsTitle: 'Mail-Souveränität',
   scoreDistTitle: 'VERTEILUNG DER BEWERTUNGEN',
+  unrated: 'Unbenotet',
   bySectorTitle: 'Ø SOUVERÄNITÄT NACH SEKTOR',
   residencyTitle: 'WO DIE MAILS GEHOSTET WERDEN',
   resDe: 'Deutschland',

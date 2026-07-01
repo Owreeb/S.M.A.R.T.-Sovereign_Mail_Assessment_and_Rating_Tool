@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
@@ -33,6 +33,7 @@ const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
   const { t } = useTranslation(['table', 'mail', 'common'])
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
+  const tableRef = useRef<HTMLTableElement>(null)
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase()
@@ -43,6 +44,41 @@ const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, pageCount)
   const rows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
+  useLayoutEffect(() => {
+    const table = tableRef.current
+    if (!table) return
+    const spans = Array.from(table.querySelectorAll<HTMLElement>('td[data-col="software"] > span'))
+    if (!spans.length) return
+
+    let maxSingle = 0
+    spans.forEach((el) => {
+      el.style.width = 'auto'
+      el.style.whiteSpace = 'nowrap'
+      maxSingle = Math.max(maxSingle, el.scrollWidth)
+      el.style.whiteSpace = 'normal'
+    })
+
+    const lineHeight = parseFloat(getComputedStyle(spans[0]).lineHeight) || 20
+    const twoLines = lineHeight * 2 + 1
+
+    const fitsAt = (w: number): boolean =>
+      spans.every((el) => {
+        el.style.width = `${w}px`
+        return el.offsetHeight <= twoLines && el.scrollWidth <= w + 1
+      })
+
+    let lo = Math.ceil(maxSingle / 2)
+    let hi = maxSingle
+    for (let i = 0; i < 12 && hi - lo > 1; i++) {
+      const mid = Math.ceil((lo + hi) / 2)
+      if (fitsAt(mid)) hi = mid
+      else lo = mid
+    }
+    spans.forEach((el) => {
+      el.style.width = `${hi}px`
+    })
+  }, [filtered, currentPage])
 
   const onSearch = (value: string): void => {
     setQuery(value)
@@ -70,7 +106,7 @@ const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
       </div>
 
       <div className={styles.tableScroll}>
-        <table className={styles.table}>
+        <table ref={tableRef} className={styles.table}>
           <thead>
             <tr>
               {TABLE_COLUMNS.map((col) => (
@@ -82,7 +118,9 @@ const OrgTable = ({ orgs, filters }: Props): React.ReactElement => {
             {rows.map((org, i) => (
               <tr key={org.wikidata_url ?? org.domain ?? `${org.org}-${i}`}>
                 {TABLE_COLUMNS.map((col) => (
-                  <td key={col.key}>{col.render ? col.render(org, t) : col.accessor(org)}</td>
+                  <td key={col.key} data-col={col.key}>
+                    {col.render ? col.render(org, t) : col.accessor(org)}
+                  </td>
                 ))}
               </tr>
             ))}

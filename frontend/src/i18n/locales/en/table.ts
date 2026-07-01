@@ -16,6 +16,8 @@ const table = {
   catUniversity: 'University',
   catCity: 'Municipality',
   catCourthouse: 'Courthouse',
+  catNewspaper: 'Newspaper',
+  catParty: 'Political party',
   statusVeryHigh: 'Very high',
   statusHigh: 'High',
   statusMedium: 'Medium',

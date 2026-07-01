@@ -29,9 +29,8 @@ Nicht-technische Bedienung: [user.de.md](user.de.md). Englische Fassung:
 | Lint/Format | ESLint 9 (Flat Config) + Prettier (mit Import-Sort-Plugin) |
 | Git-Hooks | **Husky** + **lint-staged** (pre-commit) |
 
-> Der Memo-Hinweis „nutzt `@mantine/charts`“ ist veraltet — es gibt **keine**
-> `@mantine/charts`-Abhängigkeit; alle Balken/Histogramme sind handgebaute `<div>`s
-> mit inline `width`/`background`.
+Es gibt **keine** `@mantine/charts`-Abhängigkeit; alle Balken/Histogramme sind
+handgebaute `<div>`s mit inline `width`/`background`.
 
 ### Scripts (`package.json`)
 
@@ -83,7 +82,7 @@ src/data/organizations.json  ──statischer Import──┐
 src/data/<date>.json (import.meta.glob, eager)     │
                                                    ▼
                               Dashboard.tsx (Modulebene)
-   organizations = organizationsData.filter(o => o.sovereignty_index != null)
+   organizations = organizationsData.filter(hasMailSystems)   // Orgs mit ≥1 Mail-System
    currentData / previousData = neueste / zweitneueste datierte Übersichtsdatei
                                                    │
             useOrgFilters(organizations) ─────────┤
@@ -94,9 +93,12 @@ src/data/<date>.json (import.meta.glob, eager)     │
    <OrgTable orgs={filters.filteredOrgs} filters /> (Suche + Pagination)
 ```
 
-Unbewertete Organisationen (`sovereignty_index == null`) werden **vollständig**
-aus dem Dashboard entfernt. Das Frontend lädt zur Laufzeit nichts nach — alles
-JSON wird von Vite gebündelt.
+Organisationen werden nur entfernt, wenn **kein Mail-System gefunden** wurde
+(`hasMailSystems`). Unbewertete Organisationen (`sovereignty_index == null`), für
+die dennoch Mail-Infrastruktur vorliegt — z. B. bekannter Hoster, aber nicht
+identifizierte Software — **werden angezeigt** (grau / „unbekannt"); sie fließen nur
+nicht in die notenbasierten Statistiken ein. Das Frontend lädt zur Laufzeit nichts
+nach — alles JSON wird von Vite gebündelt.
 
 ### Theme — `src/theme.ts`
 
@@ -117,7 +119,7 @@ frontend/src/
 ├── components/
 │   ├── landing/   Hero · Navbar · FeaturesSection · SovereigntySection · Footer
 │   ├── map/       MapView · ClusteredMarkers · FilterPanel · Legend · SearchControl
-│   ├── statistics/ OverviewSection · StatisticsGrid · StatCard · TopShares · InsightsSection
+│   ├── statistics/ OverviewSection · StatisticsGrid · StatCard · TopShares · VendorClassChart · InsightsSection
 │   ├── table/     OrgTable · FilterChips · tableColumns
 │   └── common/    LanguageSwitch
 ├── models/        organization.ts · statisticsData.ts     # der Scanner-Vertrag
@@ -126,7 +128,7 @@ frontend/src/
 ├── constants/     filterFields.ts
 ├── i18n/          i18n.ts · resources.ts · i18next.d.ts · locales/{de,en}/<ns>.ts
 ├── data/          organizations.json · <date>.json        # Scanner-Export
-└── __tests__/     statisticsUtils.test.ts
+└── __tests__/     statisticsUtils · mailInsights · sovereignty · countryUtils · categoryUtils (.test.ts)
 ```
 
 ---
@@ -163,7 +165,7 @@ export interface Organization {
   org: string
   domain: string | null
   email_domain: string | null
-  category: string               // 'hospital' | 'university' | 'city' | 'courthouse' | …
+  category: string               // 'hospital' | 'university' | 'city' | 'courthouse' | 'newspaper' | 'political party'
   wikidata_url: string | null
   city: string | null
   state: string | null
@@ -185,7 +187,6 @@ export type MappableOrganization = Organization & { lat: number; long: number }
 ```ts
 export interface StatisticsData {
   overview: Overview
-  topMailVendors: Share[]
   topHosters: Share[]
 }
 export interface Overview {
@@ -267,11 +268,12 @@ Jede Komponente hat ihre eigene `*.module.scss`; Farben sind als Hex hartkodiert
 
 | Komponente | Hinweise |
 |---|---|
-| `OverviewSection` | Props `{ currentData, previousData? }`. Rendert `StatisticsGrid` + `TopShares`. |
+| `OverviewSection` | Props `{ currentData, previousData?, orgs }`. Rendert `StatisticsGrid` + `TopShares`. |
 | `StatisticsGrid` | Baut drei `StatCard`s aus `currentData.overview`: orgsScanned, sovereigntyIndex (`isReversed` — niedriger ist besser), domainsScanned. Diff = `getDiffOrZero(current, previous)`. |
 | `StatCard` | Präsentational. Zeigt Wert + vorzeichenbehaftete Differenz mit ↑/↓; Farbe kippt bei `isReversed`. |
-| `TopShares` | Zwei Balkenlisten (`topMailVendors`, `topHosters`); Balkenbreite = `share*100%`. |
-| `InsightsSection` | Props `{ orgs }`. Drei clientseitige Aggregationen als Balkenlisten: **Score-Verteilung** (`scoreHistogram`), **Ø-Souveränität je Sektor** (`sovereigntyBySector`), **Hosting-Residenz** (`hostingResidency`). |
+| `TopShares` | Props `{ orgs, hosters }`. Rendert `VendorClassChart` (Anbieterklassen-Donut, clientseitig berechnet) + eine `topHosters`-Balkenliste (Balkenbreite = `share*100%`). |
+| `VendorClassChart` | Props `{ orgs }`. SVG-Donut aus `vendorClassDistribution(orgs)` — die schlechteste Vendor-Klasse je Org, nicht identifizierte Vendors fallen in „Unbekannt". |
+| `InsightsSection` | Props `{ orgs }`. Drei clientseitige Aggregationen als Balkenlisten: **Score-Verteilung** (`scoreHistogram`, plus ein angehängter **„Unbenotet"**-Balken für `sovereignty_index == null`-Orgs), **Ø-Souveränität je Sektor** (`sovereigntyBySector`), **Hosting-Residenz** (`hostingResidency`). |
 
 ### table/
 
@@ -279,7 +281,7 @@ Jede Komponente hat ihre eigene `*.module.scss`; Farben sind als Hex hartkodiert
 |---|---|
 | `OrgTable` | Props `{ orgs, filters }` (erhält die bereits gefilterten `filters.filteredOrgs`). Freitextsuche über alle Spalten-Accessoren, `PAGE_SIZE = 10`-Pagination mit Ellipsis. Rendert `FilterChips`, ein Suchfeld, die Tabelle, einen Leerzustand und die Pagination. |
 | `FilterChips` | Entfernbare Chips für jeden gewählten Filterwert + Alles-löschen. Gibt `null` zurück, wenn keine Filter aktiv sind. |
-| `tableColumns` | Die `TABLE_COLUMNS`-Definition (8 Spalten): Domain, Org, Kategorie, Provider, Software, **Klasse** (schlechteste Vendor-Kategorie als farbiges Badge), **Hosting** (Länderflaggen), **Status** (Souveränitätslevel), Score. Jede Spalte hat einen typisierten `labelKey` und einen `accessor`; manche ein `render`. |
+| `tableColumns` | Die `TABLE_COLUMNS`-Definition (9 Spalten): Domain, Org, Kategorie, Provider, Software, **Klasse** (schlechteste Vendor-Kategorie als farbiges Badge), **Hosting** (Länderflaggen), **Status** (Souveränitätslevel), Score. Jede Spalte hat einen typisierten `labelKey` und einen `accessor`; manche ein `render`. |
 
 ### common/
 
@@ -293,9 +295,9 @@ Jede Komponente hat ihre eigene `*.module.scss`; Farben sind als Hex hartkodiert
 | Util | Verantwortung |
 |---|---|
 | `sovereignty.ts` | Note → Level + Farbe (siehe §5); `SOVEREIGNTY_LEGEND`. |
-| `mailInsights.ts` | Herzstück der Dashboard-Aggregationen: `VENDOR_CATEGORY_META` (Kategorie → i18n-Key + Farbe), `worstVendorCategory(org)`, `hostingCountries(org)` (Vereinigung aus System- + Proxy-Ländern), `roleGroups(org)` (für Popups), `scoreHistogram(orgs)` (6 Buckets), `sovereigntyBySector(orgs)`, `hostingResidency(orgs)`. |
+| `mailInsights.ts` | Herzstück der Dashboard-Aggregationen: `VENDOR_CATEGORY_META` + `vendorCategoryMeta` (Kategorie → i18n-Key + Farbe), `worstVendorCategory(org)`, `hasMailSystems(org)` (Dashboard-Aufnahmefilter), `hostingCountries(org)` (Vereinigung aus System- + Proxy-Ländern), `roleGroups(org)` (für Popups), `scoreHistogram(orgs)` (6 Buckets), `sovereigntyBySector(orgs)`, `hostingResidency(orgs)`, `vendorClassDistribution(orgs)`. |
 | `countryUtils.ts` | `EU_EEA_CH`-Menge, `countryTier(code)` → `de/eu/other/us`, `worstTier(codes)`, `tierColor(tier)`. Spiegelt das Länder-Rating des Scanners. |
-| `categoryUtils.ts` | `categoryLabel(t, category)`, `COUNTRY_FILTER_VALUES`, `countryFilterLabel(t, value)`. |
+| `categoryUtils.ts` | `categoryLabel(t, category)` + `CATEGORY_KEYS`, `vendorClassLabel(t, key)`, `COUNTRY_FILTER_VALUES`, `countryFilterLabel(t, value)`. |
 | `statisticsUtils.ts` | `getDiffOrZero(current, previous?)`, `selectByDiff(...)` — die unit-getesteten Helfer. |
 | `translationUtils.ts` | `getCurrentLocale()`, `changeInterfaceLanguage(lang)` (persistiert in `localStorage['smart_lang']`). |
 
@@ -303,13 +305,14 @@ Jede Komponente hat ihre eigene `*.module.scss`; Farben sind als Hex hartkodiert
 
 ## 9. Filterung (`hooks/useOrgFilters.ts`, `constants/filterFields.ts`)
 
-Drei Filterfelder werden angeboten:
+Vier Filterfelder werden angeboten, jeweils mit einem `accessor(org)`:
 
 ```ts
 FILTER_FIELDS = [
-  { key: 'providers', labelKey: 'providerLabel', isArray: true  },
-  { key: 'category',  labelKey: 'categoryLabel', isArray: false },
-  { key: 'country',   labelKey: 'countryLabel',  isArray: false },
+  { key: 'providers',   labelKey: 'providerLabel',    accessor: org => org.providers },
+  { key: 'vendorClass', labelKey: 'vendorClassLabel', accessor: org => vendorCategoryMeta(worstVendorCategory(org)).key },
+  { key: 'category',    labelKey: 'categoryLabel',    accessor: org => org.category },
+  { key: 'country',     labelKey: 'countryLabel',     accessor: org => org.country },
 ]
 ```
 
@@ -348,7 +351,7 @@ Die eine Hook-Instanz lebt in `Dashboard` und wird von `MapView`, `FilterPanel`,
 
 | Datei | Typ | Verwendung |
 |---|---|---|
-| `organizations.json` | `Organization[]` (~5 k Einträge) | statisch von `Dashboard` importiert, unbewertete Orgs herausgefiltert |
+| `organizations.json` | `Organization[]` (~5 k Einträge) | statisch von `Dashboard` importiert, gefiltert auf Orgs mit ≥1 Mail-System (`hasMailSystems`) |
 | `<YYYY-MM-DD>.json` | `StatisticsData` | per Glob importiert, neueste = `currentData`, zweitneueste = `previousData` (treibt „seit letztem Scan“-Differenzen) |
 
 Beide werden vom `dump.py` des Scanners erzeugt. Zum Aktualisieren der Site den
@@ -378,11 +381,11 @@ vom Glob ignoriert.
 
 ## 13. Tests (`__tests__/`)
 
-Die einzige Frontend-Testdatei ist **`statisticsUtils.test.ts`** (Vitest), sie deckt
-`getDiffOrZero` und `selectByDiff` ab. Die reichere Aggregationslogik in
-`mailInsights.ts`, `sovereignty.ts`, `countryUtils.ts` und `useOrgFilters.ts` ist
-**noch nicht** unit-getestet — ein guter Ansatzpunkt, die Abdeckung zu erweitern.
-Start mit `npm test`.
+Vitest-Unit-Tests liegen in `__tests__/`: **`statisticsUtils`** (`getDiffOrZero`,
+`selectByDiff`), **`mailInsights`** (Aggregationen inkl. `hasMailSystems`,
+`hostingResidency`, `vendorClassDistribution`), **`sovereignty`**, **`countryUtils`**
+und **`categoryUtils`**. `useOrgFilters.ts` ist noch nicht abgedeckt — ein guter
+Ansatzpunkt zum Erweitern. Start mit `npm test`.
 
 ---
 
