@@ -8,11 +8,15 @@ history helpers so we keep a version history over the runs.
 
 Flow of the linking:
 
-    organisation -> domain (email/website) -> mx_domain -> mail system / ip
-                                           -> imap host  -> mail system
+    organisation -> domain (email/website) -> mx_domain  -> mail system / ip
+                                           -> imap host   -> mail system / ip
 
 The ``Domain`` result already carries ``organisation_id`` (it is read from the
 DB), so it is the bridge from an organisation to everything we scan.
+
+The ``IP`` step is keyed by a generic ``domain`` column (it resolves MX
+hostnames, IMAP hosts and org domains alike), so IPs are joined back onto the
+hostname that produced them rather than onto ``mx_domain`` directly.
 """
 
 from __future__ import annotations
@@ -357,43 +361,78 @@ def _sync_org_mail_system_history(
         )
 
 
+def _host_ip_lookup(ip_df: pd.DataFrame) -> pd.DataFrame | None:
+    """
+    Reduce the IP result to a ``host -> ip`` lookup.
+
+    The IP step is keyed by a generic ``domain`` column (MX hostnames, IMAP hosts
+    and org domains all end up there), so it is renamed to ``host`` to make the
+    join intent explicit and to avoid clashing with the ``domain`` columns of the
+    other frames.
+
+    Returns:
+        A ``host, ip`` frame, or ``None`` if there is nothing to join on.
+    """
+    if ip_df.empty or not {"domain", "ip"} <= set(ip_df.columns):
+        return None
+    return ip_df[["domain", "ip"]].rename(columns={"domain": "host"})
+
+
 def _sync_mail_system_ip_history(
     session: Session,
     run: ScannerRun,
     org_domain: pd.DataFrame,
     mx_df: pd.DataFrame,
     mx_detections: pd.DataFrame,
+    imap_df: pd.DataFrame,
+    domain_detections: pd.DataFrame,
     ip_df: pd.DataFrame,
     ms_map: dict[tuple[str, str], MailSystem],
     ip_map: dict[str, IpAddress],
 ) -> None:
     """
-    Link each organisation's own MX IPs to its mail systems.
+    Link each organisation's mail-server IPs to its mail systems.
 
     The link is scoped to (organisation, mail_system) -> ip. Because mail
     systems are shared (deduped by software+role), linking by mail_system alone
     would pool every org's IPs onto one row; carrying organisation_id keeps the
     geography per-org.
+
+    Two host chains feed the IPs: the MX hostname (SMTP banner / MX signature)
+    and the IMAP host. Both resolve to IPs in the same ``ip_df`` and are joined
+    back on the hostname that produced them.
     """
-    if (
-        mx_detections.empty
-        or ip_df.empty
-        or "ip" not in ip_df.columns
-        or org_domain.empty
-        or not {"domain", "mx_domain"} <= set(mx_df.columns)
-    ):
+    host_ip = _host_ip_lookup(ip_df)
+    if host_ip is None or org_domain.empty:
         return
 
+    frames: list[pd.DataFrame] = []
+
     # org -> mx_domain -> (mail system, ip)
-    org_ms_ip = (
-        org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
-        .merge(mx_detections, on="mx_domain")
-        .merge(ip_df[["mx_domain", "ip"]], on="mx_domain")[
-            ["organisation_id", "software", "role", "ip"]
-        ]
-        .dropna()
-        .drop_duplicates()
-    )
+    if not mx_detections.empty and {"domain", "mx_domain"} <= set(mx_df.columns):
+        frames.append(
+            org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
+            .merge(mx_detections, on="mx_domain")
+            .merge(host_ip, left_on="mx_domain", right_on="host")[
+                ["organisation_id", "software", "role", "ip"]
+            ]
+        )
+
+    # org -> imap host -> (mail system, ip). The IMAP detection is keyed by the
+    # org domain, so bridge domain -> imap_host via the IMAP result before the ip.
+    if not domain_detections.empty and "imap_host" in imap_df.columns:
+        frames.append(
+            org_domain.merge(domain_detections, on="domain")
+            .merge(imap_df[["domain", "imap_host"]], on="domain")
+            .merge(host_ip, left_on="imap_host", right_on="host")[
+                ["organisation_id", "software", "role", "ip"]
+            ]
+        )
+
+    if not frames:
+        return
+
+    org_ms_ip = pd.concat(frames, ignore_index=True).dropna().drop_duplicates()
 
     for row in org_ms_ip.to_dict(orient="records"):
         mail_system = ms_map.get((row["software"], row["role"]))
@@ -449,37 +488,49 @@ def _sync_fallback_mail_systems(
     org_domain: pd.DataFrame,
     mx_df: pd.DataFrame,
     mx_detections: pd.DataFrame,
+    imap_df: pd.DataFrame,
     domain_detections: pd.DataFrame,
     ip_df: pd.DataFrame,
     ip_map: dict[str, IpAddress],
 ) -> None:
     """
-    Link organisations with a resolvable MX but no signature match to a generic
-    fallback system that surfaces the hoster / country without producing a grade.
+    Link organisations with a resolvable mail host but no signature match to a
+    generic fallback system that surfaces the hoster / country without producing
+    a grade.
 
     Only orgs that would otherwise be unrated are touched (those with no
-    signature detection at all). Their MX IPs are linked to the shared
-    ``Unidentified Mail Server``. Because its software is unidentified, the scorer
-    treats it as a null component and excludes it from the sovereignty index, so
-    these orgs stay unrated (``sovereignty_index = null``).
+    signature detection at all). Their MX and IMAP host IPs are linked to the
+    shared ``Unidentified Mail Server``. Because its software is unidentified, the
+    scorer treats it as a null component and excludes it from the sovereignty
+    index, so these orgs stay unrated (``sovereignty_index = null``); the IPs are
+    only there to surface the hoster / country in the export.
     """
-    if (
-        org_domain.empty
-        or ip_df.empty
-        or "ip" not in ip_df.columns
-        or not {"domain", "mx_domain"} <= set(mx_df.columns)
-    ):
+    host_ip = _host_ip_lookup(ip_df)
+    if host_ip is None or org_domain.empty:
         return
 
     detected = _detected_org_ids(org_domain, mx_df, mx_detections, domain_detections)
 
-    # org -> mx_domain -> ip, for orgs without any detection
-    org_ip = (
-        org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
-        .merge(ip_df[["mx_domain", "ip"]], on="mx_domain")[["organisation_id", "ip"]]
-        .dropna()
-        .drop_duplicates()
-    )
+    frames: list[pd.DataFrame] = []
+    if {"domain", "mx_domain"} <= set(mx_df.columns):
+        frames.append(
+            org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
+            .merge(host_ip, left_on="mx_domain", right_on="host")[
+                ["organisation_id", "ip"]
+            ]
+        )
+    if "imap_host" in imap_df.columns:
+        frames.append(
+            org_domain.merge(imap_df[["domain", "imap_host"]], on="domain")
+            .merge(host_ip, left_on="imap_host", right_on="host")[
+                ["organisation_id", "ip"]
+            ]
+        )
+    if not frames:
+        return
+
+    # org -> mail host -> ip, for orgs without any detection
+    org_ip = pd.concat(frames, ignore_index=True).dropna().drop_duplicates()
     org_ip = org_ip[~org_ip["organisation_id"].astype(str).isin(detected)]
     if org_ip.empty:
         return
@@ -534,6 +585,7 @@ def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
     domain_df = _results(registry, Domain)
     org_domain = _build_org_domain(domain_df)
     mx_df = _results(registry, MX)
+    imap_df = _results(registry, IMAP)
     ip_df = _results(registry, IP)
 
     mx_detections, domain_detections = _build_detections(registry)
@@ -547,13 +599,30 @@ def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
         session, run, org_domain, mx_df, mx_detections, domain_detections, ms_map
     )
     _sync_mail_system_ip_history(
-        session, run, org_domain, mx_df, mx_detections, ip_df, ms_map, ip_map
+        session,
+        run,
+        org_domain,
+        mx_df,
+        mx_detections,
+        imap_df,
+        domain_detections,
+        ip_df,
+        ms_map,
+        ip_map,
     )
 
-    # generic IP-only fallback for orgs that resolved an MX but matched no
+    # generic IP-only fallback for orgs that resolved a mail host but matched no
     # signature (kept last so it only ever fills gaps, never overrides)
     _sync_fallback_mail_systems(
-        session, run, org_domain, mx_df, mx_detections, domain_detections, ip_df, ip_map
+        session,
+        run,
+        org_domain,
+        mx_df,
+        mx_detections,
+        imap_df,
+        domain_detections,
+        ip_df,
+        ip_map,
     )
 
     session.commit()
