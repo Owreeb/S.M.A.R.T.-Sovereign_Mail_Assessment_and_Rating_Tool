@@ -184,15 +184,22 @@ class IMAP(Step):
         raise RuntimeError("No IMAP Found")
 
 class IMAPCombiner(Step):
-    required_steps = [IMAP, DomainCombiner]
+    required_steps = [IMAP, MX, DomainCombiner]
     input_col = "domain"
 
     async def get(self, value):
         pass
 
-    async def scan(self, imap: pd.DataFrame, domain_combiner: pd.DataFrame) -> pd.DataFrame:
+    async def scan(
+        self, imap: pd.DataFrame, mx: pd.DataFrame, domain_combiner: pd.DataFrame
+    ) -> pd.DataFrame:
+        hosts = [domain_combiner["domain"]]
+        if "imap_host" in imap.columns:
+            hosts.append(imap["imap_host"])
+        if "mx_domain" in mx.columns:
+            hosts.append(mx["mx_domain"])
         return (
-            pd.concat([imap["imap_host"], domain_combiner["domain"]], ignore_index=True)
+            pd.concat(hosts, ignore_index=True)
             .dropna()
             .drop_duplicates()
             .to_frame("domain")
