@@ -1,6 +1,6 @@
 const features = {
   sovereigntyIndexTitle: 'Souveränitätsindex',
-  sovereigntyIndexDescription: 'Jede Domain erhält einen Score von 0–10 basierend auf Provider und Serverstandort.',
+  sovereigntyIndexDescription: 'Jede Domain erhält einen Score von 1 bis 6 (Schulnoten) basierend auf Provider und Serverstandort.',
   dachCoverageTitle: 'DACH-Abdeckung',
   dachCoverageDescription:
     'Wir erfassen Behörden, Universitäten und Unternehmen in Deutschland, Österreich und der Schweiz.',
