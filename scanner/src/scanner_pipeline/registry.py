@@ -2,7 +2,19 @@
 import sqlite3
 import pandas as pd
 
-from src.scanner_pipeline.step import Step, MX, Domain, IP, ASN, SPF, SMTP, IMAP, Combiner, PTR
+from src.scanner_pipeline.step import (
+    IMAPCombiner,
+    Step,
+    MX,
+    Domain,
+    IP,
+    ASN,
+    SPF,
+    SMTP,
+    IMAP,
+    DomainCombiner,
+    PTR,
+)
 from pathlib import Path
 
 
@@ -10,7 +22,8 @@ from pathlib import Path
 
 # Für jeden Step muss er passende Daten finden und übergeben und step starten.
 
-# Es werden nur fertige Steps durchsucht, 
+# Es werden nur fertige Steps durchsucht,
+
 
 class Registry:
     queue: list[Step]
@@ -21,25 +34,32 @@ class Registry:
         self.results = {}
 
     async def run_queue(self):
-        """
-        Durchlaufe alle Schritte, finde den ersten Schritt mit passenden Daten und starte diesen Schritt. Sobald der Schritt fertig ist, speichere die Ergebnisse und starte den nächsten Schritt.
-        """
         while self.queue:
+            print("=== RESULTS KEYS ===")
+            for k in self.results.keys():
+                print(k)
+
+            print("=== QUEUE ===")
+            for s in self.queue:
+                print(type(s).__name__, s.required_steps)
             step = self.find_step()
-            data = self.results[step.required_step]
-            # run step
-            self.results[type(step)] = await step.scan(data)
-            # save step data
+
+            inputs = [
+                self.results[required_step]
+                for required_step in step.required_steps
+            ]
+
+            self.results[type(step)] = await step.scan(*inputs)
+
             self.queue.remove(step)
-            
 
     def find_step(self):
         for step in self.queue:
-            if step.required_step in self.results:
+            if all(req in self.results for req in step.required_steps):
                 return step
+
         raise ValueError("No suitable step found")
 
-    
     def export_results(self, path: str | Path):
         path = Path(path)
         path.mkdir(parents=True, exist_ok=True)
@@ -56,9 +76,10 @@ class Registry:
             MX(),
             SMTP(),
             IMAP(),
-            Combiner(),
+            DomainCombiner(),
             PTR(),
             SPF(),
+            IMAPCombiner(),
         )
 
         registry.results[Domain] = domain_df
@@ -78,15 +99,15 @@ class Registry:
             conn.close()
 
         return cls.from_domain_df(domain_df)
-    
+
     @classmethod
     def create_and_run(
         cls,
-        domain_df: pd.DataFrame=None,
-        database: str | Path=None,
-        query: str=None,
-        export_results: bool=False,
-        export_path: str=None,
+        domain_df: pd.DataFrame = None,
+        database: str | Path = None,
+        query: str = None,
+        export_results: bool = False,
+        export_path: str = None,
     ):
         if domain_df is not None:
             registry = cls.from_domain_df(domain_df)

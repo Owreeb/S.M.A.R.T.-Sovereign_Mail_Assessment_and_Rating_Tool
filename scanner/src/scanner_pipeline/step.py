@@ -2,7 +2,7 @@
 import asyncio
 import ipaddress
 import ssl
-from typing import Type
+from typing import List, Type
 
 import pandas as pd
 
@@ -25,11 +25,11 @@ class Step(ABC):
 
     @property
     @abstractmethod
-    def required_step() -> Type["Step"]:
+    def required_steps() -> List[Type["Step"]]:
         pass
 
     @abstractmethod
-    async def get(self, data) -> list[dict]:
+    async def scan(self, *data: pd.DataFrame) -> list[dict]:
         pass
 
     async def _monitor(self, tasks: list[asyncio.Task]) -> None:
@@ -94,30 +94,30 @@ class Step(ABC):
 
 
 class Domain(Step):
-    required_step = None
+    required_steps = []
     input_col = None
 
     async def get(self, data) -> pd.DataFrame:
         pass
 
 
-class Combiner(Step):
-    required_step = Domain
+class DomainCombiner(Step):
+    required_steps = [Domain]
     input_col = ["website_domain", "email_domain"]
 
     async def get(self, value):
         pass
 
     async def scan(self, data: pd.DataFrame):
-        return pd.concat(
-            [data["website_domain"], data["email_domain"]],
-            ignore_index=True
-        ).dropna().drop_duplicates().to_frame("domain")
-
-
+        return (
+            pd.concat([data["website_domain"], data["email_domain"]], ignore_index=True)
+            .dropna()
+            .drop_duplicates()
+            .to_frame("domain")
+        )
 
 class MX(Step):
-    required_step = Combiner
+    required_steps = [DomainCombiner]
     input_col = "domain"
 
     async def get(self, domain: str) -> list[dict]:
@@ -131,10 +131,76 @@ class MX(Step):
             for r in answers
         ]
 
+class IMAP(Step):
+    required_steps = [DomainCombiner]
+    input_col = "domain"
+
+    timeout = 2
+
+    prefixes = [
+        "imap",
+        "mail",
+        "webmail",
+        "exchange",
+    ]
+
+    ports = [143, 993]
+
+    async def get(self, domain: str):
+        for prefix in self.prefixes:
+            host = f"{prefix}.{domain}"
+
+            for port in self.ports:
+                try:
+                    kwargs = {"ssl": True} if port == 993 else {}
+
+                    reader, writer = await asyncio.wait_for(
+                        asyncio.open_connection(host, port, **kwargs),
+                        timeout=self.timeout,
+                    )
+
+                    try:
+                        banner = await asyncio.wait_for(
+                            reader.read(1024),
+                            timeout=self.timeout,
+                        )
+
+                        return [
+                            {
+                                self.input_col: domain,
+                                "imap_host": host,
+                                "port": port,
+                                "banner": banner.decode(errors="replace").strip()[:200],
+                            }
+                        ]
+
+                    finally:
+                        writer.close()
+                        await writer.wait_closed()
+
+                except Exception:
+                    continue
+
+        raise RuntimeError("No IMAP Found")
+
+class IMAPCombiner(Step):
+    required_steps = [IMAP, DomainCombiner]
+    input_col = "domain"
+
+    async def get(self, value):
+        pass
+
+    async def scan(self, imap: pd.DataFrame, domain_combiner: pd.DataFrame) -> pd.DataFrame:
+        return (
+            pd.concat([imap["imap_host"], domain_combiner["domain"]], ignore_index=True)
+            .dropna()
+            .drop_duplicates()
+            .to_frame("domain")
+        )
 
 class IP(Step):
-    required_step = MX
-    input_col = "mx_domain"
+    required_steps = [IMAPCombiner]
+    input_col = "domain"
 
     async def get(self, domain: str) -> list[dict]:
         loop = asyncio.get_running_loop()
@@ -145,7 +211,7 @@ class IP(Step):
 
 
 class ASN(Step):
-    required_step = IP
+    required_steps = [IP]
     input_col = "ip"
 
     async def scan(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -155,7 +221,9 @@ class ASN(Step):
         data = self.preprocess(data)
         ips = list(data[self.input_col])
         if not ips:
-            return pd.DataFrame(columns=["ip", "asn", "owner", "prefix", "country", "error"])
+            return pd.DataFrame(
+                columns=["ip", "asn", "owner", "prefix", "country", "error"]
+            )
 
         looked = await asyncio.to_thread(lookup_asn_bulk, ips)
 
@@ -163,11 +231,27 @@ class ASN(Step):
         for ip in ips:
             info = looked.get(ip)
             if info is None:
-                rows.append({"ip": ip, "asn": None, "owner": None,
-                             "prefix": None, "country": None, "error": "no asn data"})
+                rows.append(
+                    {
+                        "ip": ip,
+                        "asn": None,
+                        "owner": None,
+                        "prefix": None,
+                        "country": None,
+                        "error": "no asn data",
+                    }
+                )
             else:
-                rows.append({"ip": ip, "asn": info["asn"], "owner": info["asn_org"],
-                             "prefix": None, "country": info["country_code"], "error": None})
+                rows.append(
+                    {
+                        "ip": ip,
+                        "asn": info["asn"],
+                        "owner": info["asn_org"],
+                        "prefix": None,
+                        "country": info["country_code"],
+                        "error": None,
+                    }
+                )
         return self.postprocess(pd.DataFrame(rows))
 
     async def get(self, ip: str):
@@ -213,7 +297,7 @@ class ASN(Step):
 
 
 class SMTP(Step):
-    required_step = MX
+    required_steps = [MX]
     input_col = "mx_domain"
 
     ports = [25, 587, 465]
@@ -252,61 +336,10 @@ class SMTP(Step):
 
         raise RuntimeError("No SMTP Found")
 
-class IMAP(Step):
-    required_step = Combiner
-    input_col = "domain"
-
-    timeout = 2
-
-    prefixes = [
-        "imap",
-        "mail",
-        "webmail",
-        "exchange",
-    ]
-
-    ports = [143, 993]
-
-    async def get(self, domain: str):
-        for prefix in self.prefixes:
-            host = f"{prefix}.{domain}"
-
-            for port in self.ports:
-                try:
-                    kwargs = {"ssl": True} if port == 993 else {}
-
-                    reader, writer = await asyncio.wait_for(
-                        asyncio.open_connection(host, port, **kwargs),
-                        timeout=self.timeout,
-                    )
-
-                    try:
-                        banner = await asyncio.wait_for(
-                            reader.read(1024),
-                            timeout=self.timeout,
-                        )
-
-                        return [{
-                            self.input_col: domain,
-                            "imap_host": host,
-                            "port": port,
-                            "banner": banner.decode(
-                                errors="replace"
-                            ).strip()[:200],
-                        }]
-
-                    finally:
-                        writer.close()
-                        await writer.wait_closed()
-
-                except Exception:
-                    continue
-
-        raise RuntimeError("No IMAP Found")
 
 
 class PTR(Step):
-    required_step = IP
+    required_steps = [IP]
     input_col = "ip"
 
     async def get(self, ip: str) -> list[dict]:
@@ -323,8 +356,7 @@ class PTR(Step):
 
 
 class SPF(Step):
-
-    required_step = Combiner
+    required_steps = [DomainCombiner]
     input_col = "domain"
 
     async def get(self, domain: str) -> list[dict]:
@@ -340,6 +372,7 @@ class SPF(Step):
             if str(record).strip('"').startswith("v=spf1")
         ]
 
+    
 if __name__ == "__main__":
     domain = MX()
     print(type(domain))

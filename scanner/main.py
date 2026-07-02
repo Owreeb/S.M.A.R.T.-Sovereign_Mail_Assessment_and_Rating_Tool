@@ -69,8 +69,7 @@ def main(db_path: str | Path | None = None, sample_limit: int | None = SAMPLE_LI
 
             scope = "FULL" if sample_limit is None else f"sample of {sample_limit}"
             print(f"Step 1: Scanning domains ({scope})")
-            registry = Registry.from_sqlite(db_path, _domain_query(sample_limit))
-            asyncio.run(registry.run_queue())
+            registry = Registry.create_and_run(database=db_path, query=_domain_query(sample_limit))
 
             print("Step 2: Writing scan results to the database")
             to_db(session, run, registry)

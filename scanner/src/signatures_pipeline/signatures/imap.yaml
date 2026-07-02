@@ -146,16 +146,6 @@
   vendor_country_rating: 2
   vendor_category_rating: 2
 
-# --- German / EU hosting providers ---
-- regex: '(?i)ionos|kundenserver|1and1'
-  software: IONOS Mailbox
-  vendor: IONOS
-  vendor_country: DE
-  vendor_category: EU Software Vendor
-  role: imap_pop3
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 2
 
 - regex: '(?i)gmx|mail\.com'
   software: GMX / mail.com Mailbox
@@ -167,25 +157,6 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-- regex: '(?i)kasserver|strato'
-  software: STRATO (KAS) Mail Server
-  vendor: STRATO
-  vendor_country: DE
-  vendor_category: EU Software Vendor
-  role: imap_pop3
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 2
-
-- regex: "(?i)alfahosting"
-  software: AlfaHosting Mailserver
-  vendor: AlfaHosting GmbH
-  vendor_country: DE
-  vendor_category: EU Software Vendor
-  role: imap_pop3
-  open_source_rating: 6
-  vendor_country_rating: 1
-  vendor_category_rating: 2
 
 - regex: '(?i)mailbox\.org|open-xchange'
   software: mailbox.org (Open-Xchange)
