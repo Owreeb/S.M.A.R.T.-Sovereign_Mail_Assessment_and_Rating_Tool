@@ -1,8 +1,8 @@
 """
-Dump the current state of the database into the frontend JSON format.
+dump the current db state into the frontend json format.
 
-The sovereignty_index is calculated on the fly while dumping, following
-the Souveränitätsindex V2 specification (see sovereignty_index_calc.py).
+sovereignty_index is computed on the fly while dumping (see
+sovereignty_index_calc.py).
 """
 import json
 from collections import Counter
@@ -42,16 +42,8 @@ def _current_ips(
     session: Session, mail_system: MailSystem, org_id
 ) -> list[IpAddress]:
     """
-    Get the IPs that are currently behind a mail system for one organisation.
-
-    Args:
-        session: The database session.
-        mail_system: The mail system to look up.
-        org_id: The organisation the IPs must belong to (the link is scoped to
-            org + mail system, since mail systems are shared across orgs).
-
-    Returns:
-        The current IpAddress rows of this org's mail system.
+    current ips behind a mail system for one org. scoped to org + mail system
+    because mail systems are shared across orgs.
     """
     return list(
         session.scalars(
@@ -67,7 +59,7 @@ def _current_ips(
 
 
 def _serialize_ip(ip: IpAddress) -> dict[str, Any]:
-    """Turn an IpAddress row into the JSON dict for export."""
+    """turn an IpAddress row into the export json dict"""
     return {
         "ip_address": ip.ip_address,
         "rdns_hostname": ip.rdns_hostname,
@@ -81,18 +73,7 @@ def _serialize_ip(ip: IpAddress) -> dict[str, Any]:
 def _serialize_mail_system(
     session: Session, mail_system: MailSystem, proxy: MailSystem | None, org_id
 ) -> dict[str, Any]:
-    """
-    Turn a mail system (plus optional proxy) into the JSON dict.
-
-    Args:
-        session: The database session.
-        mail_system: The main mail system.
-        proxy: The proxy in front of it, or None.
-        org_id: The organisation whose IPs to attach.
-
-    Returns:
-        The mail system dict in the export format.
-    """
+    """turn a mail system (+ optional proxy) into the json dict"""
     entry: dict[str, Any] = {
         "software": mail_system.software,
         "open_source_rating": mail_system.open_source_rating,
@@ -113,16 +94,7 @@ def _serialize_mail_system(
 
 
 def _last_checked(session: Session, run_ids: set) -> str | None:
-    """
-    Get the newest timestamp of the runs the current rows came from.
-
-    Args:
-        session: The database session.
-        run_ids: The valid_from_run ids of the org's current history rows.
-
-    Returns:
-        The newest finished_at (or started_at)
-    """
+    """newest finished_at (or started_at) among the given runs, or None"""
     if not run_ids:
         return None
     runs = session.scalars(select(ScannerRun).where(ScannerRun.id.in_(run_ids)))
@@ -130,26 +102,16 @@ def _last_checked(session: Session, run_ids: set) -> str | None:
     timestamps = [ts for ts in timestamps if ts is not None]
     if not timestamps:
         return None
-    # SQLite stores naive timestamps, but a freshly created in-memory run can
-    # still be tz-aware; normalize so old and new runs stay comparable.
+    # sqlite timestamps come back naive, but a fresh in-memory run is still
+    # tz-aware, so strip tzinfo to keep them comparable
     timestamps = [ts.replace(tzinfo=None) for ts in timestamps]
     return max(timestamps).isoformat()
 
 
 def _slim_system(system: dict[str, Any]) -> dict[str, Any]:
     """
-    Slim a serialized mail system for the export.
-
-    The per-IP objects (raw IP, rDNS, repeated ratings) are the bulk of the
-    file and not interesting on their own, so they are dropped in favour of the
-    distinct host countries and hosters. Everything else (software, vendor,
-    ratings, proxy) is kept.
-
-    Args:
-        system: A full serialized mail system dict.
-
-    Returns:
-        The slimmed system dict.
+    slim a serialized mail system: drop the bulky per-ip objects, keep the
+    distinct host countries + hosters and everything else.
     """
     ips = system.get("ips") or []
     proxy = system.get("proxy")
@@ -168,16 +130,7 @@ def _slim_system(system: dict[str, Any]) -> dict[str, Any]:
 
 
 def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
-    """
-    Turn an organisation into a JSON dict
-
-    Args:
-        session: The database session.
-        org: The organisation to serialize.
-
-    Returns:
-        The organisation dict in the export format
-    """
+    """turn an org into its export json dict"""
     domain_row = session.scalars(
         select(OrgDomainHistory).where(
             OrgDomainHistory.organisation_id == org.id,
@@ -202,7 +155,7 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
 
     for row in system_rows:
         ms = row.mail_system
-        # a standalone proxy is the visible inbound path -> score it as smtp_in
+        # lone proxy is the inbound path, score it as smtp_in
         export_role = (
             MailSystemRole.SMTP_IN if ms.role == MailSystemRole.PROXY else ms.role
         )
@@ -221,14 +174,14 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
     if domain_row is not None:
         run_ids.add(domain_row.valid_from_run)
 
-    # score from the full structure, then slim it for the output
+    # score on the full thing, then slim for output
     sovereignty_index = compute_sovereignty_index(mail_systems)
     slim_mail_systems = {
         role: [_slim_system(system) for system in systems]
         for role, systems in mail_systems.items()
     }
 
-    # the org's primary domain (website), falling back to the email domain
+    # website domain first, fall back to email domain
     domain = None
     if domain_row is not None:
         domain = domain_row.website_domain or domain_row.email_domain
@@ -254,17 +207,7 @@ def _serialize_org(session: Session, org: Organisation) -> dict[str, Any]:
 def _top_shares(
     data: list[dict[str, Any]], key: str, limit: int = 10
 ) -> list[dict[str, Any]]:
-    """
-    Count how often each name appears in the orgs' lists under ``key``.
-
-    Args:
-        data: The serialized org dicts.
-        key: The list field to count -> "providers" or "hosters".
-        limit: How many top entries to return.
-
-    Returns:
-        A list of {"name": ..., "share": ...} dicts, sorted by share.
-    """
+    """top `limit` names by share across the orgs' `key` lists (providers/hosters)"""
     counter: Counter = Counter()
     for org in data:
         for name in org.get(key) or []:
@@ -279,16 +222,7 @@ def _top_shares(
 
 
 def _build_overview(data: list[dict[str, Any]]) -> dict[str, Any]:
-    """
-    Build the overview object for the overview file.
-
-    Args:
-        data: The serialized org dicts.
-
-    Returns:
-        The overview json with the average sovereignty index and the
-        top mail vendors, hosters
-    """
+    """overview: averaged sovereignty index + top vendors and hosters"""
     average, _ = compute_average_index(data)
     domains = {org["email_domain"] for org in data if org.get("email_domain")}
     return {
@@ -303,13 +237,7 @@ def _build_overview(data: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _write_json_with_brotli(data: Any, path: Path) -> None:
-    """
-    Write data as JSON and a compressed Brotli version of it.
-
-    Args:
-        data: The JSON-serializable data to write.
-        path: The path of the plain .json file.
-    """
+    """write data as json + a brotli-compressed .br copy"""
     payload = json.dumps(data, indent=2, ensure_ascii=False)
     path.write_text(payload, encoding="utf-8")
     compressed = brotli.compress(payload.encode("utf-8"))
@@ -317,32 +245,15 @@ def _write_json_with_brotli(data: Any, path: Path) -> None:
 
 
 def _export_output_path(session: Session) -> Path:
-    """
-    Build the export path next to the database the session is bound to.
-
-    Args:
-        session: The database session.
-
-    Returns:
-        The path for the export fgolder
-    """
+    """export path next to the session's db"""
     db_file = session.get_bind().url.database
     return Path(db_file).resolve().parent / "export" / "organizations.json"
 
 
 def write_dump(session: Session) -> int:
     """
-    Dump all organisations and write them as JSON next to the database.
-
-    Writes two files into <db folder>/export: organizations.json
-    with all orgs and a date-named overview file (e.g. 2026-06-12.json)
-    with the average sovereignty index and the top vendors/hosters.
-
-    Args:
-        session: The database session.
-
-    Returns:
-        How many organisations were written.
+    dump all orgs into <db folder>/export: organizations.json plus a date-named
+    overview file. returns how many orgs were written.
     """
     orgs = session.scalars(select(Organisation).order_by(Organisation.name))
     data = [_serialize_org(session, org) for org in orgs]

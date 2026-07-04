@@ -1,18 +1,17 @@
 """
-Writes the scan results from a Registry into the database.
+write the scan results from a Registry into the database.
 
-The Registry holds one result DataFrame per Step. This module combines those
-frames, renames the columns so they line up with the ORM, extracts the mail
-system ratings from the YAML signatures and then writes everything through the
-history helpers so we keep a version history over the runs.
+combines the per-step result frames, lines the columns up with the orm, pulls
+mail system ratings out of the yaml signatures and writes everything through the
+history helpers.
 
-Flow of the linking:
+linking flow:
 
     organisation -> domain (email/website) -> mx_domain -> mail system / ip
                                            -> imap host  -> mail system
 
-The ``Domain`` result already carries ``organisation_id`` (it is read from the
-DB), so it is the bridge from an organisation to everything we scan.
+the Domain result carries organisation_id (read from the db), so it bridges an
+org to everything we scan.
 """
 
 from __future__ import annotations
@@ -44,17 +43,7 @@ from src.db.models import (
 
 
 def _results(registry: Registry, step: type) -> pd.DataFrame:
-    """
-    Return the result frame for a step, dropping the rows that errored.
-
-    Args:
-        registry: the registry with the scan results.
-        step: the Step class used as the key.
-
-    Returns:
-        A copy of the frame without the ``error`` column and without rows
-        where ``error`` was set. Empty frame if the step has no results.
-    """
+    """result frame for a step, minus the errored rows and the error column"""
     df = registry.results.get(step)
     if df is None or df.empty:
         return pd.DataFrame()
@@ -66,7 +55,7 @@ def _results(registry: Registry, step: type) -> pd.DataFrame:
 
 
 def _as_uuid(value) -> uuid.UUID:
-    """Coerce a hex string (or UUID) coming from the DB into a UUID."""
+    """coerce a hex string (or uuid) from the db into a uuid"""
     if isinstance(value, uuid.UUID):
         return value
     return uuid.UUID(str(value))
@@ -74,25 +63,17 @@ def _as_uuid(value) -> uuid.UUID:
 
 _PROXY_ROLE = MailSystemRole.PROXY.value
 
-# Identity of the generic fallback system. When an organisation's MX resolves to
-# real IPs but no signature matches, we still know *where* the mail is hosted, so
-# this shared system surfaces the hoster / country in the export. It carries no
-# vendor markers (all None) and an unidentified software, so the scorer treats it
-# as a null component and excludes it from the sovereignty index.
+# generic fallback: when an mx resolves to real ips but nothing matches, this
+# shared row still surfaces the hoster/country. no vendor markers, so the scorer
+# treats it as a null component (kept out of the index).
 _FALLBACK_SOFTWARE = FALLBACK_SOFTWARE
 _FALLBACK_ROLE = MailSystemRole.SMTP_IN
 
 
 def _build_org_domain(domain_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Long form of the org -> domain link.
-
-    Melts ``email_domain`` and ``website_domain`` into a single ``domain``
-    column so we can join the scan results (which are keyed by domain) back to
-    the organisation.
-
-    Returns:
-        DataFrame with columns ``organisation_id`` and ``domain``.
+    long form of the org -> domain link: melt email_domain/website_domain into a
+    single `domain` column so scan results (keyed by domain) can join back.
     """
     if domain_df.empty:
         return pd.DataFrame(columns=["organisation_id", "domain"])
@@ -116,17 +97,10 @@ def _build_org_domain(domain_df: pd.DataFrame) -> pd.DataFrame:
 
 def _build_detections(registry: Registry) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Match the scan results against the signatures.
+    match scan results against the signatures.
 
-    Two linking dimensions come out of this:
-
-    * ``mx_detections`` keyed by ``mx_domain`` (from SMTP banners and from the
-      MX hostname itself),
-    * ``domain_detections`` keyed by ``domain`` (from IMAP banners / hosts).
-
-    Returns:
-        A tuple ``(mx_detections, domain_detections)``. Each frame has the
-        ``SIGNATURE_FIELDS`` plus its key column.
+    returns (mx_detections keyed by mx_domain from smtp banners + mx hostnames,
+    domain_detections keyed by domain from imap banners/hosts).
     """
     columns = ["mx_domain", *SIGNATURE_FIELDS]
     mx_rows: list[dict] = []
@@ -169,11 +143,8 @@ def _sync_ip_addresses(
     session: Session, run: ScannerRun, registry: Registry
 ) -> dict[str, IpAddress]:
     """
-    Upsert the scanned IP addresses (IP + PTR + ASN) and derive the country
-    rating from the country code.
-
-    Returns:
-        A map ``ip_address -> IpAddress`` for the history linking later.
+    upsert scanned ips (ip + ptr + asn) with derived ratings.
+    returns ip_address -> IpAddress for the history linking later.
     """
     rename_dict = {
         "ip": "ip_address",
@@ -252,10 +223,8 @@ def _sync_mail_systems(
     session: Session,
 ) -> dict[tuple[str, str], MailSystem]:
     """
-    Upsert every detected mail system (unique per software + role).
-
-    Returns:
-        A map ``(software, role) -> MailSystem`` for the history linking.
+    upsert every detected mail system (one per software+role).
+    returns (software, role) -> MailSystem for the history linking.
     """
     detections = pd.concat(
         [mx_detections[list(SIGNATURE_FIELDS)], domain_detections[list(SIGNATURE_FIELDS)]],
@@ -269,7 +238,7 @@ def _sync_mail_systems(
         try:
             role = MailSystemRole(role_value)
         except ValueError:
-            # signature has a role that is not in the enum -> skip it
+            # role we don't recognize, skip
             continue
 
         mail_system, _ = get_or_create(
@@ -297,17 +266,16 @@ def _sync_org_mail_system_history(
     ms_map: dict[tuple[str, str], MailSystem],
 ) -> None:
     """
-    Link organisations to the mail systems detected for their domains.
+    link orgs to the mail systems detected for their domains.
 
-    A proxy detected together with a server on the same MX is attached to that
-    server via ``proxy_system_id`` (so the scorer's max-rule applies). A proxy
-    that is the only thing visible on an org's MX is linked on its own; the
-    dumper then treats it as the inbound (smtp_in) path.
+    a proxy on the same mx as a server gets hung off it via proxy_system_id (so
+    the scorer's max-rule kicks in). a proxy that's the only thing on an mx gets
+    linked on its own and the dumper treats it as the smtp_in path.
     """
-    # collected as (organisation_id, mail_system, proxy_system_or_None)
+    # (organisation_id, mail_system, proxy_system_or_None)
     links: list[tuple] = []
 
-    # org -> domain -> mx_domain -> mail system (SMTP banner / MX hostname)
+    # org -> domain -> mx_domain -> mail system (smtp banner / mx hostname)
     if not mx_detections.empty and {"domain", "mx_domain"} <= set(mx_df.columns):
         org_mx = org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
         org_mx_det = org_mx.merge(mx_detections, on="mx_domain")
@@ -326,11 +294,11 @@ def _sync_org_mail_system_history(
                 for server in servers:
                     links.append((org_id, server, proxy))
             else:
-                # only a proxy/frontend is visible -> link it on its own
+                # only a proxy showing, link it on its own
                 for proxy_ms in proxies:
                     links.append((org_id, proxy_ms, None))
 
-    # org -> domain -> imap host -> mail system (no proxy pairing)
+    # org -> domain -> imap host -> mail system
     if not domain_detections.empty:
         org_dom_det = org_domain.merge(domain_detections, on="domain")
         for rec in org_dom_det.to_dict(orient="records"):
@@ -338,7 +306,7 @@ def _sync_org_mail_system_history(
             if mail_system is not None:
                 links.append((rec["organisation_id"], mail_system, None))
 
-    # write, de-duplicated on (organisation, mail_system)
+    # dedupe on (org, mail_system)
     seen: set[tuple] = set()
     for org_id, mail_system, proxy in links:
         key = (str(org_id), mail_system.id)
@@ -368,12 +336,9 @@ def _sync_mail_system_ip_history(
     ip_map: dict[str, IpAddress],
 ) -> None:
     """
-    Link each organisation's own MX IPs to its mail systems.
-
-    The link is scoped to (organisation, mail_system) -> ip. Because mail
-    systems are shared (deduped by software+role), linking by mail_system alone
-    would pool every org's IPs onto one row; carrying organisation_id keeps the
-    geography per-org.
+    link each org's own mx ips to its mail systems, scoped to
+    (organisation, mail_system) -> ip. mail systems are shared (deduped by
+    software+role), so carrying organisation_id keeps the geography per-org.
     """
     if (
         mx_detections.empty
@@ -420,11 +385,8 @@ def _detected_org_ids(
     domain_detections: pd.DataFrame,
 ) -> set:
     """
-    The organisation ids that already have at least one signature-based
-    detection (via an MX host or via an IMAP host).
-
-    These orgs are left untouched by the fallback so it can never change a
-    rating that a real signature produced.
+    org ids with at least one signature-based detection (mx or imap host).
+    the fallback leaves these alone so it can't override a real hit.
     """
     detected: set = set()
 
@@ -454,14 +416,11 @@ def _sync_fallback_mail_systems(
     ip_map: dict[str, IpAddress],
 ) -> None:
     """
-    Link organisations with a resolvable MX but no signature match to a generic
-    fallback system that surfaces the hoster / country without producing a grade.
+    link orgs with a resolvable mx but no signature match to the shared
+    Unidentified Mail Server, surfacing the hoster/country without a grade.
 
-    Only orgs that would otherwise be unrated are touched (those with no
-    signature detection at all). Their MX IPs are linked to the shared
-    ``Unidentified Mail Server``. Because its software is unidentified, the scorer
-    treats it as a null component and excludes it from the sovereignty index, so
-    these orgs stay unrated (``sovereignty_index = null``).
+    only orgs with no detection at all get touched. the fallback is a null
+    component, so these orgs stay unrated (sovereignty_index = null).
     """
     if (
         org_domain.empty
@@ -473,7 +432,7 @@ def _sync_fallback_mail_systems(
 
     detected = _detected_org_ids(org_domain, mx_df, mx_detections, domain_detections)
 
-    # org -> mx_domain -> ip, for orgs without any detection
+    # org -> mx_domain -> ip, only for orgs with no detection
     org_ip = (
         org_domain.merge(mx_df[["domain", "mx_domain"]], on="domain")
         .merge(ip_df[["mx_domain", "ip"]], on="mx_domain")[["organisation_id", "ip"]]
@@ -523,14 +482,7 @@ def _sync_fallback_mail_systems(
 
 
 def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
-    """
-    Persist a whole Registry of scan results into the database.
-
-    Args:
-        session: the open DB session.
-        run: the current ScannerRun (used for the history versioning).
-        registry: the registry holding the result frames.
-    """
+    """persist a whole Registry of scan results into the db"""
     domain_df = _results(registry, Domain)
     org_domain = _build_org_domain(domain_df)
     mx_df = _results(registry, MX)
@@ -538,11 +490,10 @@ def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
 
     mx_detections, domain_detections = _build_detections(registry)
 
-    # entities first (so the link tables can reference their ids)
+    # entities first so the link tables can point at their ids
     ip_map = _sync_ip_addresses(session, run, registry)
     ms_map = _sync_mail_systems(mx_detections, domain_detections, session)
 
-    # history / link tables
     _sync_org_mail_system_history(
         session, run, org_domain, mx_df, mx_detections, domain_detections, ms_map
     )
@@ -550,8 +501,7 @@ def to_db(session: Session, run: ScannerRun, registry: Registry) -> None:
         session, run, org_domain, mx_df, mx_detections, ip_df, ms_map, ip_map
     )
 
-    # generic IP-only fallback for orgs that resolved an MX but matched no
-    # signature (kept last so it only ever fills gaps, never overrides)
+    # fallback last so it only fills gaps, never stomps a real hit
     _sync_fallback_mail_systems(
         session, run, org_domain, mx_df, mx_detections, domain_detections, ip_df, ip_map
     )

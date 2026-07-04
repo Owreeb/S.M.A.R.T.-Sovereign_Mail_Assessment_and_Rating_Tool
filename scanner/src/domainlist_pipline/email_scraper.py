@@ -1,12 +1,9 @@
 """
-Fills in the email domain for each organisation.
+fill in the email domain for orgs that don't have one yet.
 
-The rule is (only for orgs that don't have an email domain yet):
-- If an organisation already has a current smtp_in mail system, we don't
-  crawl. We just use the website domain as the email domain.
-
-The result always goes into org_domain_history with the history logic, so a
-new version is only made when the email domain actually changed.
+orgs with a current smtp_in reuse their website domain instead of getting
+crawled. everything goes through the history logic, so a new version only lands
+when the email domain actually changed.
 """
 
 import re
@@ -52,9 +49,7 @@ def normalize_url(raw_url: str) -> str:
 
 
 def extract_emails(hrefs: Iterable[str]) -> list[str]:
-    """
-    Pull emails out of href values.
-    """
+    """pull emails out of href values"""
     emails: list[str] = []
     for href in hrefs:
         if not href:
@@ -76,9 +71,7 @@ def is_generic(email: str) -> bool:
 
 
 def pick_email_domain(emails: Iterable[str]) -> str | None:
-    """
-    Domain of the first non-generic email, or None.
-    """
+    """domain of the first non-generic email, or None"""
     for email in emails:
         if is_generic(email):
             continue
@@ -87,9 +80,7 @@ def pick_email_domain(emails: Iterable[str]) -> str | None:
 
 
 def find_impressum_link(response) -> str | None:
-    """
-    First <a> that looks like an Impressum/Kontakt link (http(s) only).
-    """
+    """first <a> that looks like an impressum/kontakt link, http(s) only"""
     for anchor in response.css("a"):
         href = (anchor.attrib.get("href") or "").strip()
         if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
@@ -125,12 +116,7 @@ class MailtoSpider(scrapy.Spider):
     }
 
     def __init__(self, rows: list[tuple], results: dict) -> None:
-        """
-        Args:
-            rows: List of (org_id, website) we want to scrape.
-            results: A dict we fill with {org_id: email_domain}. The caller
-                reads it after the crawl is done.
-        """
+        # results gets filled with {org_id: email_domain}, caller reads it after the crawl
         super().__init__()
         self.rows = rows
         self.results = results
@@ -157,7 +143,7 @@ class MailtoSpider(scrapy.Spider):
             self.results[org_id] = domain
             return
 
-        # nothing on the homepage -> try the Impressum
+        # nothing on the homepage, try the impressum
         if stage == "homepage":
             impressum_url = find_impressum_link(response)
             if impressum_url:
@@ -170,25 +156,16 @@ class MailtoSpider(scrapy.Spider):
                 )
 
     def errback(self, failure):
-        # ignore errors
         pass
 
     def _extract_domain_mailto(self, response) -> str | None:
-        """Grab mailto: links from the page."""
+        """grab mailto: links off the page"""
         hrefs = response.css('a[href^="mailto:"]::attr(href)').getall()
         return pick_email_domain(extract_emails(hrefs))
 
 
 def _orgs_with_mx(session) -> set:
-    """
-    Gets the ids of all orgs that have a current smtp_in mail system.
-
-    Args:
-        session: The session.
-
-    Returns:
-        A set of organisation ids.
-    """
+    """org ids that have a current smtp_in mail system"""
     stmt = (
         select(OrgMailSystemHistory.organisation_id)
         .join(MailSystem, MailSystem.id == OrgMailSystemHistory.mail_system_id)
@@ -200,18 +177,7 @@ def _orgs_with_mx(session) -> set:
 
 
 def _set_email_domain(session, run, row, email_domain) -> None:
-    """
-    Writes the email domain into the org domain history.
-
-    It uses update_history, so website and website_domain stay the same and a
-    new version is only made if the email domain really changed.
-
-    Args:
-        session: The session.
-        run: The current ScannerRun.
-        row: The current OrgDomainHistory row of the org.
-        email_domain: The email domain we want to set.
-    """
+    """write email_domain into the domain history, keep website_domain as-is"""
     update_history(
         session,
         OrgDomainHistory,
@@ -225,37 +191,16 @@ def _set_email_domain(session, run, row, email_domain) -> None:
 
 
 def _scrape_email_domains(work: list[tuple]) -> dict:
-    """
-    Crawls the given websites and collects the email domains.
-
-    The results are kept in a dict.
-
-    Args:
-        work: List of (org_id, website) tuples to scrape.
-
-    Returns:
-        dict {org_id: email_domain}.
-    """
+    """crawl the given (org_id, website) pairs -> {org_id: email_domain}"""
     results: dict = {}
     process = CrawlerProcess()
     process.crawl(MailtoSpider, rows=work, results=results)
-    process.start()  # blocks until the crawl is finished
+    process.start()  # blocks until the crawl is done
     return results
 
 
 def run_scraper(session, run) -> None:
-    """
-    Fills in the email domain for orgs that don't have one yet.
-
-    Orgs that already have an email domain are skipped. For the rest: orgs
-    with an smtp_in just get website_domain as their email domain, orgs
-    without an MX get their website crawled.
-
-    Args:
-        session: The session to write with.
-        run: The current ScannerRun (shared with the rest of the pipeline).
-    """
-    # only orgs that don't have an email domain yet
+    """fill in email domains: smtp_in orgs reuse website_domain, the rest get crawled"""
     candidates = session.execute(
         select(OrgDomainHistory, Organisation.website)
         .join(Organisation, Organisation.id == OrgDomainHistory.organisation_id)
@@ -271,11 +216,10 @@ def run_scraper(session, run) -> None:
     to_scrape = []
     for row, website in candidates:
         if row.organisation_id in mx_orgs:
-            # has an smtp_in -> email domain is just the website domain
+            # has smtp_in, so email domain = website domain
             if row.website_domain:
                 _set_email_domain(session, run, row, row.website_domain)
         elif website and website.strip():
-            # no MX -> crawl the website
             to_scrape.append((row, website))
 
     session.commit()

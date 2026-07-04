@@ -18,13 +18,6 @@ from src.scanner_pipeline.step import (
 from pathlib import Path
 
 
-# Hat eine Liste von Steps, die alle Schrittweise abgearbeitet werden
-
-# Für jeden Step muss er passende Daten finden und übergeben und step starten.
-
-# Es werden nur fertige Steps durchsucht,
-
-
 class Registry:
     queue: list[Step]
     results: dict[Step, pd.DataFrame]

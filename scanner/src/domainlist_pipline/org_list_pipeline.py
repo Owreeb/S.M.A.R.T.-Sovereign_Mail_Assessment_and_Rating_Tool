@@ -64,11 +64,10 @@ GROUP BY ?item
 
 
 def extract_website_domain(website: str | None) -> str | None:
-    """Extracts the registered domain from a website URL.
-
-    Subdomains, paths, ports etc. are stripped, so en.mannheim.de and
-    www.mannheim.de both become mannheim.de. This way a website change
-    only creates a new history entry when the actual domain changed.
+    """
+    registered domain of a website url (strips subdomain/path/port), so
+    en.mannheim.de and www.mannheim.de both become mannheim.de and a change
+    only makes a new history entry when the real domain changed.
     """
     if not website or not isinstance(website, str):
         return None
@@ -94,19 +93,7 @@ def extract_website_domain(website: str | None) -> str | None:
 
 
 def normalize_email_to_domain(email: str | None) -> str | None:
-    """Normalizes a Wikidata email URI to its domain part.
-
-    Wikidata stores emails as 'mailto:info@example.com' URIs. This function
-    strips the prefix and returns only the domain part.
-
-    Args:
-        email: Raw email value as returned by the SPARQL query, may be None
-            or a 'mailto:...' URI.
-
-    Returns:
-        Lowercased domain part of the email, or None if the input is empty
-        or has no recognisable domain.
-    """
+    """domain part of a wikidata email (stored as a 'mailto:...' uri), or None"""
     if not email or not isinstance(email, str):
         return None
 
@@ -114,11 +101,9 @@ def normalize_email_to_domain(email: str | None) -> str | None:
     if not value:
         return None
 
-    # Strip mailto: prefix (case-insensitive).
     if value.lower().startswith("mailto:"):
         value = value.split(":", 1)[1]
 
-    # Drop query string 
     value = value.split("?", 1)[0].split("#", 1)[0]
 
     if "@" not in value:
@@ -128,18 +113,13 @@ def normalize_email_to_domain(email: str | None) -> str | None:
     return domain or None
 
 class ConfigLoader:
-    """Loads institution and area mappings from a YAML file."""
+    """loads institution + area mappings from a yaml file"""
 
     def __init__(self, config_path: str) -> None:
         self.config_path = config_path
 
     def load(self) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
-        """
-        Loads mappings from YAML.
-
-        Returns:
-            Tuple of (institutions_map, areas_map, institution_where).
-        """
+        """load (institutions_map, areas_map, institution_where) from yaml"""
         with open(self.config_path, "r", encoding="utf-8") as file_handle:
             data = yaml.safe_load(file_handle)
 
@@ -161,32 +141,16 @@ class ConfigLoader:
 
 
 class WikidataExtractor:
-    """Builds and executes Wikidata SPARQL queries."""
+    """builds and runs wikidata sparql queries"""
 
     def __init__(self, tag_to_qid: dict[str, str], institution_where: dict[str, str]):
-        """
-        Initializes the extractor.
-
-        Args:
-            tag_to_qid: Map of institution keys to QIDs.
-            institution_where: Map of institution keys to WHERE clauses.
-        """
         self.endpoint_url = "https://qlever.dev/api/wikidata"
         self.headers = {'User-Agent': 'SMART-BOT/1.4', 'Accept': 'application/sparql-results+json'}
         self.tag_to_qid = tag_to_qid
         self.institution_where = institution_where
 
     def build_query(self, institution_key: str, area_qid: str) -> str:
-        """
-        Builds a SPARQL query from the base template and a WHERE clause.
-
-        Args:
-            institution_key: Config key for the institution.
-            area_qid: Wikidata QID for the area.
-
-        Returns:
-            Fully assembled SPARQL query string.
-        """
+        """assemble the full sparql query for an institution + area"""
         target_qid = self.tag_to_qid[institution_key]
 
         where_template = self.institution_where[institution_key]
@@ -199,16 +163,7 @@ class WikidataExtractor:
         return f"{PREFIX_TEMPLATE}\n{SELECT_TEMPLATE}\n{where_clause}"
 
     def fetch(self, institution_key: str, area_qid: str) -> list[dict[str, str]]:
-        """
-        Runs a query and returns normalized result rows.
-
-        Args:
-            institution_key: Config key for the institution.
-            area_qid: Wikidata QID for the area.
-
-        Returns:
-            List of result dictionaries (possibly empty).
-        """
+        """run the query with retries, normalized rows (empty on failure)"""
         query = self.build_query(institution_key, area_qid)
         for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
@@ -233,16 +188,7 @@ class WikidataExtractor:
 
     @staticmethod
     def _parse_rows(rows: list[dict], institution_key: str) -> list[dict[str, str]]:
-        """
-        Normalizes SPARQL result bindings.
-
-        Args:
-            rows: Raw SPARQL bindings.
-            institution_key: Config key for the institution.
-
-        Returns:
-            List of normalized rows.
-        """
+        """flatten sparql bindings into plain row dicts"""
         results = []
         for row in rows:
             results.append({
@@ -260,15 +206,7 @@ class WikidataExtractor:
 
 
 def _clean(value):
-    """
-    Turns pandas NaN into None so the ORM stores NULL instead of nan.
-
-    Args:
-        value: Any cell value from the dataframe.
-
-    Returns:
-        The value, or None if it was NaN.
-    """
+    """NaN -> None so the orm stores NULL instead of nan"""
     if isinstance(value, float) and math.isnan(value):
         return None
     return value
@@ -276,18 +214,9 @@ def _clean(value):
 
 def _persist_record(session, run, record):
     """
-    Saves one organisation and updates its domain history.
-
-    The metadata of the organisation (name, city, ...) is just overwritten.
-    The domains go into org_domain_history and we only
-    add a new version when one of those really changed.
-
-    Args:
-        session: The session.
-        run: The current ScannerRun.
-        record: One row dict from the dataframe.
+    upsert one org (metadata just overwritten) and version its domains in
+    org_domain_history.
     """
-    # find the org by its wikidata url, or make a new one
     org, _ = get_or_create(
         session, Organisation, wikidata_url=_clean(record.get("id"))
     )
@@ -303,7 +232,7 @@ def _persist_record(session, run, record):
     })
     session.flush()
 
-    # only take the wikidata email if there is one, otherwise keep the existing one
+    # wikidata email wins, otherwise keep what's there
     wikidata_email = _clean(record.get("email"))
     current = get_current(session, OrgDomainHistory, organisation_id=org.id)
     email_domain = wikidata_email or (current.email_domain if current else None)
@@ -321,18 +250,7 @@ def _persist_record(session, run, record):
 
 
 def fetch_records(config_path):
-    """
-    Gets the organisation data from Wikidata and cleans it up.
-
-    This part does no database work, it just returns the rows so the caller
-    can decide how to save them.
-
-    Args:
-        config_path: Path to config YAML file.
-
-    Returns:
-        A list of record dicts
-    """
+    """fetch + clean the org rows from wikidata, no db writes"""
     institutions_map, areas_map, institution_where = ConfigLoader(config_path).load()
     extractor = WikidataExtractor(institutions_map, institution_where)
 
@@ -367,14 +285,7 @@ def fetch_records(config_path):
 
 
 def wikidata_fetch_and_persist(session, run, wikidata_config_path):
-    """
-    Fetches the data from Wikidata and saves it to the database.
-
-    Args:
-        session: The session to write with.
-        run: The current ScannerRun (used as valid_from for new history).
-        wikidata_config_path: Path to the Wikidata config YAML file.
-    """
+    """fetch the wikidata orgs and save them"""
     records = fetch_records(str(wikidata_config_path))
     for record in records:
         _persist_record(session, run, record)

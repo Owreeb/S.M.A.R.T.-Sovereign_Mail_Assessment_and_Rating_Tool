@@ -1,11 +1,9 @@
 """
-The ORM models for the scanner database.
+orm models for the scanner.
 
-The history tables save when something was valid. They do this with the
-valid_from_run and valid_to_run columns (which point to scanner_runs) and an
-is_current flag. The other tables (organisations, mail_systems, ip_addresses)
-just store the entities once without duplicates.
-The primary keys get a new uuid automatically.
+history tables (*_history) version rows with valid_from_run/valid_to_run and an
+is_current flag; entity tables (organisations, mail_systems, ip_addresses) store
+each entity once. primary keys default to a fresh uuid.
 """
 
 from __future__ import annotations
@@ -34,13 +32,10 @@ from enum import IntEnum
 
 class VendorCountryRating(IntEnum):
     """
-    Bewertung des Sitzlandes des Herstellers / Anbieters.
+    Sitzland-Bewertung des Herstellers/Anbieters.
 
-    1 = Deutschland
-    2 = EU / EWR / Schweiz
-    3 = UK oder Drittland mit Angemessenheitsbeschluss (z.B. Japan, Kanada, etc.)
-    5 = USA (CLOUD-Act-relevant)
-    6 = Hochrisiko- oder sanktionierte Staaten (z.B. Russland, China)
+    1=DE, 2=EU/EWR/CH, 3=Drittland mit Angemessenheitsbeschluss,
+    5=USA (CLOUD Act), 6=Hochrisiko/sanktioniert.
     """
 
     GERMANY = 1
@@ -65,20 +60,18 @@ class VendorCountryRating(IntEnum):
         if code in {"RU", "CN", "IR", "KP"}:
             return cls.HIGH_RISK_COUNTRY
 
-        # Default: Drittland mit Angemessenheitsbeschluss (vereinfachte Annahme)
+        # fall back to adequacy-decision third country
         return cls.ADEQUACY_THIRD_COUNTRY
 
 
-# US hyperscalers / large US clouds -> CLOUD-Act exposed regardless of the
-# country their prefix is announced from.
+# CLOUD Act reach no matter where the prefix is announced from
 _HYPERSCALER_KEYWORDS = (
     "GOOGLE", "AMAZON", "AWS", "MICROSOFT", "AZURE", "ORACLE",
     "CLOUDFLARE", "AKAMAI", "FASTLY", "DIGITALOCEAN", "LINODE",
 )
 
-# Map the vendor-country scale to the IP-hoster scale (Souveränitätsindex V2,
-# 4.2). DE/EU operators default to "private EU operator" (2) because we can not
-# tell public from cooperative without owner metadata.
+# vendor-country scale -> ip-hoster scale. DE/EU default to "private EU operator"
+# (2), we can't tell public from cooperative without owner metadata
 _HOSTER_RATING_BY_COUNTRY = {
     VendorCountryRating.GERMANY: 2,
     VendorCountryRating.EU_EEA_CH: 2,
@@ -90,18 +83,10 @@ _HOSTER_RATING_BY_COUNTRY = {
 
 def derive_hoster_rating(country_code, asn_org) -> int | None:
     """
-    Simplified IP-hoster rating (Souveränitätsindex V2, scale 4.2).
+    ip-hoster rating from asn country/owner, None if nothing to go on.
 
-    1 = public/cooperative EU operator, 2 = private EU operator,
-    4 = neutral international carrier, 5 = US hyperscaler / CLOUD-Act,
-    6 = sanctioned.
-
-    Args:
-        country_code: the ASN country code.
-        asn_org: the ASN owner string.
-
-    Returns:
-        The rating, or None if there is nothing to base it on.
+    1=public/cooperative EU, 2=private EU, 4=neutral international carrier,
+    5=US hyperscaler/CLOUD Act, 6=sanctioned.
     """
     if asn_org and any(k in str(asn_org).upper() for k in _HYPERSCALER_KEYWORDS):
         return 5
@@ -131,8 +116,6 @@ class VendorCategory(str, enum.Enum):
         }[self]
 
 class MailSystemRole(enum.Enum):
-    """The role a mail system has."""
-
     SMTP_OUT = "smtp_out"
     SMTP_IN = "smtp_in"
     IMAP_POP3 = "imap_pop3"
@@ -141,7 +124,7 @@ class MailSystemRole(enum.Enum):
 
 
 class ScannerRun(Base):
-    """One run of the scanner. The history tables point to this."""
+    """one scanner run, history tables point back to this"""
 
     __tablename__ = "scanner_runs"
 
@@ -150,7 +133,7 @@ class ScannerRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(TIMESTAMP)
     scanner_version_git_hash: Mapped[str | None] = mapped_column(Text)
 
-    # the history rows that started in this run (valid_from_run == this run)
+    # history rows opened in this run (valid_from_run == this run)
     opened_domain_history: Mapped[list[OrgDomainHistory]] = relationship(
         back_populates="valid_from",
         foreign_keys="OrgDomainHistory.valid_from_run",
@@ -166,7 +149,7 @@ class ScannerRun(Base):
 
 
 class Organisation(Base):
-    """An organisation we scanned. Saved only once."""
+    """a scanned org, stored once"""
 
     __tablename__ = "organisations"
 
@@ -192,7 +175,7 @@ class Organisation(Base):
 
 
 class MailSystem(Base):
-    """A mail software with its role. Each software+role is saved only once."""
+    """a mail software + its role, one row per software+role"""
 
     __tablename__ = "mail_systems"
     __table_args__ = (UniqueConstraint("software", "role", name="uq_mail_system_software_role"),)
@@ -207,12 +190,12 @@ class MailSystem(Base):
     vendor_country: Mapped[str | None] = mapped_column(Text)
     vendor_category: Mapped[str | None] = mapped_column(Text)
 
-    # partial scores of the sovereignty index
+    # partial sovereignty index scores
     vendor_country_rating: Mapped[int | None] = mapped_column(Integer)
     open_source_rating: Mapped[int | None] = mapped_column(Integer)
     vendor_category_rating: Mapped[int | None] = mapped_column(Integer)
 
-    # rows where this is the normal mail system
+    # rows where this is the main mail system
     mail_system_history: Mapped[list[OrgMailSystemHistory]] = relationship(
         back_populates="mail_system",
         foreign_keys="OrgMailSystemHistory.mail_system_id",
@@ -229,7 +212,7 @@ class MailSystem(Base):
 
 
 class IpAddress(Base):
-    """An IP address with its extra info. Saved only once."""
+    """a scanned ip, stored once"""
 
     __tablename__ = "ip_addresses"
     __table_args__ = (UniqueConstraint("ip_address", name="uq_ip_addresses_ip_address"),)
@@ -241,7 +224,7 @@ class IpAddress(Base):
     asn_org: Mapped[str | None] = mapped_column(Text)
     country_code: Mapped[str | None] = mapped_column(Text)
 
-    # partial scores of the sovereignty index
+    # partial sovereignty index scores
     country_rating: Mapped[int | None] = mapped_column(Integer)
     asn_rating: Mapped[int | None] = mapped_column(Integer)
 
@@ -252,9 +235,7 @@ class IpAddress(Base):
 
 
 class OrgDomainHistory(Base):
-    """
-    History of the domains of an organisation over the runs.
-    """
+    """an org's domain history across runs"""
 
     __tablename__ = "org_domain_history"
 
@@ -281,7 +262,7 @@ class OrgDomainHistory(Base):
 
 
 class OrgMailSystemHistory(Base):
-    """History that connects an organisation to a mail system over the runs."""
+    """links an org to a mail system across runs"""
 
     __tablename__ = "org_mail_system_history"
 
@@ -315,7 +296,7 @@ class OrgMailSystemHistory(Base):
 
 
 class MailSystemIpHistory(Base):
-    """History that connects a mail system to an IP address over the runs."""
+    """links a mail system to an ip across runs"""
 
     __tablename__ = "mail_system_ip_history"
 

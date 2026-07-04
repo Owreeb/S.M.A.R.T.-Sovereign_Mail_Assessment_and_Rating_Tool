@@ -181,13 +181,9 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-# =====================================================================
-# Deutsche Landes-/Bundesverwaltung & Justiz (eigenbetriebene Mailsysteme)
-# Die MX laufen unter der amtlichen Landes-/Justizdomain -> öffentlicher
-# Träger, Betrieb in DE. Software unbekannt -> open_source_rating 6 wie bei
-# den übrigen "Unknown Mail Gateway"-Einträgen. Anker (^|\.) verhindert
-# Fehltreffer (z.B. matcht 'bayern.de' nicht 'oberbayern.de').
-# =====================================================================
+# Deutsche Landes-/Bundesverwaltung & Justiz: MX unter amtlicher Domain ->
+# öffentlicher Träger in DE, Software unbekannt -> open_source_rating 6.
+# Anker (^|\.) verhindert Fehltreffer (z.B. 'bayern.de' nicht 'oberbayern.de').
 
 - regex: '(?i)(^|\.)justiz-bw\.de$'
   software: "Government Mail Gateway (Justiz Baden-Württemberg)"
@@ -309,10 +305,8 @@
   vendor_country_rating: 1
   vendor_category_rating: 1
 
-# =====================================================================
-# Österreichische / Schweizer öffentliche Verwaltung
-# gv.at = amtliche Behördendomain Österreichs; admin.ch = Schweizer Bund.
-# =====================================================================
+# Österreichische/Schweizer öffentliche Verwaltung
+# gv.at = amtliche Behördendomain AT; admin.ch = Schweizer Bund.
 
 - regex: '(?i)(^|\.)gv\.at$'
   software: "Government Mail Gateway (Republik Österreich)"
@@ -344,10 +338,8 @@
   vendor_country_rating: 2
   vendor_category_rating: 1
 
-# =====================================================================
 # Kommerzielle DE/EU-Hoster und Mail-Security-Dienste
 # Land sicher zuordenbar; Kategorie konservativ als EU Software Vendor.
-# =====================================================================
 
 - regex: '(?i)(^|\.)kundenserver\.de$'
   software: "IONOS Mail Gateway"
@@ -419,9 +411,7 @@
   vendor_country_rating: 1
   vendor_category_rating: 2
 
-# =====================================================================
 # Internationale Anbieter
-# =====================================================================
 
 - regex: '(?i)(^|\.)atos-services\.net$'
   software: "Atos Mail Gateway"

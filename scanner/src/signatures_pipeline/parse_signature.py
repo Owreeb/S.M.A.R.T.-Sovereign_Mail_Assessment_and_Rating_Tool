@@ -43,37 +43,24 @@ class ValidationRunner:
         record = self.ensure_fields(record)
         software = record.get("software")
 
-        # -------------------------
-        # Vendor Category
-        # -------------------------
         vc = record.get("vendor_category")
         if vc:
             try:
                 expected = VendorCategory(vc)
                 if record.get("vendor_category_rating") != expected.rating:
-                    # record["vendor_category_rating"] = expected.rating
-                    # self.add_corrected(software)
                     self.add_error(file, software, f"Expected vendor_category_rating: {expected.rating}")
             except ValueError:
                 self.add_error(file, software, f"Unknown vendor_category: {vc}")
 
-        # -------------------------
-        # Country Rating
-        # -------------------------
         country = record.get("vendor_country")
         if country:
             try:
                 expected = VendorCountryRating.from_country_code(country)
                 if record.get("vendor_country_rating") != expected:
                     self.add_error(file, software, f"Expected vendor_country_rating: {expected}")
-                    # record["vendor_country_rating"] = expected
-                    # self.add_corrected(software)
             except Exception as e:
                 self.add_error(file, software, str(e))
 
-        # -------------------------
-        # Role (STRICT)
-        # -------------------------
         role = record.get("role")
         if not role:
             self.add_error(file, software, "Missing role")
@@ -81,7 +68,6 @@ class ValidationRunner:
             try:
                 MailSystemRole(role)
             except ValueError:
-                # HARD ERROR (optional: skip instead of raise)
                 self.add_error(file, software, f"Invalid MailSystemRole: {role}")
 
         return record
@@ -119,13 +105,6 @@ def run():
 
         for entry in data:
             runner.normalize(entry, filename)
-
-    # -------------------------
-    # FINAL REPORT
-    # -------------------------
-    # print("\n=== CORRECTED ===")
-    # for c in runner.corrected:
-    #     print(c)
 
     print("\n=== ERRORS ===")
     for e in runner.errors:

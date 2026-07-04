@@ -1,23 +1,10 @@
 """
-Bulk ASN / country enrichment for IP addresses via Team Cymru's WHOIS service.
+bulk asn/country enrichment for ip addresses via team cymru's whois.
 
-The per-IP DNS lookups in the ASN scan step get rate-limited by Team Cymru on
-large runs, so a full scan ends up with most IPs missing their ASN/country.
-This module uses the bulk WHOIS interface (whois.cymru.com:43), which is built
-for looking up thousands of IPs in a single connection, and updates the
-ip_addresses rows (asn, asn_org, country_code) plus the derived country_rating
-and asn_rating (hoster rating).
-
-Run as a one-off recovery after a full scan, e.g.:
-
-    from src.db.base import make_engine, make_session
-    from src.scanner_pipeline.asn_bulk import enrich_ip_addresses
-    from src.json_dumper.dump import write_dump
-
-    engine = make_engine("database/SMART.db")
-    with make_session(engine)() as session:
-        enrich_ip_addresses(session, only_missing=False)
-        write_dump(session)
+per-ip dns lookups get rate-limited on big runs, so most ips end up without
+asn/country. this uses the bulk whois interface (whois.cymru.com:43) to look up
+thousands of ips per connection and fills in asn/asn_org/country_code plus the
+derived country_rating and asn_rating. run as a one-off recovery after a scan.
 """
 
 from __future__ import annotations
@@ -36,14 +23,9 @@ BATCH_SIZE = 1000
 
 def lookup_asn_bulk(ips: list[str], timeout: float = 30.0) -> dict[str, dict]:
     """
-    Look up ASN, country and AS name for many IPs via Team Cymru bulk WHOIS.
+    bulk-lookup asn/country/as-name for many ips.
 
-    Args:
-        ips: the IP addresses to look up.
-        timeout: socket timeout in seconds.
-
-    Returns:
-        A map ip -> {"asn": int|None, "asn_org": str|None, "country_code": str|None}.
+    returns ip -> {"asn", "asn_org", "country_code"}.
     """
     result: dict[str, dict] = {}
     for start in range(0, len(ips), BATCH_SIZE):
@@ -63,9 +45,8 @@ def lookup_asn_bulk(ips: list[str], timeout: float = 30.0) -> dict[str, dict]:
             finally:
                 sock.close()
         except OSError as exc:
-            # A network/socket failure must not abort the whole scan: the IPs in
-            # this batch just stay without ASN data (graceful degradation, same
-            # as a per-IP DNS failure in the old step).
+            # socket died, don't kill the scan; this batch just goes without
+            # asn data
             print(f"ASN bulk lookup failed for a batch of {len(batch)} IPs: {exc}")
             continue
 
@@ -76,7 +57,7 @@ def lookup_asn_bulk(ips: list[str], timeout: float = 30.0) -> dict[str, dict]:
             if len(parts) < 7:
                 continue
             asn_raw, ip, _prefix, cc, _reg, _alloc, asname = parts[:7]
-            # origin can be "NA" or "1234 5678" -> take the first number
+            # origin can be "NA" or "1234 5678", take the first number
             first = asn_raw.split()[0] if asn_raw and asn_raw != "NA" else None
             result[ip] = {
                 "asn": int(first) if first and first.isdigit() else None,
@@ -88,14 +69,9 @@ def lookup_asn_bulk(ips: list[str], timeout: float = 30.0) -> dict[str, dict]:
 
 def enrich_ip_addresses(session: Session, only_missing: bool = True) -> int:
     """
-    Enrich ip_addresses rows with ASN/country and the derived ratings.
+    enrich ip_addresses rows with asn/country and derived ratings.
 
-    Args:
-        session: the DB session.
-        only_missing: if True, only look up rows that have no asn_org yet.
-
-    Returns:
-        How many rows were updated.
+    only_missing skips rows that already have an asn_org. returns rows updated.
     """
     stmt = select(IpAddress)
     if only_missing:

@@ -47,7 +47,7 @@ class Step(ABC):
     async def _run_task(self, value) -> list[dict]:
         async with self.semaphore:
             try:
-                results = await self.get(value)  # returns list[dict]
+                results = await self.get(value)
 
                 for row in results:
                     row["error"] = None
@@ -215,9 +215,8 @@ class ASN(Step):
     input_col = "ip"
 
     async def scan(self, data: pd.DataFrame) -> pd.DataFrame:
-        # Team Cymru rate-limits per-IP DNS on large runs, so look the whole
-        # batch up in one bulk WHOIS connection instead. get() below is kept as
-        # the per-IP DNS fallback.
+        # cymru rate-limits per-ip dns on big runs, so do one bulk whois for the
+        # whole batch instead. get() below is the per-ip fallback.
         data = self.preprocess(data)
         ips = list(data[self.input_col])
         if not ips:
@@ -257,12 +256,9 @@ class ASN(Step):
     async def get(self, ip: str):
         addr = ipaddress.ip_address(ip)
 
-        # IPv4
         if addr.version == 4:
             reversed_ip = ".".join(reversed(ip.split(".")))
             query = f"{reversed_ip}.origin.asn.cymru.com"
-
-        # IPv6
         else:
             exploded = addr.exploded.replace(":", "")
 
@@ -278,7 +274,7 @@ class ASN(Step):
 
         asn = parts[0]
 
-        # ASN owner lookup
+        # second lookup, this one for the asn owner
         answers2 = await resolver.resolve(f"AS{asn}.asn.cymru.com", "TXT")
 
         txt2 = answers2[0].to_text().strip('"')

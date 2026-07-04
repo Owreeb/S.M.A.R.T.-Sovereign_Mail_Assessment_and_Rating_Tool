@@ -9,12 +9,12 @@ from src.json_dumper.sovereignty_index_calc import (
 
 
 def _ip(country_rating=None, hoster_rating=None):
-    """Minimal serialized IP dict as _system_score expects it."""
+    """minimal serialized ip dict, the shape _system_score wants"""
     return {"country_rating": country_rating, "hoster_rating": hoster_rating}
 
 
 def _system(value):
-    """A system whose five markers are all ``value``"""
+    """a system whose five markers are all ``value``"""
     return {
         "ips": [_ip(country_rating=value, hoster_rating=value)],
         "vendor_category_rating": value,
@@ -114,10 +114,9 @@ class TestComputeSovereigntyIndex:
 
 class TestIpOnlyFallback:
     """
-    The generic 'Unidentified Mail Server' fallback (to_db) only knows where the
-    mail is hosted, not which software runs there. Such a component is treated as
-    null: it is excluded from scoring, so an org with nothing but the fallback
-    stays unrated, no matter how sovereign its hosting looks.
+    the 'Unidentified Mail Server' fallback (to_db) only knows where the mail is
+    hosted. it's a null component: kept out of scoring, so an org with nothing
+    but the fallback stays unrated however sovereign its hosting looks.
     """
 
     @staticmethod

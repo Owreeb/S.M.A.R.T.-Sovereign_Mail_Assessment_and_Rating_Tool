@@ -3,7 +3,7 @@
 # and vendor_category_rating must equal VendorCategory(vendor_category).rating
 # (validated by parse_signature.py).
 
-# --- Open-source mail servers ---
+# open-source mail servers
 - regex: "(?i)dovecot"
   software: Dovecot
   vendor: Open-Xchange / Dovecot
@@ -44,7 +44,7 @@
   vendor_country_rating: 2
   vendor_category_rating: 1
 
-# --- US hyperscalers (cloud mailboxes) ---
+# US hyperscalers (cloud mailboxes)
 - regex: '(?i)office365|outlook\.office365|outlook\.com|exchange online'
   software: Microsoft Exchange Online
   vendor: Microsoft
@@ -75,7 +75,7 @@
   vendor_country_rating: 5
   vendor_category_rating: 5
 
-# --- Commercial mail servers ---
+# commercial mail servers
 - regex: "(?i)zimbra"
   software: Zimbra
   vendor: Synacor / Zimbra

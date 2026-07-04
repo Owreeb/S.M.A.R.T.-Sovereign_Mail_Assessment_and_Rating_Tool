@@ -1,13 +1,9 @@
 """
-Tests for the YAML signatures and the matcher.
+tests for the yaml signatures and the matcher.
 
-Focus: the MX-hostname signatures that map an organisation's mail
-infrastructure to a mail system. These guard two things that are easy to get
-wrong and directly affect the sovereignty rating:
-
-* coverage  - the curated provider/government MX hosts actually match,
-* precision - an anchored pattern does not match a look-alike hostname
-  (e.g. a ``bayern.de`` rule must not fire on ``oberbayern.de``).
+focus is the mx-hostname signatures: coverage (curated provider/government hosts
+match) and precision (anchored patterns don't fire on look-alikes, e.g. a
+bayern.de rule must not match oberbayern.de).
 """
 
 import re
@@ -56,7 +52,7 @@ ALL_KINDS = ("mx", "smtp", "imap")
 
 
 class TestSignatureConsistency:
-    """Every signature must be internally consistent and well-formed."""
+    """every signature has to be internally consistent and well-formed"""
 
     @pytest.mark.parametrize("kind", ALL_KINDS)
     def test_category_rating_matches_category(self, kind):
@@ -68,9 +64,8 @@ class TestSignatureConsistency:
                     f"{kind}/{sig.get('software')}: category_rating mismatch for {cat!r}"
                 )
 
-    # Open-source MTAs deliberately rated as maximally sovereign (country 1),
-    # which deviates from the strict country->rating mapping. Known exception,
-    # flagged for review; not auto-enforced so the suite reflects the decision.
+    # open-source MTAs are rated maximally sovereign (country 1), deviating from
+    # the strict country->rating mapping; deliberate exception
     COUNTRY_RATING_EXCEPTIONS = {"Postfix", "Exim"}
 
     @pytest.mark.parametrize("kind", ALL_KINDS)
@@ -106,10 +101,9 @@ class TestSignatureConsistency:
 
 class TestVendorIdentity:
     """
-    Mail systems are deduped in the DB by (software, role). If two different
-    operators share a software label they collapse into one row and the company
-    identity (and its rating) is lost. Every software label must therefore map
-    to a single vendor so e.g. each municipal Rechenzentrum keeps its identity.
+    mail systems are deduped by (software, role), so two operators sharing a
+    software label collapse into one row and lose their identity/rating. every
+    software label has to map to a single vendor.
     """
 
     def test_no_software_label_maps_to_multiple_vendors(self):
@@ -129,9 +123,9 @@ class TestVendorIdentity:
 
 
 class TestMxCoverage:
-    """The curated MX hosts resolve to a mail system."""
+    """the curated mx hosts resolve to a mail system"""
 
-    # (real MX hostname, expected vendor substring)
+    # (real mx hostname, expected vendor substring)
     CASES = [
         ("mail.bayern.de", "Bayern"),
         ("mailmx0001.rlp.de", "Rheinland-Pfalz"),
@@ -166,7 +160,7 @@ class TestMxCoverage:
 
 
 class TestMxPrecision:
-    """Anchored patterns must not fire on look-alike hostnames."""
+    """anchored patterns must not fire on look-alike hostnames"""
 
     NON_MATCHES = [
         "oberbayern.de",            # must not hit the bayern.de rule

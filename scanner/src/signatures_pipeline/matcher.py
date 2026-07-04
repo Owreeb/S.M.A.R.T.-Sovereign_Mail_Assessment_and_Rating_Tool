@@ -1,11 +1,8 @@
 """
-Matches scan results (SMTP/IMAP banners, MX hostnames) against the YAML
-signatures and returns the mail system metadata, including the partial
-sovereignty ratings.
+match scan results (smtp/imap banners, mx hostnames) against the yaml signatures.
 
-The signature files live in ``signatures/`` and are grouped by the scan step
-they belong to (``mx``, ``smtp``, ``imap``). Each entry has a ``regex`` plus the
-``MailSystem`` fields the match contributes.
+signatures live in signatures/ grouped by scan step (mx, smtp, imap); each has a
+regex plus the MailSystem fields it contributes.
 """
 
 from __future__ import annotations
@@ -19,7 +16,7 @@ import yaml
 
 SIGNATURE_DIR = Path(__file__).resolve().parent / "signatures"
 
-# the fields a matched signature contributes to a MailSystem row
+# fields a matched signature contributes to a MailSystem row
 SIGNATURE_FIELDS = (
     "software",
     "role",
@@ -34,15 +31,7 @@ SIGNATURE_FIELDS = (
 
 @lru_cache(maxsize=None)
 def load_signatures(kind: str) -> tuple[dict[str, Any], ...]:
-    """
-    Load and compile the signatures for one kind (mx/smtp/imap).
-
-    Args:
-        kind: name of the signature file without extension.
-
-    Returns:
-        A tuple of signature dicts, each with a compiled ``_pattern``.
-    """
+    """load + compile the signatures for one kind (mx/smtp/imap)"""
     path = SIGNATURE_DIR / f"{kind}.yaml"
     if not path.exists():
         return ()
@@ -59,16 +48,7 @@ def load_signatures(kind: str) -> tuple[dict[str, Any], ...]:
 
 
 def match_signature(kind: str, *texts: str | None) -> dict[str, Any] | None:
-    """
-    Return the first ``kind`` signature whose regex matches any of the texts.
-
-    Args:
-        kind: which signature file to use (mx/smtp/imap).
-        texts: the strings to test (banner, hostname, ...).
-
-    Returns:
-        A dict with only the ``SIGNATURE_FIELDS``, or None if nothing matched.
-    """
+    """first `kind` signature matching any of the texts (SIGNATURE_FIELDS only), or None"""
     candidates = [text for text in texts if text]
     if not candidates:
         return None
