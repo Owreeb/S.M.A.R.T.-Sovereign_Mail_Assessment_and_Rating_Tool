@@ -4,7 +4,7 @@ The frontend is a **Vite + React 19 + TypeScript** single-page application that
 visualises the digital-sovereignty data produced by the scanner. It renders a
 landing page, an interactive map, a statistics dashboard, a filterable table, and a
 scoring-methodology page. It is a **static site** (all data bundled at build time)
-deployed to **GitHub Pages**.
+and can be served from any static web host.
 
 Non-technical usage: [user.en.md](user.en.md). German version:
 [technical.de.md](technical.de.md).
@@ -363,10 +363,10 @@ the glob.
   spec); coverage reporter `lcov`. Path aliases `@assets`, `@components`,
   `@constants`, `@hooks`, `@models`, `@pages`, `@utils` (mirrored in
   `tsconfig.app.json`).
-- **`.github/workflows/deploy.yml`** — on push to `main` touching `frontend/**`:
-  Node 22, `npm ci`, `npm run build` with `BASE_PATH=/<repo-name>/`, copy
-  `dist/index.html` → `dist/404.html` (SPA fallback for client routing), deploy to
-  GitHub Pages.
+- **Deployment** — there is no automated deploy workflow any more. `npm run build`
+  produces `dist/`, which is served from any static web host. If the site is not at
+  the root, set `BASE_PATH=/<subpath>/`; client routing needs an SPA fallback to
+  `index.html` (on plain file hosts: copy `dist/index.html` → `dist/404.html`).
 - **`.github/workflows/ci.yml`** — lint + build on PR/push, plus `vitest run
   --coverage` feeding SonarQube (lcov at `frontend/coverage/lcov.info`).
 - **Husky** (`.husky/pre-commit`) runs `lint-staged` only when staged paths begin
@@ -393,5 +393,5 @@ extend. Run with `npm test`.
 - The sovereignty scale is **1 (best) … 6 (worst)**; `null` = unrated; **levels 5
   and 6 both map to `sehr-niedrig`**.
 - The **React Compiler is enabled** — avoid patterns that defeat its assumptions.
-- GitHub Pages base path is injected via `BASE_PATH` → `vite base` +
-  `BrowserRouter basename`; `404.html` provides the SPA fallback.
+- The site's base path is injected via `BASE_PATH` → `vite base` +
+  `BrowserRouter basename`; an SPA fallback to `index.html` is required.

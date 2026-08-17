@@ -4,7 +4,7 @@ Das Frontend ist eine **Vite-+-React-19-+-TypeScript**-Single-Page-Application, 
 die Souveränitätsdaten des Scanners visualisiert. Es rendert eine Landingpage, eine
 interaktive Karte, ein Statistik-Dashboard, eine filterbare Tabelle und eine Seite
 zur Bewertungsmethodik. Es ist eine **statische Site** (alle Daten werden zur
-Buildzeit gebündelt), deployt auf **GitHub Pages**.
+Buildzeit gebündelt) und kann auf jedem statischen Webserver ausgeliefert werden.
 
 Nicht-technische Bedienung: [user.de.md](user.de.md). Englische Fassung:
 [technical.en.md](technical.en.md).
@@ -367,10 +367,12 @@ vom Glob ignoriert.
   Repo-Wurzelverzeichnis importieren kann); Coverage-Reporter `lcov`. Pfad-Aliase
   `@assets`, `@components`, `@constants`, `@hooks`, `@models`, `@pages`, `@utils`
   (gespiegelt in `tsconfig.app.json`).
-- **`.github/workflows/deploy.yml`** — bei Push auf `main` mit Änderungen an
-  `frontend/**`: Node 22, `npm ci`, `npm run build` mit `BASE_PATH=/<repo-name>/`,
-  `dist/index.html` → `dist/404.html` kopieren (SPA-Fallback fürs Client-Routing),
-  Deploy auf GitHub Pages.
+- **Deployment** — es gibt keinen automatischen Deploy-Workflow mehr. `npm run
+  build` erzeugt `dist/`; das Verzeichnis wird auf einem beliebigen statischen
+  Webserver abgelegt. Liegt die Site nicht im Root, `BASE_PATH=/<unterpfad>/`
+  setzen; für das Client-Routing braucht der Server einen SPA-Fallback auf
+  `index.html` (bei reinen Datei-Hostern: `dist/index.html` → `dist/404.html`
+  kopieren).
 - **`.github/workflows/ci.yml`** — Lint + Build bei PR/Push, plus `vitest run
   --coverage` für SonarQube (lcov unter `frontend/coverage/lcov.info`).
 - **Husky** (`.husky/pre-commit`) führt `lint-staged` nur aus, wenn gestagte Pfade
@@ -400,5 +402,5 @@ Ansatzpunkt zum Erweitern. Start mit `npm test`.
   **die Level 5 und 6 bilden beide auf `sehr-niedrig` ab**.
 - Der **React Compiler ist aktiviert** — Muster vermeiden, die seine Annahmen
   unterlaufen.
-- Der GitHub-Pages-Basispfad wird über `BASE_PATH` → `vite base` +
-  `BrowserRouter basename` injiziert; `404.html` liefert den SPA-Fallback.
+- Der Basispfad der Site wird über `BASE_PATH` → `vite base` +
+  `BrowserRouter basename` injiziert; ein SPA-Fallback auf `index.html` ist nötig.

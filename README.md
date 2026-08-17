@@ -41,7 +41,8 @@ berechnet den **Souveränitätsindex V2** und exportiert das Ergebnis als JSON.
 Single Page Application auf Basis von **React 19 + Vite + TypeScript** (Mantine,
 Leaflet, i18next). Stellt die Scan-Ergebnisse auf einer interaktiven Karte, in
 einem Statistik-Dashboard und in einer filterbaren Tabelle dar — zweisprachig
-(DE/EN). Deployt auf **GitHub Pages**; alle Daten werden zur Buildzeit gebündelt.
+(DE/EN). Rein statischer Build (`npm run build` → `dist/`) — auf einem beliebigen
+Webserver hostbar; alle Daten werden zur Buildzeit gebündelt.
 
 → [Technische Doku](docs/frontend/technical.de.md) · [Benutzerhandbuch](docs/frontend/user.de.md)
 
@@ -89,4 +90,4 @@ Weitere Referenzen:
 
 ## Lizenz
 
-Noch nicht festgelegt.
+[MIT](LICENSE)

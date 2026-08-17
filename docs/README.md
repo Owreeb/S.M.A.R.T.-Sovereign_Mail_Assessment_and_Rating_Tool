@@ -44,7 +44,7 @@ für **Scanner** und **Frontend**, auf **Englisch** und **Deutsch**.*
 ## System at a glance / System auf einen Blick
 
 ```
-   Wikidata ──► Scanner (Python) ──► SQLite ──► JSON export ──► Frontend (React) ──► GitHub Pages
+   Wikidata ──► Scanner (Python) ──► SQLite ──► JSON export ──► Frontend (React) ──► static hosting
                 DNS/MX/IP/ASN          SCD-2     organizations.json   map · table · stats
                 SMTP/IMAP probes       history   <date>.json
                 signature matching               (sovereignty index 1..6)
